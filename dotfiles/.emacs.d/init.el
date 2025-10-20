@@ -39,9 +39,11 @@
   :config (load-theme 'zenburn t))
 
 ;; Mode Line
-(use-package smart-mode-line
+(use-package moody
   :config
-  (sml/setup))
+  (moody-replace-mode-line-front-space)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
 ;; Which-key (Shortcut-Hilfe)
 (use-package which-key :config (which-key-mode))
@@ -51,19 +53,12 @@
   :init (projectile-mode +1)
   :bind-keymap ("C-c p" . projectile-command-map))
 
-;; Treemacs (Projekt-Explorer)
-(use-package treemacs
-  :defer t
-  :bind (("M-0" . treemacs-select-window)
-         ("C-x t t" . treemacs)
-         ("C-x t C-t" . treemacs-find-file))
+;; File Explorer
+(use-package dirvish
+  :init (dirvish-override-dired-mode)
   :config
-  (setq treemacs-width 30
-        treemacs-follow-after-init t
-        treemacs-show-hidden-files t)
-  (treemacs-follow-mode 1)
-  (treemacs-filewatch-mode 1))
-;;(use-package treemacs-projectile :after (treemacs projectile))
+  (setq dirvish-default-layout '(0 0.3 0.7)
+        dirvish-attributes '(subtree-state collapse git-msg)))
 
 ;; Ace / Jump Navigation
 (use-package ace-window :bind (("M-p" . ace-window)))
@@ -176,7 +171,8 @@
   (load-file (concat (concat (getenv "HOME") "/.emacs.d/") file)))
 
 (load-conf-file "completion.el")
-(load-conf-file "lsp.el")
+;; (load-conf-file "lsp.el")
+(load-conf-file "eglot.el")
 (load-conf-file "rust.el")
 (load-conf-file "scheme.el")
 (load-conf-file "magit.el")

@@ -38,8 +38,8 @@
 		     ,(local-file "../../dotfiles/.emacs.d/clojure.el"))
 		    (,(emacs-file "completion.el")
 		     ,(local-file "../../dotfiles/.emacs.d/completion.el"))
-		    (,(emacs-file "lsp.el")
-		     ,(local-file "../../dotfiles/.emacs.d/lsp.el"))
+		    (,(emacs-file "eglot.el")
+		     ,(local-file "../../dotfiles/.emacs.d/eglot.el"))
 		    (,(emacs-file "magit.el")
 		     ,(local-file "../../dotfiles/.emacs.d/magit.el"))
 		    (,(emacs-file "rust.el")
@@ -61,7 +61,7 @@
         (list
 	 "emacs-use-package"
 	 "emacs-zenburn-theme"
-         "emacs-smart-mode-line"
+         "emacs-moody"
 	 "emacs-smex"
 	 "emacs-ace-window"
 	 "emacs-ace-jump-mode"
@@ -69,7 +69,7 @@
 	 "emacs-posframe"
 	 "emacs-magit"
 	 "emacs-projectile"
-	 "emacs-treemacs"
+	 "emacs-dirvish"
 	 "emacs-dap-mode"
 	 "emacs-yasnippet"
 	 "emacs-yasnippet-snippets"
@@ -81,9 +81,7 @@
 	 "emacs-embark"
 	 "emacs-consult"
 	 "emacs-vertico"
-	 "emacs-lsp-mode"
-	 "emacs-lsp-ui"
-	 "emacs-lsp-ivy"
+	 "emacs-consult-eglot"
 	 "emacs-kind-icon"
 	 "emacs-cape"
 	 "emacs-corfu"
