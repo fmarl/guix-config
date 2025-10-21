@@ -62,7 +62,11 @@
 
 ;; Ace / Jump Navigation
 (use-package ace-window :bind (("M-p" . ace-window)))
-(use-package ace-jump-mode :bind (("C-c SPC" . ace-jump-mode)))
+(use-package avy
+  :bind (("C-:" . avy-goto-char-timer)
+	 ("M-g -" . avy-kill-region)
+	 ("M-g =" . avy-move-region)
+	 ("M-g +" . avy-copy-region)))
 
 ;; Smex (M-x)
 (use-package smex
@@ -72,6 +76,9 @@
 
 ;; Markdown
 (use-package markdown-mode :mode "\\.md\\'")
+
+;; Terminal
+(use-package eat)
 
 ;; Direnv
 (use-package direnv
@@ -171,7 +178,6 @@
   (load-file (concat (concat (getenv "HOME") "/.emacs.d/") file)))
 
 (load-conf-file "completion.el")
-;; (load-conf-file "lsp.el")
 (load-conf-file "eglot.el")
 (load-conf-file "rust.el")
 (load-conf-file "scheme.el")
