@@ -10,12 +10,10 @@
 ;; Indicate which modules to import to access the variables
 ;; used in this configuration.
 (use-modules (gnu)
-	     (gnu packages))
-(use-service-modules cups desktop networking ssh xorg)
-
-(define (test a b c)
-  (append (list (specification->package "abc"))
-	  %base-packages))
+	     (gnu packages)
+	     (my networking)
+	     (my desktop))
+(use-service-modules desktop ssh xorg)
 
 (operating-system
  (locale "en_US.utf8")
@@ -28,6 +26,7 @@
                 (name "marrero")
                 (comment "Florian Marrero Liestmann")
                 (group "users")
+		(shell (file-append (specification->package "zsh") "/bin/zsh"))
                 (home-directory "/home/marrero")
                 (supplementary-groups '("wheel" "netdev" "audio" "video")))
                %base-user-accounts))
@@ -41,13 +40,15 @@
  ;; Below is the list of system services.  To search for available
  ;; services, run 'guix system search KEYWORD' in a terminal.
  (services
-  (append 
+  (append
+   (make-desktop (service mate-desktop-service-type))
    (list
-    (service mate-desktop-service-type)
     (set-xorg-configuration
      (xorg-configuration (keyboard-layout keyboard-layout)))
-    (service openssh-service-type))
-   %desktop-services))
+    
+    (service openssh-service-type)
+    (make-static-network "enp5s0" "192.168.0.200/24"))
+   %base-services))
   
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)

@@ -4,13 +4,13 @@
   #:use-module (gnu services)
   #:use-module (gnu home services))
 
-(define-public %lf-config-service
+(define-public %lf-services
   (list (simple-service 'lf-config
 			home-files-service-type
 			`((".config/lf/lfrc"
 			   ,(local-file "../../dotfiles/.config/lf/lfrc")))
 			)))
 
-(define-public %lf-package
+(define-public %lf-packages
   (specifications->packages
    (list "lf")))

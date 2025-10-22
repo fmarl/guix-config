@@ -5,8 +5,6 @@
              (gnu home services shells)
 	     (gnu home services ssh)
 	     (my home emacs)
-	     (my home zsh)
-	     (my home lf)
 	     (my home common))
 
 (home-environment

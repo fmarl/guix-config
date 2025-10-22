@@ -23,5 +23,6 @@ for opt in "${disabled_opts[@]}"; do
 done
 unset opt disabled_opts
 
+eval "$(starship init zsh)"
 eval "$(direnv hook zsh)"
 source <(fzf --zsh)
