@@ -1,14 +1,3 @@
-;; This is an operating system configuration generated
-;; by the graphical installer.
-;;
-;; Once installation is complete, you can learn and modify
-;; this file to tweak the system configuration, and pass it
-;; to the 'guix system reconfigure' command to effect your
-;; changes.
-
-
-;; Indicate which modules to import to access the variables
-;; used in this configuration.
 (use-modules (gnu)
 	     (gnu packages)
 	     (my networking)
@@ -31,23 +20,15 @@
                 (supplementary-groups '("wheel" "netdev" "audio" "video")))
                %base-user-accounts))
 
- ;; Packages installed system-wide.  Users can also install packages
- ;; under their own account: use 'guix search KEYWORD' to search
- ;; for packages and 'guix install PACKAGE' to install a package.
- ;;(packages (append (list (specification->package "nss-certs"))
- ;;                  %base-packages))
-
- ;; Below is the list of system services.  To search for available
- ;; services, run 'guix system search KEYWORD' in a terminal.
  (services
   (append
-   (make-desktop (service mate-desktop-service-type))
+   (make-desktop mate-desktop-services)
+
    (list
-    (set-xorg-configuration
-     (xorg-configuration (keyboard-layout keyboard-layout)))
-    
     (service openssh-service-type)
+
     (make-static-network "enp5s0" "192.168.0.200/24"))
+
    %base-services))
   
  (bootloader (bootloader-configuration
@@ -59,9 +40,6 @@
                       (target (uuid
                                "6df8d888-ef43-4a42-b01e-4469d8fb2f02")))))
 
- ;; The list of file systems that get "mounted".  The unique
- ;; file system identifiers there ("UUIDs") can be obtained
- ;; by running 'blkid' in a terminal.
  (file-systems (cons* (file-system
                        (mount-point "/")
                        (device (uuid

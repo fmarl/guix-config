@@ -4,12 +4,12 @@
              (guix gexp)
              (gnu home services shells)
 	     (gnu home services ssh)
-	     (my home emacs)
-	     (my home common))
+	     (my home base)
+	     (my home emacs))
 
 (home-environment
  (packages (append
-	    %common-desktop-packages
+	    %my-home-desktop-packages
 	    %emacs-packages
 	    ))
  
@@ -31,5 +31,5 @@
 
 				     (identity-file "~/.ssh/id_ed25519")))))))
 	  %emacs-services
-	  %common-services
+	  %my-home-services
           %base-home-services)))
