@@ -1,0 +1,106 @@
+[
+  {
+    "battery": {
+      "bat": "BAT0",
+      "format": "{capacity}% {icon}",
+      "format-alt": "{time} {icon}",
+      "format-charging": "{capacity}% ",
+      "format-icons": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "format-plugged": "{capacity}% ",
+      "states": {
+        "critical": 15,
+        "warning": 30
+      }
+    },
+    "clock#1": {
+      "format": "{:%a}",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "clock#2": {
+      "format": "{:%H:%M}",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "clock#3": {
+      "format": "{:%d.%m}",
+      "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+    "cpu": {
+      "format": "{usage}% "
+    },
+    "custom/left-arrow-dark": {
+      "format": "",
+      "tooltip": false
+    },
+    "custom/left-arrow-light": {
+      "format": "",
+      "tooltip": false
+    },
+    "custom/right-arrow-dark": {
+      "format": "",
+      "tooltip": false
+    },
+    "custom/right-arrow-light": {
+      "format": "",
+      "tooltip": false
+    },
+    "disk": {
+      "format": "Disk {percentage_used:2}%",
+      "interval": 5,
+      "path": "/"
+    },
+    "height": 10,
+    "memory": {
+      "format": "{}% "
+    },
+    "modules-center": [
+      "custom/left-arrow-dark",
+      "clock#1",
+      "custom/left-arrow-light",
+      "custom/left-arrow-dark",
+      "clock#2",
+      "custom/right-arrow-dark",
+      "custom/right-arrow-light",
+      "clock#3",
+      "custom/right-arrow-dark"
+    ],
+    "modules-left": [
+      "river/tags",
+      "custom/right-arrow-dark"
+    ],
+    "modules-right": [
+      "custom/left-arrow-dark",
+      "network",
+      "custom/left-arrow-light",
+      "custom/left-arrow-dark",
+      "memory",
+      "custom/left-arrow-light",
+      "custom/left-arrow-dark",
+      "cpu",
+      "custom/left-arrow-light",
+      "custom/left-arrow-dark",
+      "battery",
+      "custom/left-arrow-light",
+      "custom/left-arrow-dark",
+      "tray"
+    ],
+    "network": {
+      "format-alt": "{bandwidthDownBits}/{bandwidthUpBits}",
+      "format-disconnected": "Disconnected ",
+      "format-ethernet": "Ethernet ",
+      "format-linked": "Ethernet (No IP) ",
+      "format-wifi": "({signalStrength}%) "
+    },
+    "river/tags": {
+      "num-tags": 9
+    },
+    "tray": {
+      "spacing": 10
+    }
+  }
+]

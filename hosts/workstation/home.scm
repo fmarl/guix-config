@@ -6,12 +6,14 @@
 	     (gnu home services ssh)
 	     (my utils)
 	     (my home base)
-	     (my home emacs))
+	     (my home emacs)
+	     (my home river))
 
 (home-environment
  (packages (append
 	    %my-home-desktop-packages
 	    %emacs-packages
+	    %river-packages
 	    ))
  
  (services
@@ -33,5 +35,6 @@
 		     (authorized-keys (map (lambda (file) (local-file file))
 					   (relative-host-files "workstation" "/pubkeys"))))))
 	  %emacs-services
+	  %river-services
 	  %my-home-services
           %base-home-services)))
