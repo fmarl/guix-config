@@ -4,6 +4,7 @@
              (guix gexp)
              (gnu home services shells)
 	     (gnu home services ssh)
+	     (my utils)
 	     (my home base)
 	     (my home emacs))
 
@@ -28,8 +29,9 @@
 				     (host-name "github.com")
 				     (user "git")
 				     (port 22)
-
-				     (identity-file "~/.ssh/id_ed25519")))))))
+				     (identity-file "~/.ssh/id_ed25519"))))
+		     (authorized-keys (map (lambda (file) (local-file file))
+					   (relative-host-files "workstation" "/pubkeys"))))))
 	  %emacs-services
 	  %my-home-services
           %base-home-services)))
