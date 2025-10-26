@@ -17,7 +17,7 @@
                 (group "users")
 		(shell (file-append (specification->package "zsh") "/bin/zsh"))
                 (home-directory "/home/marrero")
-                (supplementary-groups '("wheel" "netdev" "audio" "video" "seat")))
+                (supplementary-groups '("wheel" "netdev" "audio" "video" "seat" "plugdev")))
                %base-user-accounts))
 
  (services

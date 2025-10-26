@@ -9,6 +9,7 @@
   #:use-module (gnu services dbus)
   #:use-module (gnu services shepherd)
   #:use-module (gnu packages suckless)
+  #:use-module (gnu packages security-token)
   #:use-module (gnu system keyboard)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
@@ -75,6 +76,9 @@
      (description
       "Create the XDG_RUNTIME_DIR."))))
 
+(define fido2-services
+  (udev-rules-service 'fido2 libfido2 #:groups '("plugdev")))
+
 (define* (make-desktop desktop-services #:key (login-manager-services lightdm-login-manager-services))
   (append
    login-manager-services
@@ -88,4 +92,7 @@
     (service seatd-service-type)
     (service dbus-root-service-type)
     ;; Create XDG_RUNTIME_DIR
-    (service xdg-runtime-dir-service-type))))
+    (service xdg-runtime-dir-service-type)
+    ;; fido2 (Yubikey etc)
+    fido2-services
+    )))

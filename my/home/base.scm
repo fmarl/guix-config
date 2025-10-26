@@ -1,6 +1,5 @@
 (define-module (my home base)
   #:use-module (gnu packages)
-  #:use-module (gnu packages fonts)
   #:use-module (my home lf)
   #:use-module (my home shell)
   #:export (
@@ -8,10 +7,15 @@
 	    %my-home-services
 	    %my-home-desktop-packages))
 
+(define %my-base-fonts
+   (specifications->packages
+    (list "font-hack")))
+
 (define %my-home-packages
   (append
    (specifications->packages
     (list "git"))
+   %my-base-fonts
    %shell-packages
    %lf-packages))
 
