@@ -22,7 +22,9 @@
 
  (services
   (append
-   (make-desktop mate-desktop-services)
+   (make-desktop (list
+		  mate-desktop-services
+		  river-desktop-services))
 
    (list
     (service openssh-service-type)

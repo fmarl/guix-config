@@ -110,4 +110,8 @@ riverctl map normal None XF86AudioMute         spawn '~a --toggle-mute'
 
 (define %river-packages
   (specifications->packages
-   (list "river")))
+   (list "river"
+	 "bemenu"
+	 "imv"
+	 "zathura"
+	 "mpv")))

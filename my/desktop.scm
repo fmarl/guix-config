@@ -1,5 +1,6 @@
 (define-module (my desktop)
   #:use-module (guix gexp)
+  #:use-module (guix records)
   #:use-module (gnu services)
   #:use-module (gnu services xorg)
   #:use-module (gnu services base)
@@ -8,6 +9,7 @@
   #:use-module (gnu services lightdm)
   #:use-module (gnu services dbus)
   #:use-module (gnu services shepherd)
+  #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
   #:use-module (gnu packages security-token)
   #:use-module (gnu system keyboard)
@@ -17,6 +19,7 @@
   #:export (
 	    screen-locker-service
 	    mate-desktop-services
+	    river-desktop-services
 	    gdm-login-manager-services
 	    lightdm-login-manager-services
 	    make-desktop
@@ -35,9 +38,27 @@
             (name "slock")
             (program (file-append slock "/bin/slock")))))
 
+(define-record-type* <river-desktop-configuration> river-desktop-configuration
+  make-river-desktop-configuration
+  river-desktop-configuration?
+  (river-package river-package (default river)))
+
+(define river-desktop-service-type
+  (service-type
+    (name 'river-desktop)
+    (description "The river window manager")
+    (extensions
+     (list (service-extension profile-service-type
+			      (compose list river-package))))
+    (default-value (river-desktop-configuration))))
+
 (define mate-desktop-services
   (list
    (service mate-desktop-service-type)))
+
+(define river-desktop-services
+  (list
+   (service river-desktop-service-type)))
 
 (define gdm-login-manager-services
   (list
@@ -79,10 +100,16 @@
 (define fido2-services
   (udev-rules-service 'fido2 libfido2 #:groups '("plugdev")))
 
+(define (flatten lst)
+  (cond
+    ((null? lst) '())
+    ((list? (car lst)) (append (flatten (car lst)) (flatten (cdr lst))))
+    (else (cons (car lst) (flatten (cdr lst))))))
+
 (define* (make-desktop desktop-services #:key (login-manager-services lightdm-login-manager-services))
   (append
    login-manager-services
-   desktop-services
+   (flatten desktop-services)
    (list
     screen-locker-service
     fontconfig-file-system-service
