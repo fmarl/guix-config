@@ -12,8 +12,8 @@
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
   #:use-module (gnu packages security-token)
-  #:use-module (gnu packages admin)
   #:use-module (gnu packages shells)
+  #:use-module (gnu packages glib)
   #:use-module (gnu system keyboard)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
@@ -22,18 +22,9 @@
 	    screen-locker-service
 	    mate-desktop-services
 	    river-desktop-services
-	    gdm-login-manager-services
-	    lightdm-login-manager-services
-	    greetd+tuigreet-login-manager-services
+	    make-greetd-login-manager-service
 	    make-desktop
 	    ))
-
-(define keyboard-layout
-  (keyboard-layout "us" "altgr-intl"))
-
-(define common-xorg-config
-  (xorg-configuration
-   (keyboard-layout keyboard-layout)))
 
 (define screen-locker-service
   (service screen-locker-service-type
@@ -41,48 +32,65 @@
             (name "slock")
             (program (file-append slock "/bin/slock")))))
 
-;; GDM
-
-(define gdm-login-manager-services
-  (list
-   (service gdm-service-type)
-   gdm-file-system-service))
-
-;; Lightdm
-
-(define lightdm-login-manager-services
-  (list
-   (service lightdm-service-type
-	    (lightdm-configuration
-	     (xorg-configuration common-xorg-config)
-	     (greeters (list (lightdm-gtk-greeter-configuration)))))))
-
 ;; Greetd
 
-(define greetd+tuigreet-login-manager-services
+(define (make-greetd-login-manager-services command)
   (list
    (service greetd-service-type
-            (greetd-configuration
-             (terminals
-              (list
-	       (greetd-terminal-configuration
-		(terminal-vt "1")
-		(default-session-command (file-append tuigreet "/bin/tuigreet")))
-	       (greetd-terminal-configuration
-                (terminal-vt "2")
-                (default-session-command
-                  (greetd-agreety-session (command
-					   (greetd-user-session)))))
-	       (greetd-terminal-configuration
-                (terminal-vt "3")
-                (default-session-command
-                  (greetd-agreety-session (command
-					   (greetd-user-session)))))
-	       (greetd-terminal-configuration
-                (terminal-vt "4")
-                (default-session-command
-                  (greetd-agreety-session (command
-					   (greetd-user-session)))))))))))
+	    (greetd-configuration
+	      (greeter-supplementary-groups
+	       '("video" "input" "seat" "users"))
+	      (terminals
+	       (list
+		(greetd-terminal-configuration
+		  (terminal-vt "1")
+		  (terminal-switch #t)
+		  (default-session-command
+                    (greetd-agreety-session
+                      (command
+		       (greetd-user-session
+			 (command
+			  (file-append dbus "/bin/dbus-run-session"))
+			 (command-args (list command)))))))
+		
+		(greetd-terminal-configuration
+		  (terminal-vt "2")
+		  (default-session-command
+		    (greetd-agreety-session
+		      (command
+		       (greetd-user-session)))))
+		
+		(greetd-terminal-configuration
+		  (terminal-vt "3")
+		  (default-session-command
+		    (greetd-agreety-session
+		      (command
+		       (greetd-user-session)))))
+		
+		(greetd-terminal-configuration
+		  (terminal-vt "4")
+		  (default-session-command
+		    (greetd-agreety-session
+		      (command
+		       (greetd-user-session)))))
+
+		(greetd-terminal-configuration
+		  (terminal-vt "5")
+		  (default-session-command
+		    (greetd-agreety-session
+		      (command
+		       (greetd-user-session)))))
+
+		(greetd-terminal-configuration
+		  (terminal-vt "6")
+		  (default-session-command
+		    (greetd-agreety-session
+		      (command
+		       (greetd-user-session)))))
+		))))
+   
+   (service mingetty-service-type
+	    (mingetty-configuration (tty "tty8")))))
 
 ;; River
 
@@ -133,7 +141,7 @@
                           (compose
                            list
                            (const xdg-runtime-dir-shepherd-service)))))
-     (default-value #f)			; no default value required
+     (default-value #f)	; no default value required
      (description
       "Create the XDG_RUNTIME_DIR."))))
 
@@ -146,19 +154,21 @@
     ((list? (car lst)) (append (flatten (car lst)) (flatten (cdr lst))))
     (else (cons (car lst) (flatten (cdr lst))))))
 
-(define* (make-desktop desktop-services #:key (login-manager-services greetd+tuigreet-login-manager-services))
+(define* (make-desktop desktop-services #:key (login-manager-services (make-greetd-login-manager-services "river")))
   (append
    login-manager-services
    (flatten desktop-services)
    (list
+    ;; Seat Management
+    (service seatd-service-type)
+    ;; Screen Locking
     screen-locker-service
     fontconfig-file-system-service
-    (service x11-socket-directory-service-type)
+    ;; (service x11-socket-directory-service-type)
     ;; D-Bus stuff
-    (service seatd-service-type)
     (service dbus-root-service-type)
     ;; Create XDG_RUNTIME_DIR
-    (service xdg-runtime-dir-service-type)
+    ;; (service xdg-runtime-dir-service-type)
     ;; fido2 (Yubikey etc)
     fido2-services
     )))

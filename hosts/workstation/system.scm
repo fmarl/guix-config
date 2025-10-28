@@ -22,20 +22,18 @@
 
  (services
   (append
-   ;; We remove these because we use greetd.
-   (modify-services %base-services
-		    (delete login-service-type)
-		    (delete mingetty-service-type))
-   
    (make-desktop (list
-		  mate-desktop-services
 		  river-desktop-services))
 
    (list
     (service openssh-service-type)
     (make-static-network "enp5s0" "192.168.0.200/24"))
 
-   %base-services))
+   (modify-services %base-services
+     (delete agetty-service-type)
+     (delete login-service-type)
+     (delete console-font-service-type)
+     (delete mingetty-service-type))))
   
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)
