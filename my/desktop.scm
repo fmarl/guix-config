@@ -12,6 +12,8 @@
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
   #:use-module (gnu packages security-token)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages shells)
   #:use-module (gnu system keyboard)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
@@ -22,6 +24,7 @@
 	    river-desktop-services
 	    gdm-login-manager-services
 	    lightdm-login-manager-services
+	    greetd+tuigreet-login-manager-services
 	    make-desktop
 	    ))
 
@@ -38,6 +41,51 @@
             (name "slock")
             (program (file-append slock "/bin/slock")))))
 
+;; GDM
+
+(define gdm-login-manager-services
+  (list
+   (service gdm-service-type)
+   gdm-file-system-service))
+
+;; Lightdm
+
+(define lightdm-login-manager-services
+  (list
+   (service lightdm-service-type
+	    (lightdm-configuration
+	     (xorg-configuration common-xorg-config)
+	     (greeters (list (lightdm-gtk-greeter-configuration)))))))
+
+;; Greetd
+
+(define greetd+tuigreet-login-manager-services
+  (list
+   (service greetd-service-type
+            (greetd-configuration
+             (terminals
+              (list
+	       (greetd-terminal-configuration
+		(terminal-vt "1")
+		(default-session-command (file-append tuigreet "/bin/tuigreet")))
+	       (greetd-terminal-configuration
+                (terminal-vt "2")
+                (default-session-command
+                  (greetd-agreety-session (command
+					   (greetd-user-session)))))
+	       (greetd-terminal-configuration
+                (terminal-vt "3")
+                (default-session-command
+                  (greetd-agreety-session (command
+					   (greetd-user-session)))))
+	       (greetd-terminal-configuration
+                (terminal-vt "4")
+                (default-session-command
+                  (greetd-agreety-session (command
+					   (greetd-user-session)))))))))))
+
+;; River
+
 (define-record-type* <river-desktop-configuration> river-desktop-configuration
   make-river-desktop-configuration
   river-desktop-configuration?
@@ -52,25 +100,17 @@
 			      (compose list river-package))))
     (default-value (river-desktop-configuration))))
 
-(define mate-desktop-services
-  (list
-   (service mate-desktop-service-type)))
-
 (define river-desktop-services
   (list
    (service river-desktop-service-type)))
 
-(define gdm-login-manager-services
-  (list
-   (service gdm-service-type)
-   gdm-file-system-service))
+;; Mate
 
-(define lightdm-login-manager-services
+(define mate-desktop-services
   (list
-   (service lightdm-service-type
-	    (lightdm-configuration
-	     (xorg-configuration common-xorg-config)
-	     (greeters (list (lightdm-gtk-greeter-configuration)))))))
+   (service mate-desktop-service-type)))
+
+;; Other
 
 (define xdg-runtime-dir-service-type
   (let ((xdg-runtime-dir-shepherd-service
@@ -93,7 +133,7 @@
                           (compose
                            list
                            (const xdg-runtime-dir-shepherd-service)))))
-     (default-value #f) ; no default value required
+     (default-value #f)			; no default value required
      (description
       "Create the XDG_RUNTIME_DIR."))))
 
@@ -106,7 +146,7 @@
     ((list? (car lst)) (append (flatten (car lst)) (flatten (cdr lst))))
     (else (cons (car lst) (flatten (cdr lst))))))
 
-(define* (make-desktop desktop-services #:key (login-manager-services lightdm-login-manager-services))
+(define* (make-desktop desktop-services #:key (login-manager-services greetd+tuigreet-login-manager-services))
   (append
    login-manager-services
    (flatten desktop-services)
@@ -115,7 +155,6 @@
     fontconfig-file-system-service
     (service x11-socket-directory-service-type)
     ;; D-Bus stuff
-    (service polkit-service-type)
     (service seatd-service-type)
     (service dbus-root-service-type)
     ;; Create XDG_RUNTIME_DIR
