@@ -38,56 +38,69 @@
   (list
    (service greetd-service-type
 	    (greetd-configuration
-	      (greeter-supplementary-groups
-	       '("video" "input" "seat" "users"))
-	      (terminals
-	       (list
-		(greetd-terminal-configuration
-		  (terminal-vt "1")
-		  (terminal-switch #t)
-		  (default-session-command
-                    (greetd-agreety-session
-                      (command
-		       (greetd-user-session
-			 (command
-			  (file-append dbus "/bin/dbus-run-session"))
-			 (command-args (list command)))))))
-		
-		(greetd-terminal-configuration
-		  (terminal-vt "2")
-		  (default-session-command
-		    (greetd-agreety-session
-		      (command
-		       (greetd-user-session)))))
-		
-		(greetd-terminal-configuration
-		  (terminal-vt "3")
-		  (default-session-command
-		    (greetd-agreety-session
-		      (command
-		       (greetd-user-session)))))
-		
-		(greetd-terminal-configuration
-		  (terminal-vt "4")
-		  (default-session-command
-		    (greetd-agreety-session
-		      (command
-		       (greetd-user-session)))))
+	     (greeter-supplementary-groups
+	      '("video" "input" "seat" "users"))
+	     (terminals
+	      (list
+	       (greetd-terminal-configuration
+		(terminal-vt "1")
+		(terminal-switch #t)
+		(default-session-command
+                  (greetd-agreety-session
+                   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)")))
+		     (command
+		      (file-append dbus "/bin/dbus-run-session"))
+		     (command-args (list command)))))))
+	       
+	       (greetd-terminal-configuration
+		(terminal-vt "2")
+		(default-session-command
+		  (greetd-agreety-session
+		   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)"))))))))
+	       
+	       (greetd-terminal-configuration
+		(terminal-vt "3")
+		(default-session-command
+		  (greetd-agreety-session
 
-		(greetd-terminal-configuration
-		  (terminal-vt "5")
-		  (default-session-command
-		    (greetd-agreety-session
-		      (command
-		       (greetd-user-session)))))
+		   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)"))))))))
+	       
+	       (greetd-terminal-configuration
+		(terminal-vt "4")
+		(default-session-command
+		  (greetd-agreety-session
+		   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)"))))))))
 
-		(greetd-terminal-configuration
-		  (terminal-vt "6")
-		  (default-session-command
-		    (greetd-agreety-session
-		      (command
-		       (greetd-user-session)))))
-		))))
+	       (greetd-terminal-configuration
+		(terminal-vt "5")
+		(default-session-command
+		  (greetd-agreety-session
+        	   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)"))))))))
+
+	       (greetd-terminal-configuration
+		(terminal-vt "6")
+		(default-session-command
+		  (greetd-agreety-session
+		   (command
+		    (greetd-user-session
+		     (extra-env '(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+				  ("GPG_TTY" . "$(tty)"))))))))
+	       ))))
    
    (service mingetty-service-type
 	    (mingetty-configuration (tty "tty8")))))

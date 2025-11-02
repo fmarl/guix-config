@@ -1,10 +1,15 @@
 (use-modules (gnu)
+	     (nongnu packages linux)
+	     (nongnu system linux-initrd)
 	     (gnu packages)
 	     (my networking)
 	     (my desktop))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
+ (kernel linux)
+ (initrd microcode-initrd)
+ (firmware (list amdgpu-firmware))
  (locale "en_US.utf8")
  (timezone "Europe/Berlin")
  (keyboard-layout (keyboard-layout "us" "altgr-intl"))

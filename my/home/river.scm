@@ -92,6 +92,8 @@ riverctl map normal None XF86MonBrightnessDown spawn '~a set 5%-'
 riverctl map normal None XF86AudioRaiseVolume  spawn '~a -i 5'
 riverctl map normal None XF86AudioLowerVolume  spawn '~a -d 5'
 riverctl map normal None XF86AudioMute         spawn '~a --toggle-mute'
+
+waybar &
 "
 				  #$(file-append brightnessctl "/bin/brightnessctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
