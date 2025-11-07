@@ -45,18 +45,43 @@
               (targets (list "/boot/efi"))
               (keyboard-layout keyboard-layout)))
   
- (swap-devices (list (swap-space
-                      (target (uuid
-                               "6df8d888-ef43-4a42-b01e-4469d8fb2f02")))))
+ ;;(swap-devices (list (swap-space
+ ;;                     (target (uuid
+ ;;                              "")))))
 
- (file-systems (cons* (file-system
-                       (mount-point "/")
-                       (device (uuid
-                                "d2f8ab96-ec15-4114-ab80-c6c7786cbe87"
-                                'xfs))
-                       (type "xfs"))
-                      (file-system
-                       (mount-point "/boot/efi")
-                       (device (uuid "D9B9-0B32"
-                                     'fat32))
-                       (type "vfat")) %base-file-systems)))
+ (file-systems (cons*
+		(file-system
+                 (mount-point "/")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/home")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/boot")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/var/log")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=@log,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/gnu")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=@gnu,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/.snapshots")
+                 (device (file-system-label "ROOT"))
+                 (type "btrfs")
+		 (options "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+		(file-system
+                 (mount-point "/boot/efi")
+                 (device (uuid "A196-47A5"
+                               'fat32))
+                 (type "vfat")) %base-file-systems)))
