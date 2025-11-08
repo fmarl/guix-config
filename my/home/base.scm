@@ -1,15 +1,21 @@
 (define-module (my home base)
   #:use-module (gnu packages)
+  #:use-module (gnu services)
+  #:use-module (gnu home services desktop)
   #:use-module (my home lf)
   #:use-module (my home shell)
+  #:use-module (my home emacs)
+  #:use-module (my home git)
+  #:use-module (my home desktop)
   #:export (
 	    %my-home-packages
+	    %my-home-desktop-packages
 	    %my-home-services
-	    %my-home-desktop-packages))
+	    %my-home-desktop-services))
 
 (define %my-base-fonts
-   (specifications->packages
-    (list "font-hack")))
+  (specifications->packages
+   (list "font-hack")))
 
 (define %my-home-packages
   (append
@@ -17,12 +23,9 @@
     (list "git"))
    %my-base-fonts
    %shell-packages
-   %lf-packages))
-
-(define %my-home-services
-  (append
-   %shell-services
-   %lf-services))
+   %lf-packages
+   %git-packages
+   %emacs-packages))
 
 (define %my-home-desktop-packages
   (append
@@ -30,3 +33,19 @@
     (list "librewolf"
 	  "alacritty"))
    %my-home-packages))
+
+
+(define %my-home-services
+  (append
+   %shell-services
+   %lf-services
+   %git-services
+   %emacs-services))
+
+(define %my-home-desktop-services
+  (append
+   (list
+    (service home-dbus-service-type)
+    (service home-wayland-service-type))
+   %my-home-services))
+

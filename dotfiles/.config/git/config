@@ -1,0 +1,20 @@
+[commit]
+	gpgSign = false
+
+[core]
+	editor = "emacsclient -c -a '' -w"
+	whitespace = "-trailing-space"
+
+[log]
+	abbrevCommit = true
+
+[pull]
+	rebase = false
+
+[tag]
+	gpgSign = false
+
+[user]
+	email = "f.m.liestmann@fx-ttr.de"
+	name = "Florian Marrero Liestmann"
+	signingKey = "D1912EEBC3FBEBB4"

@@ -1,21 +1,21 @@
 (define-module (my home git)
+  #:use-module (guix gexp)
+  #:use-module (gnu packages)
+  #:use-module (gnu services)
   #:use-module (gnu home services)
-  #:use-module (gnu home services version-control)
-  #:use-module (gnu packages))
+  #:export (
+	    %git-services
+	    %git-packages))
 
-(define-public %git-package
-  (specifications->packages (list "git")))
+(define %git-services
+  (list (simple-service 'git-config
+			home-files-service-type
+			`((".config/git/config"
+			   ,(local-file "../../dotfiles/.config/git/config"))
+			  (".config/git/ignore"
+			   ,(local-file "../../dotfiles/.config/git/ignore")))
+			)))
 
-(define-public %git-config-service
-  (list
-   (service home-git-service-type
-            (home-git-configuration
-             (user-name "Florian Marrero Liestmann")
-             (user-email "f.m.liestmann@fx-ttr.de")
-             (extra-content
-              '((core
-                 (editor . "emacsclient"))
-                (pull
-                 (rebase . "false"))
-                (init
-                 (defaultBranch . "main"))))))))
+(define-public %git-packages
+  (specifications->packages
+   (list "git")))

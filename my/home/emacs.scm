@@ -48,6 +48,10 @@
 		     ,(local-file "../../dotfiles/.emacs.d/scheme.el"))
 		    (,(emacs-file "org.el")
 		     ,(local-file "../../dotfiles/.emacs.d/org.el"))
+		    (,(emacs-file "mu4e.el")
+		     ,(local-file "../../dotfiles/.emacs.d/org.el"))
+		    (,(emacs-file "circe.el")
+		     ,(local-file "../../dotfiles/.emacs.d/circe.el"))
 		    )))
 
 (define emacs-client-as-editor-service
@@ -70,7 +74,6 @@
     "emacs-magit"
     "emacs-projectile"
     "emacs-dirvish"
-    "emacs-dap-mode"
     "emacs-yasnippet"
     "emacs-yasnippet-snippets"
     "emacs-markdown-mode"
@@ -91,6 +94,7 @@
     "emacs-rust-mode"
     "emacs-geiser"
     "emacs-guix"
+    "emacs-circe"
     )
    )
   )
@@ -98,7 +102,9 @@
 (define-public %emacs-packages
   (append
    (specifications->packages
-    (list "emacs"))
+    (list
+     "emacs"
+     "mu"))
    emacs-packages))
 
 (define-public %emacs-services

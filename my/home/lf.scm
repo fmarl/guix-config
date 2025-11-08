@@ -5,8 +5,7 @@
   #:use-module (gnu home services)
   #:export (
 	    %lf-services
-	    %lf-packages
-))
+	    %lf-packages))
 
 (define %lf-services
   (list (simple-service 'lf-config

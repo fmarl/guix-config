@@ -1,0 +1,25 @@
+theme = "autumn"
+
+[editor]
+bufferline = "multiple"
+cursorline = true
+end-of-line-diagnostics = "hint"
+rulers = [120]
+true-color = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.inline-diagnostics]
+cursor-line = "error"
+other-lines = "disable"
+
+[editor.lsp]
+auto-signature-help = false
+display-messages = true
+
+[editor.statusline]
+left = ["mode", "spinner", "version-control", "file-name"]
+

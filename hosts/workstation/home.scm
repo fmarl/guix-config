@@ -1,26 +1,32 @@
-(use-modules (gnu home)
-             (gnu packages)
-             (gnu services)
-             (guix gexp)
-             (gnu home services shells)
-	     (gnu home services ssh)
-	     (my utils)
-	     (my home base)
-	     (my home emacs)
-	     (my home river)
-	     (my home waybar))
+(use-modules
+ (guix gexp)
+ (gnu home)
+ (gnu packages)
+ (gnu services)
+ (gnu home services)
+ (gnu home services shells)
+ (gnu home services ssh)
+ (my utils)
+ (my home base)
+ (my home river)
+ (my home waybar)
+ (my home mako))
 
 (home-environment
  (packages (append
-	    %my-home-desktop-packages
-	    %emacs-packages
 	    %river-packages
 	    %waybar-packages
-	    ))
+	    %my-home-desktop-packages))
  
  (services
   (append
    (list
+    (simple-service 'env-vars-service
+		    home-environment-variables-service-type
+		    `(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
+                      ("GPG_TTY" . "$(tty)")
+                      ("_JAVA_AWT_WM_NONREPARENTING" . #t)))
+    
     (service home-openssh-service-type
 	     (home-openssh-configuration
 	      (hosts
@@ -46,8 +52,8 @@
     (service home-ssh-agent-service-type
          (home-ssh-agent-configuration
           (extra-options '("-t" "1h30m")))))
-   %emacs-services
    %river-services
    %waybar-services
-   %my-home-services
+   %mako-services
+   %my-home-desktop-services
    %base-home-services)))

@@ -184,6 +184,8 @@
 (load-conf-file "magit.el")
 (load-conf-file "cc.el")
 (load-conf-file "org.el")
+(load-conf-file "circe.el")
+(load-conf-file "mu4e.el")
 
 (add-to-list 'auto-mode-alist
              '("\\.json\\'" . (lambda ()
