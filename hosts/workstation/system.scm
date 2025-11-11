@@ -32,7 +32,8 @@
 
    (list
     (service openssh-service-type)
-    (make-static-network "enp5s0" "192.168.0.200/24"))
+    (make-static-network-service "enp5s0" "192.168.0.200/24")
+    (make-firewall-service))
 
    (modify-services %base-services
      (delete agetty-service-type)

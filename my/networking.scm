@@ -1,9 +1,14 @@
 (define-module (my networking)
+  #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services base)
-  #:use-module (gnu services networking))
+  #:use-module (gnu services networking)
+  #:export (
+	    make-static-network-service
+	    network-manager-service
+	    make-firewall-service))
 
-(define-public (make-static-network nic ip)
+(define (make-static-network-service nic ip)
   (service static-networking-service-type
            (list (static-networking
                   (addresses
@@ -16,7 +21,38 @@
                           (gateway "192.168.0.1"))))
                   (name-servers '("1.1.1.1"))))))
 
-(define-public network-manager-service
+(define network-manager-service
   (list
    (service network-manager-service-type)
    (service wpa-supplicant-service-type)))
+
+(define (make-firewall-service)
+  (service nftables-service-type
+           (nftables-configuration
+            (ruleset (plain-file "nftables.conf"
+                                 "\
+# A simple and safe firewall (based on %default-nftables-ruleset)
+table inet filter {
+  chain input {
+    type filter hook input priority 0; policy drop;
+
+    # early drop of invalid connections
+    ct state invalid drop
+
+    # allow established/related connections
+    ct state { established, related } accept
+
+    # allow from loopback
+    iif lo accept
+    # drop connections to lo not coming from lo
+    iif != lo ip daddr 127.0.0.1/8 drop
+    iif != lo ip6 daddr ::1/128 drop
+
+    # reject everything else
+    reject with icmpx type port-unreachable
+  }
+  chain output {
+    type filter hook output priority 0; policy accept;
+  }
+}
+")))))
