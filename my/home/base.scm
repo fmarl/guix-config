@@ -6,7 +6,6 @@
   #:use-module (my home shell)
   #:use-module (my home emacs)
   #:use-module (my home git)
-  #:use-module (my home desktop)
   #:export (
 	    %my-home-packages
 	    %my-home-desktop-packages
@@ -45,7 +44,6 @@
 (define %my-home-desktop-services
   (append
    (list
-    (service home-dbus-service-type)
-    (service home-wayland-service-type))
+    (service home-dbus-service-type))
    %my-home-services))
 
