@@ -4,7 +4,7 @@ autoload -U compinit && compinit
 HISTSIZE="10000"
 SAVEHIST="10000"
 
-HISTFILE="/home/marrero/.zsh_history"XS
+HISTFILE="/home/marrero/.zsh_history"
 
 enabled_opts=(
   HIST_FCNTL_LOCK HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY autocd
@@ -22,6 +22,8 @@ for opt in "${disabled_opts[@]}"; do
   unsetopt "$opt"
 done
 unset opt disabled_opts
+
+. $HOME/.profile
 
 eval "$(starship init zsh)"
 eval "$(direnv hook zsh)"
