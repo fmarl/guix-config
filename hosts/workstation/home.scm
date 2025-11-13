@@ -9,8 +9,7 @@
  (my utils)
  (my home base)
  (my home river)
- (my home waybar)
- (my home mako))
+ (my home waybar))
 
 (home-environment
  (packages (append
@@ -54,6 +53,5 @@
           (extra-options '("-t" "1h30m")))))
    %river-services
    %waybar-services
-   %mako-services
    %my-home-desktop-services
    %base-home-services)))

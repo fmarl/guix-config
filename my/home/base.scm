@@ -19,7 +19,8 @@
 (define %my-home-packages
   (append
    (specifications->packages
-    (list "git"))
+    (list "git"
+	  "openssh"))
    %my-base-fonts
    %shell-packages
    %lf-packages
