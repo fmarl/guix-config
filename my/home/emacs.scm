@@ -5,6 +5,8 @@
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (gnu home services)
+  #:use-module (gnu home services shepherd)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:export (%emacs-packages %emacs-services))
@@ -15,23 +17,39 @@
 (define emacs-client-tty
   (program-file "emacs-client-tty"
                 #~(apply system*
-                         #$(file-append emacs "/bin/emacsclient")
+                         #$(file-append emacs-next "/bin/emacsclient")
                          "--tty"
                          (cdr (command-line)))))
+
 (define emacs-client-new-frame
   (program-file "emacs-client-new-frame"
                 #~(apply system*
-                         #$(file-append emacs "/bin/emacsclient")
+                         #$(file-append emacs-next "/bin/emacsclient")
                          "--create-frame"
 			 (string-append "--alternate-editor=\"\"")
                          (cdr (command-line)))))
 
+(define emacs-daemon-service
+  (simple-service 'emacs-daemon home-shepherd-service-type
+		  (list (shepherd-service
+			 (provision '(emacs-daemon))
+			 (start #~(make-forkexec-constructor
+				   (list #$(file-append emacs-next "/bin/emacs")
+					 "--fg-daemon=emacs-daemon")))
+			 
+			 (stop #~(make-system-destructor
+				  #$(file-append emacs-next
+						 "/bin/emacsclient" " "
+						 "--socket-name=emacs-daemon"
+						 " " "--eval '(kill-emacs)'")))
+			 (documentation (string-append "Emacs background daemon"))))))
+
 
 (define emacs-service
   (simple-service 'emacs-config
-                  home-files-service-type
-                  `((,(emacs-file "init.el")
-                     ,(local-file "../../dotfiles/.emacs.d/init.el"))
+		  home-files-service-type
+		  `((,(emacs-file "init.el")
+		     ,(local-file "../../dotfiles/.emacs.d/init.el"))
 		    (,(emacs-file "cc.el")
                      ,(local-file "../../dotfiles/.emacs.d/cc.el"))
 		    (,(emacs-file "clojure.el")
@@ -95,17 +113,18 @@
     "emacs-geiser"
     "emacs-guix"
     "emacs-circe"
-    )
-   )
-  )
+    )))
 
 (define-public %emacs-packages
   (append
    (specifications->packages
     (list
-     "emacs"
+     "emacs-next"
      "mu"))
    emacs-packages))
 
 (define-public %emacs-services
-  (list emacs-service emacs-client-as-editor-service))
+  (list
+   emacs-service
+   emacs-daemon-service
+   emacs-client-as-editor-service))

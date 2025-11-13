@@ -12,10 +12,11 @@
  (my home waybar))
 
 (home-environment
- (packages (append
-	    %river-packages
-	    %waybar-packages
-	    %my-home-desktop-packages))
+ (packages
+  (append
+   %river-packages
+   %waybar-packages
+   %my-home-desktop-packages))
  
  (services
   (append
