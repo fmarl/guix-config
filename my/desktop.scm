@@ -20,18 +20,10 @@
   #:use-module (ice-9 match)
   #:use-module (my utils)
   #:export (
-	    screen-locker-service
 	    mate-desktop-services
 	    river-desktop-services
-	    make-greetd-login-manager-service
 	    make-desktop
 	    ))
-
-(define screen-locker-service
-  (service screen-locker-service-type
-	   (screen-locker-configuration
-             (name "slock")
-             (program (file-append slock "/bin/slock")))))
 
 ;; Mingetty + Agetty
 
@@ -106,12 +98,12 @@
 
 (define river-desktop-service-type
   (service-type
-    (name 'river-desktop)
-    (description "The river window manager")
-    (extensions
-     (list (service-extension profile-service-type
-			      (compose list river-package))))
-    (default-value (river-desktop-configuration))))
+   (name 'river-desktop)
+   (description "The river window manager")
+   (extensions
+    (list (service-extension profile-service-type
+			     (compose list river-package))))
+   (default-value (river-desktop-configuration))))
 
 (define river-desktop-services
   (list
@@ -124,21 +116,24 @@
 (define mate-desktop-services
   (list
    (service mate-desktop-service-type)
-   (elogind-service)
+   (service elogind-service-type)
    (make-mingetty+agetty-services)))
 
-(define fido2-services
-  (udev-rules-service 'fido2 libfido2 #:groups '("plugdev")))
-
-(define (make-desktop #:key (desktop-services '()))
-  (append
+(define* (make-desktop #:key (desktop-services river-desktop-services))
+  (cons*
    desktop-services
    (list
-    ;; Screen Locking
-    screen-locker-service
     fontconfig-file-system-service
+    
+    ;; Screen Locking
+    (service screen-locker-service-type
+	     (screen-locker-configuration
+              (name "slock")
+              (program (file-append slock "/bin/slock"))))
+    
     ;; D-Bus stuff
     (service dbus-root-service-type)
+    
     ;; fido2 (Yubikey etc)
-    fido2-services
+    (udev-rules-service 'fido2 libfido2 #:groups '("plugdev"))
     )))

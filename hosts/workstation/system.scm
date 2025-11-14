@@ -3,7 +3,8 @@
 	     (nongnu system linux-initrd)
 	     (gnu packages)
 	     (my networking)
-	     (my desktop))
+	     (my desktop)
+	     (my base))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
@@ -27,28 +28,23 @@
 
  (services
   (append
-   (make-desktop (list
-		  river-desktop-services))
-
+   (make-desktop)
+   
+   (make-network
+    #:nic-config (make-static-network-service "enp5s0" "192.168.0.200/24"))
+   
    (list
-    (service openssh-service-type)
-    (make-static-network-service "enp5s0" "192.168.0.200/24")
-    (make-firewall-service))
+    (service openssh-service-type))
 
-   (modify-services %base-services
-     (delete agetty-service-type)
-     (delete login-service-type)
-     (delete console-font-service-type)
-     (delete mingetty-service-type))))
+   %my-base-services))
   
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)
               (targets (list "/boot/efi"))
               (keyboard-layout keyboard-layout)))
   
- ;;(swap-devices (list (swap-space
- ;;                     (target (uuid
- ;;                              "")))))
+ (swap-devices (list (swap-space
+                     (target (uuid "2ed570db-c148-4e3f-a3b5-d0c71b4cc5e9")))))
 
  (file-systems (cons*
 		(file-system

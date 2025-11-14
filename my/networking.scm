@@ -9,36 +9,39 @@
 	    network-manager-services
 	    make-firewall-service))
 
-(define (make-network #:key (nic-config '()) (firewall '()))
-  (cons*
+(define* (make-network #:key (nic-config '()) (network-manager-services) (firewall '()) ((make-firewall-service)))
+  (append
    nic-config
    firewall
-   (service static-networking-service-type
-	    (list %loopback-static-networking))))
+   (list
+    (service static-networking-service-type
+	     (list %loopback-static-networking)))))
 
 (define (make-static-network-service nic ip)
-  (service static-networking-service-type
-           (list (static-networking
-                  (addresses
-                   (list (network-address
-                          (device nic)
-                          (value ip))))
-                  (routes
-                   (list (network-route
-                          (destination "default")
-                          (gateway "192.168.0.1"))))
-                  (name-servers '("1.1.1.1"))))))
+  (list
+   (service static-networking-service-type
+            (list (static-networking
+                   (addresses
+                    (list (network-address
+                           (device nic)
+                           (value ip))))
+                   (routes
+                    (list (network-route
+                           (destination "default")
+                           (gateway "192.168.0.1"))))
+                   (name-servers '("1.1.1.1")))))))
 
-(define (network-manager-services)
+(define network-manager-services
   (list
    (service network-manager-service-type)
    (service wpa-supplicant-service-type)))
 
 (define (make-firewall-service)
-  (service nftables-service-type
-           (nftables-configuration
-            (ruleset (plain-file "nftables.conf"
-                                 "\
+  (list
+   (service nftables-service-type
+            (nftables-configuration
+             (ruleset (plain-file "nftables.conf"
+                                  "\
 # A simple and safe firewall (based on %default-nftables-ruleset)
 table inet filter {
   chain input {
@@ -63,4 +66,4 @@ table inet filter {
     type filter hook output priority 0; policy accept;
   }
 }
-")))))
+"))))))
