@@ -1,6 +1,14 @@
 (define-module (my base)
+  #:use-module (guix gexp)
+  #:use-module (gnu services)
   #:use-module (gnu services base)
-  #:export ())
+  #:use-module (gnu services shepherd)
+  #:use-module (gnu services admin)
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages bash)
+  #:export (%my-base-services))
 
 
 (define %my-base-services
