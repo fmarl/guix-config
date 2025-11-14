@@ -29,11 +29,12 @@
 
  (services
   (append
-   (make-desktop (list river-desktop-services))
+   (make-desktop river-desktop-services)
+   (make-network
+    #:nic-config (network-manager-services)
+    #:firewall (make-firewall-service))
 
-   network-manager-service
-
-   (list (make-firewall-service))
+   (service pcscd-service-type)
    
    (modify-services %base-services
 		    (delete agetty-service-type)

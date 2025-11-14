@@ -4,7 +4,7 @@ name = "Florian Marrero Liestmann"
 signingKey = "D1912EEBC3FBEBB4"
 
 [commit]
-gpgSign = true
+gpgSign = false
 
 [core]
 editor = "emacsclient -s emacs-daemon -t -a ''"
@@ -19,7 +19,7 @@ abbrevCommit = true
 rebase = true
 
 [tag]
-gpgSign = true
+gpgSign = false
 
 [diff]
 renames = copies

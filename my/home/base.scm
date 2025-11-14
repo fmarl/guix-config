@@ -1,7 +1,10 @@
 (define-module (my home base)
+  #:use-module (guix gexp)
   #:use-module (gnu packages)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu services)
   #:use-module (gnu home services desktop)
+  #:use-module (gnu home services gnupg)
   #:use-module (my home lf)
   #:use-module (my home shell)
   #:use-module (my home emacs)
@@ -20,7 +23,8 @@
   (append
    (specifications->packages
     (list "git"
-	  "openssh"))
+	  "openssh"
+	  "gnupg"))
    %my-base-fonts
    %shell-packages
    %lf-packages
@@ -37,6 +41,12 @@
 
 (define %my-home-services
   (append
+   (list
+    (service home-gpg-agent-service-type
+             (home-gpg-agent-configuration
+              (pinentry-program
+               (file-append pinentry-emacs "/bin/pinentry-emacs")))))
+
    %shell-services
    %lf-services
    %git-services
