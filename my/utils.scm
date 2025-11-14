@@ -8,6 +8,12 @@
 	    relative-host-files
 	    load-by-hostname))
 
+(define (flatten lst)
+  (cond
+    ((null? lst) '())
+    ((list? (car lst)) (append (flatten (car lst)) (flatten (cdr lst))))
+    (else (cons (car lst) (flatten (cdr lst))))))
+
 (define (stat:type=? st type)
   (eq? (stat:type st) type))
 

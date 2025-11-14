@@ -187,6 +187,10 @@
 (load-conf-file "circe.el")
 (load-conf-file "mu4e.el")
 
+(defun pinentry-emacs (desc prompt ok error)
+  (let ((str (read-passwd (concat (replace-regexp-in-string "%22" "\"" (replace-regexp-in-string "%0A" "\n" desc)) prompt ": "))))
+    str))
+
 (add-to-list 'auto-mode-alist
              '("\\.json\\'" . (lambda ()
                                 (javascript-mode)

@@ -4,9 +4,17 @@
   #:use-module (gnu services base)
   #:use-module (gnu services networking)
   #:export (
+	    make-network
 	    make-static-network-service
-	    network-manager-service
+	    network-manager-services
 	    make-firewall-service))
+
+(define (make-network #:key (nic-config '()) (firewall '()))
+  (cons*
+   nic-config
+   firewall
+   (service static-networking-service-type
+	    (list %loopback-static-networking))))
 
 (define (make-static-network-service nic ip)
   (service static-networking-service-type
@@ -21,7 +29,7 @@
                           (gateway "192.168.0.1"))))
                   (name-servers '("1.1.1.1"))))))
 
-(define network-manager-service
+(define (network-manager-services)
   (list
    (service network-manager-service-type)
    (service wpa-supplicant-service-type)))
