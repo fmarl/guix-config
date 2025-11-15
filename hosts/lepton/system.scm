@@ -4,7 +4,8 @@
 	     (gnu packages)
 	     (my networking)
 	     (my desktop)
-	     (my base))
+	     (my base)
+	     (my filesystem))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
@@ -42,8 +43,8 @@
               (keyboard-layout keyboard-layout)))
  
  (swap-devices (list (swap-space
-                     (target (uuid
-                              "98f80efd-ddbe-4556-b70a-e317fe8c539d")))))
+                      (target (uuid
+                               "98f80efd-ddbe-4556-b70a-e317fe8c539d")))))
 
  (mapped-devices
   (list
@@ -52,45 +53,22 @@
     (target "cryptroot")
     (type luks-device-mapping))))
  
- (file-systems (cons*
-		(file-system
-                 (mount-point "/")
-                 (device "/dev/mapper/cryptroot")
-                 (type "btrfs")
-		 (options "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		 (dependencies mapped-devices))
-		(file-system
-                 (mount-point "/home")
-		 (device "/dev/mapper/cryptroot")
-                 (dependencies mapped-devices)
-                 (type "btrfs")
-		 (options "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/boot")
-		 (device "/dev/mapper/cryptroot")
-                 (dependencies mapped-devices)
-                 (type "btrfs")
-		 (options "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/var/log")
-		 (device "/dev/mapper/cryptroot")
-                 (dependencies mapped-devices)
-                 (type "btrfs")
-		 (options "subvol=@volatile-log,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/gnu")
-		 (device "/dev/mapper/cryptroot")
-		 (dependencies mapped-devices)
-                 (type "btrfs")
-		 (options "subvol=@gnu,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/.snapshots")
-		 (device "/dev/mapper/cryptroot")
-		 (dependencies mapped-devices)
-                 (type "btrfs")
-		 (options "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/boot/efi")
-                 (device (uuid "CE94-679E"
-                               'fat32))
-                 (type "vfat")) %base-file-systems)))
+ (file-systems (append
+		(btrfs-filesystems
+		 "/dev/mapper/cryptroot"
+		 '(("/"           "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/home"       "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/boot"       "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/var/log"    "subvol=@volatile-log,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/gnu"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/.snapshots" "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+                 mapped-devices)
+		
+		(list
+		 (file-system
+                  (mount-point "/boot/efi")
+                  (device (uuid "CE94-679E"
+				'fat32))
+                  (type "vfat")))
+		
+		%base-file-systems)))
