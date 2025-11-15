@@ -106,7 +106,7 @@
    (default-value (river-desktop-configuration))))
 
 (define river-desktop-services
-  (list
+  (cons*
    (service river-desktop-service-type)
    (service seatd-service-type)
    (make-greetd-login-manager-services "river")))
@@ -114,13 +114,13 @@
 ;; Mate
 
 (define mate-desktop-services
-  (list
+  (cons*
    (service mate-desktop-service-type)
    (service elogind-service-type)
    (make-mingetty+agetty-services)))
 
 (define* (make-desktop #:key (desktop-services river-desktop-services))
-  (cons*
+  (append
    desktop-services
    (list
     fontconfig-file-system-service

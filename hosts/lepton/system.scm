@@ -3,7 +3,8 @@
 	     (nongnu system linux-initrd)
 	     (gnu packages)
 	     (my networking)
-	     (my desktop))
+	     (my desktop)
+	     (my base))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
@@ -29,27 +30,20 @@
 
  (services
   (append
-   (make-desktop river-desktop-services)
-   (make-network
-    #:nic-config (network-manager-services)
-    #:firewall (make-firewall-service))
-
-   (service pcscd-service-type)
+   (make-desktop)
    
-   (modify-services %base-services
-		    (delete agetty-service-type)
-		    (delete login-service-type)
-		    (delete console-font-service-type)
-		    (delete mingetty-service-type))))
+   (make-network)
+
+   %my-base-services))
  
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)
               (targets (list "/boot/efi"))
               (keyboard-layout keyboard-layout)))
  
- ;;(swap-devices (list (swap-space
- ;;                     (target (uuid
- ;;                              "")))))
+ (swap-devices (list (swap-space
+                     (target (uuid
+                              "98f80efd-ddbe-4556-b70a-e317fe8c539d")))))
 
  (mapped-devices
   (list
@@ -84,7 +78,7 @@
                  (type "btrfs")
 		 (options "subvol=@volatile-log,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
 		(file-system
-                 (mount-point "/gnu/")
+                 (mount-point "/gnu")
 		 (device "/dev/mapper/cryptroot")
 		 (dependencies mapped-devices)
                  (type "btrfs")

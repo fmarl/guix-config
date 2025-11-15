@@ -9,7 +9,7 @@
 	    network-manager-services
 	    make-firewall-service))
 
-(define* (make-network #:key (nic-config '()) (network-manager-services) (firewall '()) ((make-firewall-service)))
+(define* (make-network #:key (nic-config network-manager-services) (firewall (make-firewall-service)))
   (append
    nic-config
    firewall
