@@ -1,6 +1,7 @@
 (define-module (my utils)
   #:use-module (ice-9 ftw)
   #:export (
+	    flatten
 	    base-path
 	    relative-path
 	    relative-host-path

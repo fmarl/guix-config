@@ -1,0 +1,28 @@
+;; -*- mode: scheme -*-
+
+(use-modules (ice-9 pretty-print)
+	     (ice-9 colorized)
+	     (ice-9 readline)
+	     (system repl common))
+
+(set! %load-compiled-path
+      (cons (string-append (getenv "HOME") "/.cache/guile/ccache")
+            %load-compiled-path))
+
+(define pp pretty-print)
+
+(define (module->symbols m)
+  (sort! (map symbol->string (module-map (lambda (sym var) sym) m))
+         string<?))
+
+(define (help-module m)
+  (display (string-append "Symbols in module " (symbol->string m) ":\n"))
+  (for-each display (map (lambda (s) (string-append "  " s "\n"))
+                         (module->symbols m))))
+
+(activate-colorized)
+(activate-readline)
+
+(repl-default-prompt-set!
+ (lambda (r)
+   (string-append "(λ) ")))
