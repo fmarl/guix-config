@@ -1,12 +1,19 @@
 (define-module (my utils)
   #:use-module (ice-9 ftw)
   #:export (
+	    flatten
 	    base-path
 	    relative-path
 	    relative-host-path
 	    relative-files
 	    relative-host-files
 	    load-by-hostname))
+
+(define (flatten lst)
+  (cond
+    ((null? lst) '())
+    ((list? (car lst)) (append (flatten (car lst)) (flatten (cdr lst))))
+    (else (cons (car lst) (flatten (cdr lst))))))
 
 (define (stat:type=? st type)
   (eq? (stat:type st) type))
