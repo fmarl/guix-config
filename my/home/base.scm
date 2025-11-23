@@ -17,7 +17,7 @@
 
 (define %my-base-fonts
   (specifications->packages
-   (list "font-hack")))
+   (list "font-hack" "font-awesome-nonfree")))
 
 (define %my-home-packages
   (append
