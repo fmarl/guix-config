@@ -111,6 +111,28 @@
    (service seatd-service-type)
    (make-greetd-login-manager-services "river")))
 
+;; Niri
+
+(define-record-type* <niri-desktop-configuration> niri-desktop-configuration
+  make-niri-desktop-configuration
+  niri-desktop-configuration?
+  (niri-package niri-package (default niri)))
+
+(define niri-desktop-service-type
+  (service-type
+   (name 'niri-desktop)
+   (description "The niri window manager")
+   (extensions
+    (list (service-extension profile-service-type
+			     (compose list niri-package))))
+   (default-value (niri-desktop-configuration))))
+
+(define niri-desktop-services
+  (cons*
+   (service niri-desktop-service-type)
+   (service seatd-service-type)
+   (make-greetd-login-manager-services "niri")))
+
 ;; Mate
 
 (define mate-desktop-services
@@ -128,8 +150,8 @@
     ;; Screen Locking
     (service screen-locker-service-type
 	     (screen-locker-configuration
-              (name "slock")
-              (program (file-append slock "/bin/slock"))))
+              (name "waylock")
+              (program (file-append waylock "/bin/waylock"))))
     
     ;; D-Bus stuff
     (service dbus-root-service-type)
