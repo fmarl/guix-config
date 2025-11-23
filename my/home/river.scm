@@ -1,7 +1,9 @@
 (define-module (my home river)
+  #:use-module (ice-9 format)
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu packages)
+  #:use-module (gnu packages wm)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu home services)
@@ -93,13 +95,16 @@ riverctl map normal None XF86AudioRaiseVolume  spawn '~a -i 5'
 riverctl map normal None XF86AudioLowerVolume  spawn '~a -d 5'
 riverctl map normal None XF86AudioMute         spawn '~a --toggle-mute'
 
+### Autostarting ###
 waybar &
+~a -i $HOME/Pictures/Wallpaper/DesertPeak/DesertPeak-1.jpg &
 "
 				  #$(file-append brightnessctl "/bin/brightnessctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
 				  #$(file-append pamixer "/bin/pamixer")
 				  #$(file-append pamixer "/bin/pamixer")
-				  #$(file-append pamixer "/bin/pamixer"))
+				  #$(file-append pamixer "/bin/pamixer")
+				  #$(file-append swaybg "/bin/swaybg"))
 			  port)))
 		     (chmod #$output #o700))))
 
