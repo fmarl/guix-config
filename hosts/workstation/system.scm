@@ -4,6 +4,7 @@
 	     (gnu packages)
 	     (my networking)
 	     (my desktop)
+	     (my filesystem)
 	     (my base))
 (use-service-modules desktop ssh xorg)
 
