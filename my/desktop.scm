@@ -10,6 +10,7 @@
   #:use-module (gnu services lightdm)
   #:use-module (gnu services dbus)
   #:use-module (gnu services shepherd)
+  #:use-module (gnu packages wm)
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
   #:use-module (gnu packages security-token)
@@ -19,6 +20,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (my utils)
+  #:use-module (my packages)
   #:export (
 	    mate-desktop-services
 	    river-desktop-services
@@ -116,7 +118,7 @@
 (define-record-type* <niri-desktop-configuration> niri-desktop-configuration
   make-niri-desktop-configuration
   niri-desktop-configuration?
-  (niri-package niri-package (default niri)))
+  (niri-package niri-package (default my-niri)))
 
 (define niri-desktop-service-type
   (service-type
@@ -141,7 +143,7 @@
    (service elogind-service-type)
    (make-mingetty+agetty-services)))
 
-(define* (make-desktop #:key (desktop-services river-desktop-services))
+(define* (make-desktop #:key (desktop-services niri-desktop-services))
   (append
    desktop-services
    (list
