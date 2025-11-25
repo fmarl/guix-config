@@ -269,6 +269,7 @@ binds {
 }
 
 spawn-at-startup \"~a\"
+spawn-at-startup \"~a -i $HOME/Pictures/Wallpaper/DesertPeak/DesertPeak-1.jpg\"
 
 "
 				  #$(file-append alacritty "/bin/alacritty")
@@ -280,7 +281,8 @@ spawn-at-startup \"~a\"
 				  #$(file-append wireplumber "/bin/wpctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
-				  #$(file-append waybar "/bin/waybar"))
+				  #$(file-append waybar "/bin/waybar")
+				  #$(file-append swaybg "/bin/swaybg"))
 			  port))))))
 (define %niri-services
   (list (simple-service 'niri-config
@@ -289,6 +291,8 @@ spawn-at-startup \"~a\"
 			   ,%niri-config)))))
 (define %niri-packages
    (specifications->packages
-   (list "imv"
-	 "zathura"
-	 "mpv")))
+   (list
+    "xwayland-satellite"
+    "imv"
+    "zathura"
+    "mpv")))
