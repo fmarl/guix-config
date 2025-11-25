@@ -60,7 +60,7 @@
 		   ("/home"       "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/boot"       "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/var/log"    "subvol=@volatile-log,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/gnu"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/gnu/store"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/.snapshots" "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
                  mapped-devices)
 		

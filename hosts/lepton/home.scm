@@ -8,13 +8,13 @@
  (gnu home services ssh)
  (my utils)
  (my home base)
- (my home river)
+ (my home niri)
  (my home waybar))
 
 (home-environment
  (packages
   (append
-   %river-packages
+   %niri-packages
    %waybar-packages
    %my-home-desktop-packages))
  
@@ -51,7 +51,7 @@
     (service home-ssh-agent-service-type
              (home-ssh-agent-configuration
               (extra-options '("-t" "1h30m")))))
-   %river-services
+   %niri-services
    %waybar-services
    %my-home-desktop-services
    %base-home-services)))
