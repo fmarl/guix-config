@@ -4,10 +4,12 @@
     {
 	"height": 5,
 	"modules-left": [
-	    "river/tags"
+	    "river/tags",
+	    "niri/workspaces"
 	],
 	"modules-center": [
-	    "river/window"
+	    "river/window",
+	    "niri/window"
 	],
 	"modules-right": [
 	    "network",
@@ -62,6 +64,12 @@
 	},
 	"river/window": {
 	    "format": {}
+	},
+	"niri/workspaces": {
+	    
+	},
+	"niri/window": {
+	    
 	},
 	"tray": {
 	    "spacing": 10
