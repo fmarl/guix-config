@@ -4,6 +4,7 @@
 	     (gnu packages)
 	     (my networking)
 	     (my desktop)
+	     (my filesystem)
 	     (my base))
 (use-service-modules desktop ssh xorg)
 
@@ -45,40 +46,22 @@
   
  (swap-devices (list (swap-space
                      (target (uuid "2ed570db-c148-4e3f-a3b5-d0c71b4cc5e9")))))
-
- (file-systems (cons*
-		(file-system
-                 (mount-point "/")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/home")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/boot")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/var/log")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=@log,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/gnu")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=@gnu,compress-force=zstd:3,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/.snapshots")
-                 (device (file-system-label "ROOT"))
-                 (type "btrfs")
-		 (options "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
-		(file-system
-                 (mount-point "/boot/efi")
-                 (device (uuid "A196-47A5"
-                               'fat32))
-                 (type "vfat")) %base-file-systems)))
+ 
+ (file-systems (append
+		(btrfs-filesystems
+		 (file-system-label "ROOT")
+		 '(("/"           "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/home"       "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/boot"       "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/var/log"    "subvol=@log,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/gnu"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/.snapshots" "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async")))
+		
+		(list
+		 (file-system
+                  (mount-point "/boot/efi")
+                  (device (uuid "A196-47A5"
+				'fat32))
+                  (type "vfat")))
+		
+		%base-file-systems)))

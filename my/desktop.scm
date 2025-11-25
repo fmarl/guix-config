@@ -10,6 +10,7 @@
   #:use-module (gnu services lightdm)
   #:use-module (gnu services dbus)
   #:use-module (gnu services shepherd)
+  #:use-module (gnu packages wm)
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
   #:use-module (gnu packages security-token)
@@ -19,6 +20,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (my utils)
+  #:use-module (my packages)
   #:export (
 	    mate-desktop-services
 	    river-desktop-services
@@ -111,6 +113,28 @@
    (service seatd-service-type)
    (make-greetd-login-manager-services "river")))
 
+;; Niri
+
+(define-record-type* <niri-desktop-configuration> niri-desktop-configuration
+  make-niri-desktop-configuration
+  niri-desktop-configuration?
+  (niri-package niri-package (default my-niri)))
+
+(define niri-desktop-service-type
+  (service-type
+   (name 'niri-desktop)
+   (description "The niri window manager")
+   (extensions
+    (list (service-extension profile-service-type
+			     (compose list niri-package))))
+   (default-value (niri-desktop-configuration))))
+
+(define niri-desktop-services
+  (cons*
+   (service niri-desktop-service-type)
+   (service seatd-service-type)
+   (make-greetd-login-manager-services "niri")))
+
 ;; Mate
 
 (define mate-desktop-services
@@ -119,7 +143,7 @@
    (service elogind-service-type)
    (make-mingetty+agetty-services)))
 
-(define* (make-desktop #:key (desktop-services river-desktop-services))
+(define* (make-desktop #:key (desktop-services niri-desktop-services))
   (append
    desktop-services
    (list
@@ -128,8 +152,8 @@
     ;; Screen Locking
     (service screen-locker-service-type
 	     (screen-locker-configuration
-              (name "slock")
-              (program (file-append slock "/bin/slock"))))
+              (name "waylock")
+              (program (file-append waylock "/bin/waylock"))))
     
     ;; D-Bus stuff
     (service dbus-root-service-type)

@@ -17,14 +17,14 @@
 (define emacs-client-tty
   (program-file "emacs-client-tty"
                 #~(apply system*
-                         #$(file-append emacs-next "/bin/emacsclient")
+                         #$(file-append emacs-next-pgtk "/bin/emacsclient")
                          "--tty"
                          (cdr (command-line)))))
 
 (define emacs-client-new-frame
   (program-file "emacs-client-new-frame"
                 #~(apply system*
-                         #$(file-append emacs-next "/bin/emacsclient")
+                         #$(file-append emacs-next-pgtk "/bin/emacsclient")
                          "--create-frame"
 			 (string-append "--alternate-editor=\"\"")
                          (cdr (command-line)))))
@@ -34,11 +34,11 @@
 		  (list (shepherd-service
 			 (provision '(emacs-daemon))
 			 (start #~(make-forkexec-constructor
-				   (list #$(file-append emacs-next "/bin/emacs")
+				   (list #$(file-append emacs-next-pgtk "/bin/emacs")
 					 "--fg-daemon=emacs-daemon")))
 			 
 			 (stop #~(make-system-destructor
-				  #$(file-append emacs-next
+				  #$(file-append emacs-next-pgtk
 						 "/bin/emacsclient" " "
 						 "--socket-name=emacs-daemon"
 						 " " "--eval '(kill-emacs)'")))
@@ -119,7 +119,7 @@
   (append
    (specifications->packages
     (list
-     "emacs-next"
+     "emacs-next-pgtk"
      "mu"))
    emacs-packages))
 

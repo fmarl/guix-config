@@ -5,6 +5,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services gnupg)
+  #:use-module (gnu home services sound)
   #:use-module (my home lf)
   #:use-module (my home shell)
   #:use-module (my home emacs)
@@ -17,7 +18,7 @@
 
 (define %my-base-fonts
   (specifications->packages
-   (list "font-hack")))
+   (list "font-hack" "font-awesome-nonfree")))
 
 (define %my-home-packages
   (append
@@ -55,6 +56,7 @@
 (define %my-home-desktop-services
   (append
    (list
-    (service home-dbus-service-type))
+    (service home-dbus-service-type)
+    (service home-pipewire-service-type))
    %my-home-services))
 
