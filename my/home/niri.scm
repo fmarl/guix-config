@@ -23,6 +23,11 @@
 			  (format #f "
 prefer-no-csd
 
+cursor {
+    xcursor-theme \"Adwaita\"
+    xcursor-size 24
+}
+
 input {
   keyboard {
       xkb {
@@ -269,7 +274,7 @@ binds {
 }
 
 spawn-at-startup \"~a\"
-spawn-at-startup \"~a -i $HOME/Pictures/Wallpaper/DesertPeak/DesertPeak-1.jpg\"
+spawn-sh-at-startup \"~a -i $HOME/Pictures/Wallpaper/ZorinMountain/Night.jpg\"
 
 "
 				  #$(file-append alacritty "/bin/alacritty")
