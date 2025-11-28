@@ -31,12 +31,12 @@
 	     (home-openssh-configuration
 	      (hosts
 	       (list
-		(openssh-host (name "codeberg")
+		(openssh-host (name "codeberg.org")
 			      (host-name "codeberg.org")
 			      (user "git")
 			      (port 22)
 			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "github")
+		(openssh-host (name "github.com")
 			      (host-name "github.com")
 			      (user "git")
 			      (port 22)

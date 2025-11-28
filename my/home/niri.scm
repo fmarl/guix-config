@@ -37,12 +37,11 @@ input {
   }
 
   touchpad {
-      tap
+      tap; 
+      click-method \"button-areas\";
   }
 
-  mouse {
-  
-  }
+  mouse { }
 
   trackpoint {
       off
@@ -65,7 +64,7 @@ input {
 }
 
 layout {
-    gaps 16
+    gaps 10
     center-focused-column \"never\"
 
     preset-column-widths {
@@ -274,8 +273,7 @@ binds {
 }
 
 spawn-at-startup \"~a\"
-spawn-sh-at-startup \"~a -i $HOME/Pictures/Wallpaper/ZorinMountain/Night.jpg\"
-
+spawn-sh-at-startup \"~a -i $HOME/Pictures/Wallpaper/DesertPeak/DesertPeak-1.jpg\"
 "
 				  #$(file-append alacritty "/bin/alacritty")
 				  #$(file-append wofi "/bin/wofi")
