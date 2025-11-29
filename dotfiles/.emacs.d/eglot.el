@@ -2,7 +2,7 @@
 
 (use-package eglot
   :ensure t
-  :hook ((rust-mode go-mode python-mode) . eglot-ensure)
+  :hook ((tuareg-mode rust-mode) . eglot-ensure)
   :config
   (setq eglot-sync-connect nil
         eglot-autoshutdown t

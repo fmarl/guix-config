@@ -36,12 +36,12 @@
    (service network-manager-service-type)
    (service wpa-supplicant-service-type)))
 
-(define (make-firewall-service)
+(define* (make-firewall-service #:key (allow-ssh? #f))
   (list
    (service nftables-service-type
             (nftables-configuration
              (ruleset (plain-file "nftables.conf"
-                                  "\
+                                  (format #f "\
 # A simple and safe firewall (based on %default-nftables-ruleset)
 table inet filter {
   chain input {
@@ -59,6 +59,8 @@ table inet filter {
     iif != lo ip daddr 127.0.0.1/8 drop
     iif != lo ip6 daddr ::1/128 drop
 
+    ~a
+
     # reject everything else
     reject with icmpx type port-unreachable
   }
@@ -66,4 +68,4 @@ table inet filter {
     type filter hook output priority 0; policy accept;
   }
 }
-"))))))
+" (if allow-ssh? "tcp dport ssh accept" ""))))))))

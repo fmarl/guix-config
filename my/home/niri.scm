@@ -125,7 +125,7 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
     
     Mod+Shift+Return hotkey-overlay-title=\"Open alacritty\" { spawn \"~a\"; }
-    Mod+P hotkey-overlay-title=\"Run Wofi\" { spawn \"~a\" \"--show\" \"drun\"; }
+    Mod+P hotkey-overlay-title=\"Run bemenu\" { spawn \"~a\" \"--tb\" \"#000000\" \"--tf\" \"#ffffff\" \"--line-height\" \"26\" \"--prompt\" \"λ ~~>\"; }
     Super+Alt+L hotkey-overlay-title=\"Lock the Screen\" { spawn \"~a\"; }
     
     XF86AudioRaiseVolume allow-when-locked=true { spawn \"~a\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1+\"; }
@@ -276,7 +276,7 @@ spawn-at-startup \"~a\"
 spawn-sh-at-startup \"~a -i $HOME/Pictures/Wallpaper/DesertPeak/DesertPeak-1.jpg\"
 "
 				  #$(file-append alacritty "/bin/alacritty")
-				  #$(file-append wofi "/bin/wofi")
+				  #$(file-append bemenu "/bin/bemenu-run")
 				  #$(file-append waylock "/bin/waylock")
 				  #$(file-append wireplumber "/bin/wpctl")
 				  #$(file-append wireplumber "/bin/wpctl")

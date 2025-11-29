@@ -60,8 +60,6 @@
 		     ,(local-file "../../dotfiles/.emacs.d/eglot.el"))
 		    (,(emacs-file "magit.el")
 		     ,(local-file "../../dotfiles/.emacs.d/magit.el"))
-		    (,(emacs-file "rust.el")
-		     ,(local-file "../../dotfiles/.emacs.d/rust.el"))
 		    (,(emacs-file "scheme.el")
 		     ,(local-file "../../dotfiles/.emacs.d/scheme.el"))
 		    (,(emacs-file "org.el")
@@ -70,6 +68,10 @@
 		     ,(local-file "../../dotfiles/.emacs.d/org.el"))
 		    (,(emacs-file "circe.el")
 		     ,(local-file "../../dotfiles/.emacs.d/circe.el"))
+		    (,(emacs-file "lisp.el")
+		     ,(local-file "../../dotfiles/.emacs.d/lisp.el"))
+		    (,(emacs-file "ocaml.el")
+		     ,(local-file "../../dotfiles/.emacs.d/ocaml.el"))
 		    )))
 
 (define emacs-client-as-editor-service
@@ -95,7 +97,6 @@
     "emacs-yasnippet"
     "emacs-yasnippet-snippets"
     "emacs-markdown-mode"
-    "emacs-eat"
     "emacs-paredit"
     "emacs-rainbow-delimiters"
     "emacs-marginalia"
@@ -108,9 +109,9 @@
     "emacs-cape"
     "emacs-corfu"
     "emacs-clang-format"
-    "emacs-rustic"
-    "emacs-rust-mode"
     "emacs-geiser"
+    "emacs-sly"
+    "emacs-tuareg"
     "emacs-guix"
     "emacs-circe"
     )))
