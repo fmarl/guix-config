@@ -77,9 +77,6 @@
 ;; Markdown
 (use-package markdown-mode :mode "\\.md\\'")
 
-;; Terminal
-(use-package eat)
-
 ;; Direnv
 (use-package direnv
   :config (direnv-mode))
@@ -179,13 +176,14 @@
 
 (load-conf-file "completion.el")
 (load-conf-file "eglot.el")
-(load-conf-file "rust.el")
-(load-conf-file "scheme.el")
-(load-conf-file "magit.el")
-(load-conf-file "cc.el")
 (load-conf-file "org.el")
 (load-conf-file "circe.el")
+(load-conf-file "magit.el")
 (load-conf-file "mu4e.el")
+(load-conf-file "scheme.el")
+(load-conf-file "cc.el")
+(load-conf-file "lisp.el")
+(load-conf-file "ocaml.el")
 
 (defun pinentry-emacs (desc prompt ok error)
   (let ((str (read-passwd (concat (replace-regexp-in-string "%22" "\"" (replace-regexp-in-string "%0A" "\n" desc)) prompt ": "))))
