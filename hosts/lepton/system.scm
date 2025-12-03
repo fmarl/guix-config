@@ -1,15 +1,16 @@
 (use-modules (gnu)
-	     (nongnu packages linux)
 	     (nongnu system linux-initrd)
+	     (nongnu packages linux)
 	     (gnu packages)
 	     (my networking)
 	     (my desktop)
 	     (my base)
-	     (my filesystem))
+	     (my filesystem)
+	     (my linux))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux)
+ (kernel linux-hardened)
  (initrd microcode-initrd)
  (firmware (cons*
 	    iwlwifi-firmware
