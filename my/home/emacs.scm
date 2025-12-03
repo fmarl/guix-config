@@ -50,28 +50,28 @@
 		  home-files-service-type
 		  `((,(emacs-file "init.el")
 		     ,(local-file "../../dotfiles/.emacs.d/init.el"))
-		    (,(emacs-file "cc.el")
-                     ,(local-file "../../dotfiles/.emacs.d/cc.el"))
-		    (,(emacs-file "clojure.el")
-		     ,(local-file "../../dotfiles/.emacs.d/clojure.el"))
 		    (,(emacs-file "completion.el")
 		     ,(local-file "../../dotfiles/.emacs.d/completion.el"))
 		    (,(emacs-file "eglot.el")
 		     ,(local-file "../../dotfiles/.emacs.d/eglot.el"))
 		    (,(emacs-file "magit.el")
 		     ,(local-file "../../dotfiles/.emacs.d/magit.el"))
-		    (,(emacs-file "scheme.el")
-		     ,(local-file "../../dotfiles/.emacs.d/scheme.el"))
 		    (,(emacs-file "org.el")
 		     ,(local-file "../../dotfiles/.emacs.d/org.el"))
 		    (,(emacs-file "mu4e.el")
 		     ,(local-file "../../dotfiles/.emacs.d/org.el"))
 		    (,(emacs-file "circe.el")
 		     ,(local-file "../../dotfiles/.emacs.d/circe.el"))
-		    (,(emacs-file "lisp.el")
-		     ,(local-file "../../dotfiles/.emacs.d/lisp.el"))
+		    (,(emacs-file "cc.el")
+                     ,(local-file "../../dotfiles/.emacs.d/cc.el"))
+		    (,(emacs-file "scheme.el")
+		     ,(local-file "../../dotfiles/.emacs.d/scheme.el"))
+		    (,(emacs-file "clojure.el")
+		     ,(local-file "../../dotfiles/.emacs.d/clojure.el"))
 		    (,(emacs-file "ocaml.el")
 		     ,(local-file "../../dotfiles/.emacs.d/ocaml.el"))
+		    (,(emacs-file "rust.el")
+		     ,(local-file "../../dotfiles/.emacs.d/rust.el"))
 		    )))
 
 (define emacs-client-as-editor-service
@@ -105,13 +105,13 @@
     "emacs-consult"
     "emacs-vertico"
     "emacs-consult-eglot"
-    "emacs-kind-icon"
     "emacs-cape"
     "emacs-corfu"
     "emacs-clang-format"
     "emacs-geiser"
-    "emacs-sly"
     "emacs-tuareg"
+    "emacs-rustic"
+    "emacs-cidr"
     "emacs-guix"
     "emacs-circe"
     )))

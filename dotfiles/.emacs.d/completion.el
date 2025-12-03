@@ -6,11 +6,6 @@
   (corfu-quit-no-match t)
   (corfu-preview-current nil))
 
-(use-package kind-icon
-  :after corfu
-  :custom (kind-icon-use-icons t)
-  :config (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
 (use-package cape
   :after corfu
   :config
