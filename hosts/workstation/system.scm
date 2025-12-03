@@ -5,11 +5,12 @@
 	     (my networking)
 	     (my desktop)
 	     (my filesystem)
-	     (my base))
+	     (my base)
+	     (my linux))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux)
+ (kernel linux-hardened)
  (initrd microcode-initrd)
  (firmware (list amdgpu-firmware))
  (locale "en_US.utf8")

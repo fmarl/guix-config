@@ -8,4 +8,5 @@
   (package
     (inherit (customize-linux
 	      #:linux linux
-	      #:configs '("CONFIG_SECURITY_LANDLOCK=y")))))
+	      #:configs '("CONFIG_SECURITY_LANDLOCK=y"
+			  "CONFIG_LSM=\"yama,loadpin,safesetid,integrity,apparmor,smack,landlock\"")))))

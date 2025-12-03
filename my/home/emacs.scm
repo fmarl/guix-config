@@ -111,7 +111,7 @@
     "emacs-geiser"
     "emacs-tuareg"
     "emacs-rustic"
-    "emacs-cidr"
+    "emacs-cider"
     "emacs-guix"
     "emacs-circe"
     )))
