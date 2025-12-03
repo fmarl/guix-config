@@ -32,11 +32,18 @@
    %git-packages
    %emacs-packages))
 
+(define %my-home-desktop-themes
+  (specifications->packages
+   (list
+    "adwaita-icon-theme")))
+
 (define %my-home-desktop-packages
   (append
    (specifications->packages
-    (list "librewolf"
-	  "alacritty"))
+    (list
+     "librewolf"
+     "alacritty"))
+   %my-home-desktop-themes
    %my-home-packages))
 
 

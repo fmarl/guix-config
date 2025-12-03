@@ -1,15 +1,16 @@
 (use-modules (gnu)
-	     (nongnu packages linux)
 	     (nongnu system linux-initrd)
+	     (nongnu packages linux)
 	     (gnu packages)
 	     (my networking)
 	     (my desktop)
 	     (my base)
-	     (my filesystem))
+	     (my filesystem)
+	     (my linux))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux)
+ (kernel linux-hardened)
  (initrd microcode-initrd)
  (firmware (cons*
 	    iwlwifi-firmware
@@ -60,7 +61,7 @@
 		   ("/home"       "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/boot"       "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/var/log"    "subvol=@volatile-log,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/gnu"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
+		   ("/gnu/store"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
 		   ("/.snapshots" "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
                  mapped-devices)
 		

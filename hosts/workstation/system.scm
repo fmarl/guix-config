@@ -5,11 +5,12 @@
 	     (my networking)
 	     (my desktop)
 	     (my filesystem)
-	     (my base))
+	     (my base)
+	     (my linux))
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux)
+ (kernel linux-hardened)
  (initrd microcode-initrd)
  (firmware (list amdgpu-firmware))
  (locale "en_US.utf8")
@@ -32,7 +33,9 @@
    (make-desktop)
    
    (make-network
-    #:nic-config (make-static-network-service "enp5s0" "192.168.0.200/24"))
+    #:nic-config (make-static-network-service "enp5s0" "192.168.0.200/24")
+    #:firewall (make-firewall-service
+		#:allow-ssh? #t))
    
    (list
     (service openssh-service-type))

@@ -2,7 +2,7 @@
 
 (use-package eglot
   :ensure t
-  :hook ((rust-mode go-mode python-mode) . eglot-ensure)
+  :hook ((tuareg-mode rust-mode c-mode) . eglot-ensure)
   :config
   (setq eglot-sync-connect nil
         eglot-autoshutdown t
@@ -26,12 +26,6 @@
               ("C-c M-?" . consult-eglot-symbols)
               ("C-c a" . eglot-code-actions)
               ("C-c r" . eglot-rename)))
-
-;; Performance-Booster: lsp-booster
-;; (use-package lsp-booster
-;;   :ensure t
-;;   :config
-;;   (advice-add 'eglot--make-server-process :around #'lsp-booster--eglot-make-server-process))
 
 (provide 'eglot-setup)
 ;;; eglot.el ends here

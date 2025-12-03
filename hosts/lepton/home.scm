@@ -8,13 +8,15 @@
  (gnu home services ssh)
  (my utils)
  (my home base)
- (my home river)
- (my home waybar))
+ (my home niri)
+ (my home waybar)
+ (my home envs))
 
 (home-environment
  (packages
   (append
-   %river-packages
+   lisp-env
+   %niri-packages
    %waybar-packages
    %my-home-desktop-packages))
  
@@ -31,12 +33,12 @@
 	     (home-openssh-configuration
 	      (hosts
 	       (list
-		(openssh-host (name "codeberg")
+		(openssh-host (name "codeberg.org")
 			      (host-name "codeberg.org")
 			      (user "git")
 			      (port 22)
 			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "github")
+		(openssh-host (name "github.com")
 			      (host-name "github.com")
 			      (user "git")
 			      (port 22)
@@ -51,7 +53,7 @@
     (service home-ssh-agent-service-type
              (home-ssh-agent-configuration
               (extra-options '("-t" "1h30m")))))
-   %river-services
+   %niri-services
    %waybar-services
    %my-home-desktop-services
    %base-home-services)))
