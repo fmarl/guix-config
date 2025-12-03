@@ -32,7 +32,9 @@
    (make-desktop)
    
    (make-network
-    #:nic-config (make-static-network-service "enp5s0" "192.168.0.200/24"))
+    #:nic-config (make-static-network-service "enp5s0" "192.168.0.200/24")
+    #:firewall (make-firewall-service
+		#:allow-ssh? #t))
    
    (list
     (service openssh-service-type))
