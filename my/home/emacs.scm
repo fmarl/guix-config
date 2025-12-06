@@ -9,6 +9,7 @@
   #:use-module (gnu home services shepherd)
   #:use-module (guix gexp)
   #:use-module (guix packages)
+  #:use-module (my packages)
   #:export (%emacs-packages %emacs-services))
 
 (define (emacs-file fname)
@@ -81,40 +82,40 @@
                     ("VISUAL" . ,emacs-client-new-frame))))
 
 (define emacs-packages
-  (specifications->packages
-   (list
-    "emacs-use-package"
-    "emacs-zenburn-theme"
-    "emacs-moody"
-    "emacs-smex"
-    "emacs-ace-window"
-    "emacs-avy"
-    "emacs-direnv"
-    "emacs-posframe"
-    "emacs-magit"
-    "emacs-projectile"
-    "emacs-dirvish"
-    "emacs-yasnippet"
-    "emacs-yasnippet-snippets"
-    "emacs-markdown-mode"
-    "emacs-paredit"
-    "emacs-rainbow-delimiters"
-    "emacs-marginalia"
-    "emacs-orderless"
-    "emacs-embark"
-    "emacs-consult"
-    "emacs-vertico"
-    "emacs-consult-eglot"
-    "emacs-cape"
-    "emacs-corfu"
-    "emacs-clang-format"
-    "emacs-geiser"
-    "emacs-tuareg"
-    "emacs-rustic"
-    "emacs-cider"
-    "emacs-guix"
-    "emacs-circe"
-    )))
+   (specifications->packages
+    (list
+     "emacs-use-package"
+     "emacs-zenburn-theme"
+     "emacs-moody"
+     "emacs-smex"
+     "emacs-ace-window"
+     "emacs-avy"
+     "emacs-direnv"
+     "emacs-posframe"
+     "emacs-magit"
+     "emacs-projectile"
+     "emacs-dirvish"
+     "emacs-yasnippet"
+     "emacs-yasnippet-snippets"
+     "emacs-markdown-mode"
+     "emacs-paredit"
+     "emacs-rainbow-delimiters"
+     "emacs-marginalia"
+     "emacs-orderless"
+     "emacs-embark"
+     "emacs-consult"
+     "emacs-vertico"
+     "emacs-consult-eglot"
+     "emacs-cape"
+     "emacs-corfu"
+     "emacs-clang-format"
+     "emacs-geiser"
+     "emacs-tuareg"
+     "emacs-rustic"
+     "emacs-cider"
+     "emacs-guix"
+     "emacs-circe"
+     )))
 
 (define-public %emacs-packages
   (append
