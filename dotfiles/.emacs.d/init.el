@@ -183,7 +183,10 @@
 (load-conf-file "scheme.el")
 (load-conf-file "cc.el")
 (load-conf-file "clojure.el")
-(load-conf-file "utop.el")
+(load-conf-file "ocaml/dune.el")
+(load-conf-file "ocaml/dune-flymake.el")
+(load-conf-file "ocaml/dune-watch.el")
+(load-conf-file "ocaml/utop.el")
 (load-conf-file "ocaml.el")
 (load-conf-file "rust.el")
 
