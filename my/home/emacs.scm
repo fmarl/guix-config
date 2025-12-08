@@ -71,6 +71,8 @@
 		     ,(local-file "../../dotfiles/.emacs.d/clojure.el"))
 		    (,(emacs-file "ocaml.el")
 		     ,(local-file "../../dotfiles/.emacs.d/ocaml.el"))
+		    (,(emacs-file "utop.el")
+		     ,(local-file "../../dotfiles/.emacs.d/utop.el"))
 		    (,(emacs-file "rust.el")
 		     ,(local-file "../../dotfiles/.emacs.d/rust.el"))
 		    )))
