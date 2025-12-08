@@ -10,12 +10,12 @@
  (my home base)
  (my home niri)
  (my home waybar)
- (my home envs))
+ (my home envs)
+ (my packages))
 
 (home-environment
  (packages
   (append
-   lisp-env
    %niri-packages
    %waybar-packages
    %my-home-desktop-packages))
