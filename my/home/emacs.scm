@@ -49,7 +49,7 @@
 (define emacs-service
   (simple-service 'emacs-config
 		  home-files-service-type
-		  `(((,(emacs-file "ocaml/dune.el")
+		  `((,(emacs-file "ocaml/dune.el")
 		     ,(local-file "../../dotfiles/.emacs.d/ocaml/dune.el"))
 		    (,(emacs-file "ocaml/dune-flymake.el")
 		     ,(local-file "../../dotfiles/.emacs.d/ocaml/dune-flymake.el"))
@@ -69,8 +69,7 @@
    (specifications->packages
     (list
      "emacs-use-package"
-     "emacs-zenburn-theme"
-     "emacs-moody"
+     "emacs-ef-themes"
      "emacs-smex"
      "emacs-ace-window"
      "emacs-avy"
@@ -99,6 +98,7 @@
      "emacs-cider"
      "emacs-guix"
      "emacs-circe"
+     "emacs-gleam-mode"
      )))
 
 (define-public %emacs-packages
