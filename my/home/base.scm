@@ -42,7 +42,8 @@
    (specifications->packages
     (list
      "librewolf"
-     "alacritty"))
+     "alacritty"
+     "signal-desktop"))
    %my-home-desktop-themes
    %my-home-packages))
 
