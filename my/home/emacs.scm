@@ -99,6 +99,7 @@
      "emacs-guix"
      "emacs-circe"
      "emacs-gleam-mode"
+     "emacs-elfeed"
      )))
 
 (define-public %emacs-packages
