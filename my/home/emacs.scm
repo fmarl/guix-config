@@ -100,6 +100,10 @@
      "emacs-circe"
      "emacs-gleam-mode"
      "emacs-elfeed"
+
+
+     "tree-sitter-rust"
+
      )))
 
 (define-public %emacs-packages
