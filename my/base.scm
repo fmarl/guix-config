@@ -8,6 +8,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages bash)
+  #:use-module (my sysctl)
   #:export (%my-base-services))
 
 (define %my-base-services
@@ -45,7 +46,7 @@
         (service udev-service-type
                  (udev-configuration (rules (list lvm2 fuse alsa-utils crda))))
 
-        (service sysctl-service-type)
+        %sysctl-service
 
         (service special-files-service-type
                  `(("/bin/sh" ,(file-append bash "/bin/sh"))
