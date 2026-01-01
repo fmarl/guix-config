@@ -10,7 +10,6 @@
   #:use-module (gnu packages bash)
   #:export (%my-base-services))
 
-
 (define %my-base-services
   ;; Convenience variable holding the basic services.
   (list (service login-service-type)
@@ -23,14 +22,13 @@
 
         (service shepherd-system-log-service-type)
 
-
         ;; Extra Bash configuration including Bash completion and aliases.
         (service etc-bashrc-d-service-type)
         (service urandom-seed-service-type)
-	
+
         (service guix-service-type)
         (service nscd-service-type)
-	
+
         (service log-rotation-service-type)
 
         ;; Convenient services brought by the Shepherd.
@@ -39,15 +37,13 @@
 
         ;; Periodically delete old build logs.
         (service log-cleanup-service-type
-                 (log-cleanup-configuration
-                   (directory "/var/log/guix/drvs")))
+                 (log-cleanup-configuration (directory "/var/log/guix/drvs")))
 
         ;; The LVM2 rules are needed as soon as LVM2 or the device-mapper is
         ;; used, so enable them by default.  The FUSE and ALSA rules are
         ;; less critical, but handy.
         (service udev-service-type
-                 (udev-configuration
-                   (rules (list lvm2 fuse alsa-utils crda))))
+                 (udev-configuration (rules (list lvm2 fuse alsa-utils crda))))
 
         (service sysctl-service-type)
 

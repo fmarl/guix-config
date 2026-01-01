@@ -9,7 +9,6 @@
   #:use-module (gnu home services shepherd)
   #:use-module (guix gexp)
   #:use-module (guix packages)
-  #:use-module (my packages)
   #:export (%emacs-packages %emacs-services))
 
 (define (emacs-file fname)
@@ -45,20 +44,6 @@
 						 " " "--eval '(kill-emacs)'")))
 			 (documentation (string-append "Emacs background daemon"))))))
 
-
-(define emacs-service
-  (simple-service 'emacs-config
-		  home-files-service-type
-		  `(((,(emacs-file "ocaml/dune.el")
-		     ,(local-file "../../dotfiles/.emacs.d/ocaml/dune.el"))
-		    (,(emacs-file "ocaml/dune-flymake.el")
-		     ,(local-file "../../dotfiles/.emacs.d/ocaml/dune-flymake.el"))
-		    (,(emacs-file "ocaml/dune-watch.el")
-		     ,(local-file "../../dotfiles/.emacs.d/ocaml/dune-watch.el"))
-		    (,(emacs-file "ocaml/utop.el")
-		     ,(local-file "../../dotfiles/.emacs.d/ocaml/utop.el"))
-		    )))
-
 (define emacs-client-as-editor-service
   (simple-service 'emacs-set-default-editor
                   home-environment-variables-service-type
@@ -69,8 +54,7 @@
    (specifications->packages
     (list
      "emacs-use-package"
-     "emacs-zenburn-theme"
-     "emacs-moody"
+     "emacs-ef-themes"
      "emacs-smex"
      "emacs-ace-window"
      "emacs-avy"
@@ -99,6 +83,12 @@
      "emacs-cider"
      "emacs-guix"
      "emacs-circe"
+     "emacs-gleam-mode"
+     "emacs-elfeed"
+
+
+     "tree-sitter-rust"
+
      )))
 
 (define-public %emacs-packages
@@ -111,6 +101,5 @@
 
 (define-public %emacs-services
   (list
-   emacs-service
    emacs-daemon-service
    emacs-client-as-editor-service))

@@ -10,8 +10,7 @@
  (my home base)
  (my home niri)
  (my home waybar)
- (my home envs)
- (my packages))
+ (my home envs))
 
 (home-environment
  (packages
@@ -43,8 +42,13 @@
 			      (user "git")
 			      (port 22)
 			      (identity-file "~/.ssh/id_ed25519"))
+		(openssh-host (name "workstation")
+			      (host-name "192.168.0.200")
+			      (user "marrero")
+			      (port 22)
+			      (identity-file "~/.ssh/id_ed25519"))
 		(openssh-host (name "boson")
-			      (host-name "192.168.0.171")
+			      (host-name "192.168.0.201")
 			      (user "marrero")
 			      (port 22)
 			      (identity-file "~/.ssh/id_ed25519"))))

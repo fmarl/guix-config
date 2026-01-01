@@ -1,15 +1,14 @@
 (define-module (my home base)
   #:use-module (guix gexp)
   #:use-module (gnu packages)
-  #:use-module (gnu packages gnupg)
   #:use-module (gnu services)
   #:use-module (gnu home services desktop)
-  #:use-module (gnu home services gnupg)
   #:use-module (gnu home services sound)
   #:use-module (my home lf)
   #:use-module (my home shell)
   #:use-module (my home emacs)
   #:use-module (my home git)
+  #:use-module (my home gnupg)
   #:export (
 	    %my-home-packages
 	    %my-home-desktop-packages
@@ -18,7 +17,7 @@
 
 (define %my-base-fonts
   (specifications->packages
-   (list "font-hack" "font-awesome-nonfree")))
+   (list "font-hack" "font-awesome-nonfree" "font-aporetic")))
 
 (define %my-home-packages
   (append
@@ -42,19 +41,15 @@
    (specifications->packages
     (list
      "librewolf"
-     "alacritty"))
+     "alacritty"
+     "signal-desktop"))
    %my-home-desktop-themes
    %my-home-packages))
 
 
 (define %my-home-services
   (append
-   (list
-    (service home-gpg-agent-service-type
-             (home-gpg-agent-configuration
-              (pinentry-program
-               (file-append pinentry-emacs "/bin/pinentry-emacs")))))
-
+   %gpg-services
    %shell-services
    %lf-services
    %git-services
