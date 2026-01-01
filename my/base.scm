@@ -10,7 +10,6 @@
   #:use-module (gnu packages bash)
   #:export (%my-base-services))
 
-
 (define %my-base-services
   ;; Convenience variable holding the basic services.
   (list (service login-service-type)

@@ -13,19 +13,16 @@
   #:use-module (gnu packages wm)
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages suckless)
-  #:use-module (gnu packages security-token)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages glib)
   #:use-module (gnu system keyboard)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (my utils)
-  #:use-module (my packages)
-  #:export (
-	    mate-desktop-services
+  #:use-module (my security)
+  #:export (mate-desktop-services
 	    river-desktop-services
-	    make-desktop
-	    ))
+	    make-desktop))
 
 ;; Mingetty + Agetty
 
@@ -118,7 +115,7 @@
 (define-record-type* <niri-desktop-configuration> niri-desktop-configuration
   make-niri-desktop-configuration
   niri-desktop-configuration?
-  (niri-package niri-package (default my-niri)))
+  (niri-package niri-package (default niri)))
 
 (define niri-desktop-service-type
   (service-type
@@ -146,6 +143,7 @@
 (define* (make-desktop #:key (desktop-services niri-desktop-services))
   (append
    desktop-services
+    %security-services
    (list
     fontconfig-file-system-service
     
@@ -157,7 +155,4 @@
     
     ;; D-Bus stuff
     (service dbus-root-service-type)
-    
-    ;; fido2 (Yubikey etc)
-    (udev-rules-service 'fido2 libfido2 #:groups '("plugdev"))
     )))
