@@ -9,7 +9,6 @@
   #:use-module (gnu home services shepherd)
   #:use-module (guix gexp)
   #:use-module (guix packages)
-  #:use-module (my packages)
   #:export (%emacs-packages %emacs-services))
 
 (define (emacs-file fname)

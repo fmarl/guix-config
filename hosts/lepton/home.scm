@@ -10,8 +10,7 @@
  (my home base)
  (my home niri)
  (my home waybar)
- (my home envs)
- (my packages))
+ (my home envs))
 
 (home-environment
  (packages

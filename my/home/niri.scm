@@ -9,10 +9,8 @@
   #:use-module (gnu packages zig-xyz)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu home services)
-  #:export (
-	    %niri-services
-	    %niri-packages
-))
+  #:export (%niri-services
+	    %niri-packages))
 
 (define %niri-config
   (computed-file "config.kdl"
