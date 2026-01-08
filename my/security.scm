@@ -6,8 +6,8 @@
   #:export (%security-services))
 
 (define %security-services
-  (list
-   (service pcscd-service-type)
-   
-   ;; fido2 (Yubikey etc)
-   (udev-rules-service 'fido2 libfido2 #:groups '("plugdev"))))
+  (list (service pcscd-service-type)
+
+        ;; fido2 (Yubikey etc)
+        (udev-rules-service 'fido2 libfido2
+                            #:groups '("plugdev"))))
