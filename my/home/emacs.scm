@@ -76,19 +76,37 @@
      "emacs-consult-eglot"
      "emacs-cape"
      "emacs-corfu"
+
+     ;; C / C++
      "emacs-clang-format"
-     "emacs-geiser"
+     
+     ;; OCaml
      "emacs-tuareg"
-     "emacs-rustic"
+
+     ;; Clojure
      "emacs-cider"
+
+     ;; Common Lisp
+     "emacs-sly"
+
+     ;; Rust
+     "emacs-rustic"
+     
+     ;; Zig
+     "emacs-zig-mode"
+
+     ;; Utils
      "emacs-guix"
+     "emacs-geiser"
      "emacs-circe"
-     "emacs-gleam-mode"
      "emacs-elfeed"
-
-
+     "emacs-ement"
+     
+     ;; Treesitter
      "tree-sitter-rust"
-
+     "tree-sitter-zig"
+     "tree-sitter-clojure"
+     "tree-sitter-ocaml"
      )))
 
 (define-public %emacs-packages
@@ -96,7 +114,8 @@
    (specifications->packages
     (list
      "emacs-next-pgtk"
-     "mu"))
+     "mu"
+     "sbcl"))
    emacs-packages))
 
 (define-public %emacs-services
