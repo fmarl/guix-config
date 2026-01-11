@@ -20,6 +20,7 @@
   #:use-module (ice-9 match)
   #:use-module (my utils)
   #:use-module (my security)
+  #:use-module (my acpi)
   #:export (mate-desktop-services river-desktop-services make-desktop))
 
 ;; Mingetty + Agetty
@@ -135,6 +136,9 @@
 (define* (make-desktop #:key (desktop-services niri-desktop-services))
   (append desktop-services %security-services
           (list fontconfig-file-system-service
+		;; acpid
+		(service acpid-service-type)
+		(service acpi-files-service-type)
 
                 ;; Screen Locking
                 (service screen-locker-service-type
