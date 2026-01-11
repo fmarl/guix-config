@@ -105,17 +105,12 @@
      ;; Treesitter
      "tree-sitter-rust"
      "tree-sitter-zig"
-     "tree-sitter-clojure"
-     "tree-sitter-ocaml"
      )))
 
 (define-public %emacs-packages
   (append
    (specifications->packages
-    (list
-     "emacs-next-pgtk"
-     "mu"
-     "sbcl"))
+    (list "emacs-next-pgtk"))
    emacs-packages))
 
 (define-public %emacs-services

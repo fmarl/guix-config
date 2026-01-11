@@ -9,12 +9,14 @@
  (my utils)
  (my home base)
  (my home niri)
- (my home waybar))
+ (my home waybar)
+ (my home mail))
 
 (home-environment
  (packages (append
 	    %niri-packages
 	    %waybar-packages
+	    %mail-packages
 	    %my-home-desktop-packages))
  
  (services
@@ -53,5 +55,6 @@
           (extra-options '("-t" "1h30m")))))
    %niri-services
    %waybar-services
+   %mail-services
    %my-home-desktop-services
    %base-home-services)))

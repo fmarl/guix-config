@@ -1,0 +1,21 @@
+IMAPAccount mailbox
+Host imap.mailbox.org
+User f.m.liestmann@fx-ttr.de
+PassCmd "age -d -i $HOME/.config/sops/age/keys.txt $HOME/.mailbox.age"
+TLSType IMAPS
+
+IMAPStore mailbox-remote
+Account mailbox
+
+MaildirStore mailbox-local
+Path ~/Mail/
+Inbox ~/Mail/INBOX/
+SubFolders Verbatim
+
+Channel mailbox
+Far :mailbox-remote:
+Near :mailbox-local:
+Patterns * !Archives
+Create Near
+Expunge Both
+SyncState *
