@@ -3,7 +3,7 @@ typeset -U path cdpath fpath manpath
 autoload -U compinit && compinit
 HISTSIZE="10000"
 SAVEHIST="10000"
-
+PROMPT="%~ $ "
 HISTFILE="/home/marrero/.zsh_history"
 
 enabled_opts=(
@@ -25,6 +25,5 @@ unset opt disabled_opts
 
 . $HOME/.profile
 
-eval "$(starship init zsh)"
 eval "$(direnv hook zsh)"
 source <(fzf --zsh)

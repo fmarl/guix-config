@@ -58,7 +58,7 @@
      "emacs-smex"
      "emacs-ace-window"
      "emacs-avy"
-     "emacs-direnv"
+     "emacs-envrc"
      "emacs-posframe"
      "emacs-magit"
      "emacs-projectile"
@@ -71,18 +71,14 @@
      "emacs-marginalia"
      "emacs-orderless"
      "emacs-embark"
+     "emacs-wgrep"
+     "emacs-apheleia"
      "emacs-consult"
      "emacs-vertico"
      "emacs-consult-eglot"
      "emacs-cape"
      "emacs-corfu"
-
-     ;; C / C++
-     "emacs-clang-format"
      
-     ;; OCaml
-     "emacs-tuareg"
-
      ;; Clojure
      "emacs-cider"
 
@@ -100,7 +96,11 @@
      "emacs-geiser"
      "emacs-circe"
      "emacs-elfeed"
-     "emacs-ement"
+     "emacs-org-modern"
+     "emacs-denote"
+
+     ;; Movement
+     "emacs-meow"
      
      ;; Treesitter
      "tree-sitter-rust"
