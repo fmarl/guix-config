@@ -16,6 +16,7 @@
   #:use-module (gnu packages shells)
   #:use-module (gnu packages glib)
   #:use-module (gnu system keyboard)
+  #:use-module (sagittarius services vpn)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (my utils)
@@ -139,6 +140,9 @@
 		;; acpid
 		(service acpid-service-type)
 		(service acpi-files-service-type)
+
+		;; VPN
+		(service mullvad-service-type)
 
                 ;; Screen Locking
                 (service screen-locker-service-type

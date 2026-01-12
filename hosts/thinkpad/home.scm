@@ -10,11 +10,12 @@
  (my home base)
  (my home niri)
  (my home waybar)
- )
+ (sagittarius packages vpn))
 
 (home-environment
  (packages
   (append
+   (list mullvad-vpn-desktop)
    %niri-packages
    %waybar-packages
    %my-home-desktop-packages))
