@@ -78,6 +78,7 @@
      "emacs-consult-eglot"
      "emacs-cape"
      "emacs-corfu"
+     "emacs-diff-hl"
      
      ;; Clojure
      "emacs-cider"
