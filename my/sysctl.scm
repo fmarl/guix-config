@@ -7,7 +7,6 @@
   (service sysctl-service-type
    (sysctl-configuration
      (settings (append '(("kernel.sysrq" . "0")
-			 ("kernel.unprivileged_userns_clone" . "1")
 			 ("kernel.unprivileged_bpf_disabled" . "1")
 			 ("kernel.core_uses_pid" . "1")
 			 ("dev.tty.ldisc_autoload" . "0")
