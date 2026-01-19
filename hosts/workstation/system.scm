@@ -10,8 +10,9 @@
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux-hardened)
+ (kernel (linux-default (local-file "defconfig")))
  (initrd microcode-initrd)
+ (initrd-modules (list "nvme" "usbhid" "hid-generic"))
  (firmware (list amdgpu-firmware))
  (locale "en_US.utf8")
  (timezone "Europe/Berlin")
@@ -38,7 +39,9 @@
 		#:allow-ssh? #t))
    
    (list
-    (service openssh-service-type))
+    (service openssh-service-type
+	     (openssh-configuration
+	      (password-authentication? #f))))
 
    %my-base-services))
   
