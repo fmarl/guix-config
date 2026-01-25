@@ -14,6 +14,7 @@
  (initrd microcode-initrd)
  (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
  (firmware (cons*
+	    ibt-hw-firmware
 	    iwlwifi-firmware
 	    %base-firmware))
  (locale "en_US.utf8")
