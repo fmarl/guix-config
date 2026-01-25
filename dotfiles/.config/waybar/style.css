@@ -1,119 +1,60 @@
 * {
     border: none;
-    border-radius: 0px;
-    font-family: "Roboto Mono Medium", Helvetica, Arial, sans-serif;
-    font-size: 10px;
+    border-radius: 0;
     min-height: 0;
+
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 12px;
 }
 
 window#waybar {
-    background: linear-gradient(0deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.9) 100%);
-    color: #ffffff;
+    background: #111111;
+    color: #d4d4d4;
 }
 
-#tags,
+.modules-left,
+.modules-center,
+.modules-right {
+    margin: 0 8px;
+}
+
 #workspaces button {
+    background: transparent;
+    color: #666666;
+    padding: 0 6px;
+}
+
+#workspaces button.active {
     color: #ffffff;
-    padding: 0 4px;
-    box-shadow: inset 0 -3px transparent;
 }
 
-#tags,
 #workspaces button:hover {
-    background: rgba(0, 0, 0, 0.9);
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-#tags,
-#workspaces button.focused {
-    background-color: #64727d;
-}
-
-#tags,
-#workspaces button.urgent {
-    background-color: #eb4d4b;
-}
-
-#mode {
-    background-color: #64727d;
-}
-
-#clock,
-#battery,
-#cpu,
-#memory,
-#network,
-#tray,
-#mode,
-#idle_inhibitor {
-    padding: 0 10px;
-    margin: 6px 3px;
-    color: #000000;
-}
-
-#window,
-#workspaces,
-#tags {
-    margin: 0 4px;
-}
-
-/* If tags is the leftmost module, omit left margin */
-.modules-left > widget:first-child > #tags {
-    margin-left: 0;
-}
-
-/* If tags is the rightmost module, omit right margin */
-.modules-right > widget:last-child > #tags {
-    margin-right: 0;
+    background: transparent;
+    color: #bbbbbb;
 }
 
 #clock {
-    color: white;
+    color: #d4d4d4;
+    padding: 0 10px;
 }
 
+#network,
 #battery {
-    color: white;
-}
-
-#battery.charging {
-    color: #ffffff;
-}
-
-@keyframes blink {
-    to {
-	background-color: #ffffff;
-	color: #000000;
-    }
-}
-
-#battery.critical:not(.charging) {
-    color: #f53c3c;
-    animation-name: blink;
-    animation-duration: 0.5s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-}
-
-label:focus {
-}
-
-#cpu {
-    color: #ffffff;
-}
-
-#memory {
-    color: white;
-}
-
-#backlight {
-    color: white;
-}
-
-#network {
-    color: white;
+    padding: 0 6px;
 }
 
 #network.disconnected {
-    color: #f53c3c;
+    color: #666666;
+}
+
+#battery.warning {
+    color: #d79921;
+}
+
+#battery.critical {
+    color: #cc241d;
+}
+
+#battery.charging {
+    color: #b8bb26;
 }
