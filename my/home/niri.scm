@@ -271,6 +271,7 @@ binds {
 }
 
 spawn-at-startup \"~a\"
+spawn-sh-at-startup \"~a -i $HOME/Pictures/wallpaper.svg\"
 "
 				  #$(file-append alacritty "/bin/alacritty")
 				  #$(file-append bemenu "/bin/bemenu-run")
@@ -281,7 +282,8 @@ spawn-at-startup \"~a\"
 				  #$(file-append wireplumber "/bin/wpctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
 				  #$(file-append brightnessctl "/bin/brightnessctl")
-				  #$(file-append (@ (gnu packages window-management) waybar) "/bin/waybar"))
+				  #$(file-append (@ (gnu packages window-management) waybar) "/bin/waybar")
+				  #$(file-append (@ (gnu packages window-management) swaybg) "/bin/swaybg"))
 			  port))))))
 (define %niri-services
   (list (simple-service 'niri-config
