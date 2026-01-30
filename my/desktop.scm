@@ -22,6 +22,7 @@
   #:use-module (my utils)
   #:use-module (my security)
   #:use-module (my acpi)
+  #:use-module (my packages)
   #:export (mate-desktop-services river-desktop-services make-desktop))
 
 ;; Mingetty + Agetty
@@ -87,11 +88,14 @@
 
 ;; River
 
-(define-record-type* <river-desktop-configuration> river-desktop-configuration
-                     make-river-desktop-configuration
+(define-record-type* <river-desktop-configuration>
+  river-desktop-configuration
+  make-river-desktop-configuration
   river-desktop-configuration?
   (river-package river-package
-                 (default river)))
+                 (default river-0.4))
+  (command river-command
+           (default "river")))
 
 (define river-desktop-service-type
   (service-type (name 'river-desktop)
@@ -101,10 +105,13 @@
                                                               river-package))))
                 (default-value (river-desktop-configuration))))
 
-(define river-desktop-services
-  (cons* (service river-desktop-service-type)
-         (service seatd-service-type)
-         (make-greetd-login-manager-services "river")))
+(define (river-desktop-services config)
+  (match-record config <river-desktop-configuration>
+    (command)
+    (cons*
+     (service river-desktop-service-type config)
+     (service seatd-service-type)
+     (make-greetd-login-manager-services command))))
 
 ;; Niri
 
@@ -134,7 +141,9 @@
          (service elogind-service-type)
          (make-mingetty+agetty-services)))
 
-(define* (make-desktop #:key (desktop-services niri-desktop-services))
+(define* (make-desktop #:key (desktop-services (river-desktop-services
+						(river-desktop-configuration
+						 (command "river -c emacs")))))
   (append desktop-services %security-services
           (list fontconfig-file-system-service
 		;; acpid

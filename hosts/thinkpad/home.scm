@@ -16,8 +16,6 @@
  (packages
   (append
    (list mullvad-vpn-desktop)
-   %niri-packages
-   %waybar-packages
    %my-home-desktop-packages))
  
  (services
@@ -58,7 +56,5 @@
     (service home-ssh-agent-service-type
              (home-ssh-agent-configuration
               (extra-options '("-t" "1h30m")))))
-   %niri-services
-   %waybar-services
    %my-home-desktop-services
    %base-home-services)))
