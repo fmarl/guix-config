@@ -5,7 +5,6 @@
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services sound)
   #:use-module (gnu home services)
-  #:use-module (my home lf)
   #:use-module (my home shell)
   #:use-module (my home emacs)
   #:use-module (my home git)
@@ -28,7 +27,6 @@
 	  "gnupg"))
    %my-base-fonts
    %shell-packages
-   %lf-packages
    %git-packages
    %emacs-packages))
 
@@ -52,7 +50,6 @@
   (append
    %gpg-services
    %shell-services
-   %lf-services
    %git-services
    %emacs-services))
 

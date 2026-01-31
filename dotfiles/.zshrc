@@ -27,3 +27,5 @@ unset opt disabled_opts
 
 eval "$(direnv hook zsh)"
 source <(fzf --zsh)
+
+[ -n "$EAT_SHELL_INTEGRATION_DIR" ] &&  source "$EAT_SHELL_INTEGRATION_DIR/zsh"
