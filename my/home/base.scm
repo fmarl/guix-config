@@ -50,8 +50,7 @@
   (append
    %gpg-services
    %shell-services
-   %git-services
-   %emacs-services))
+   %git-services))
 
 (define %my-home-desktop-services
   (append

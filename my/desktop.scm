@@ -143,7 +143,7 @@
 
 (define* (make-desktop #:key (desktop-services (river-desktop-services
 						(river-desktop-configuration
-						 (command "river -c emacs")))))
+						 (command '("river" "-c" "emacs"))))))
   (append desktop-services %security-services
           (list fontconfig-file-system-service
 		;; acpid
