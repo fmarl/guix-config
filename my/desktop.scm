@@ -95,7 +95,7 @@
   (river-package river-package
                  (default river-0.4))
   (command river-command
-           (default "river")))
+           (default '("river"))))
 
 (define river-desktop-service-type
   (service-type (name 'river-desktop)
@@ -111,7 +111,7 @@
     (cons*
      (service river-desktop-service-type config)
      (service seatd-service-type)
-     (make-greetd-login-manager-services command))))
+     (make-greetd-login-manager-services #~(string-join #$command " ")))))
 
 ;; Niri
 
@@ -143,7 +143,7 @@
 
 (define* (make-desktop #:key (desktop-services (river-desktop-services
 						(river-desktop-configuration
-						 (command '("river" "-c" "emacs"))))))
+						 (command '("river" "-c" (file-append nucleotide "/nucleotide")))))))
   (append desktop-services %security-services
           (list fontconfig-file-system-service
 		;; acpid
