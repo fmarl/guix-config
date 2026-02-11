@@ -7,6 +7,5 @@
 
 (define (linux-default config)
   (package
-    (inherit (customize-linux
-	      #:linux linux
-	      #:defconfig config))))
+    (inherit (customize-linux #:linux linux
+                              #:defconfig config))))
