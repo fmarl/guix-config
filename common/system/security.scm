@@ -1,0 +1,78 @@
+(define-module (common system security)
+  #:use-module (guix gexp)
+  #:use-module (gnu services)
+  #:use-module (gnu services base)
+  #:use-module (gnu services security-token)
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu system pam)
+  #:use-module (gnu packages security-token)
+  #:use-module (common users)
+  #:export (%security-services))
+
+(define u2f-mappings
+  (plain-file "u2f-mappings"
+              (string-join (map (lambda (user)
+                                  (string-append (user-name user) ":"
+                                                 (user-u2f-keys user)))
+                                (filter user-u2f-keys %users))
+                           "\n" 'suffix)))
+
+(define u2f-pam-services
+  '("login" "greetd" "sudo"))
+
+(define u2f-pam-extension
+  (pam-extension
+   (transformer
+    (lambda (pam)
+      (if (member (pam-service-name pam) u2f-pam-services)
+          (pam-service
+           (inherit pam)
+           (auth (cons (pam-entry
+                        (control "sufficient")
+                        (module (file-append pam-u2f "/lib/security/pam_u2f.so"))
+                        (arguments
+                         (list "cue" "origin=pam://yubi"
+                               #~(string-append "authfile=" #$u2f-mappings))))
+                       (pam-service-auth pam))))
+          pam)))))
+
+(define %sysctl-service
+  (service sysctl-service-type
+           (sysctl-configuration (settings (append '(("kernel.core_uses_pid" . "1")
+                                                     ("dev.tty.ldisc_autoload" . "0")
+                                                     ("kernel.kptr_restrict" . "2")
+                                                     ("kernel.yama.ptrace_scope" . "1")
+                                                     ("fs.protected_fifos" . "2")
+                                                     ("fs.protected_regular" . "2")
+                                                     ("fs.suid_dumpable" . "0")
+                                                     ("net.core.bpf_jit_enable" . "0")
+                                                     ("net.ipv4.tcp_rfc1337" . "1")
+                                                     ("net.ipv4.conf.default.accept_source_route" . "0")
+                                                     ("net.ipv4.conf.all.log_martians" . "1")
+                                                     ("net.ipv4.conf.all.rp_filter" . "1")
+                                                     ("net.ipv4.conf.default.log_martians" . "1")
+                                                     ("net.ipv4.conf.default.rp_filter" . "1")
+                                                     ("net.ipv4.icmp_echo_ignore_broadcasts" . "1")
+                                                     ("net.ipv4.conf.all.accept_redirects" . "0")
+                                                     ("net.ipv4.conf.all.secure_redirects" . "0")
+                                                     ("net.ipv4.conf.default.accept_redirects" . "0")
+                                                     ("net.ipv4.conf.default.secure_redirects" . "0")
+                                                     ("net.ipv6.conf.all.accept_redirects" . "0")
+                                                     ("net.ipv6.conf.default.accept_redirects" . "0")
+                                                     ("net.ipv4.conf.all.send_redirects" . "0")
+                                                     ("net.ipv4.conf.default.send_redirects" . "0"))
+                                                   %default-sysctl-settings)))))
+
+(define %security-services
+  (list (service pcscd-service-type)
+
+        ;; fido2 (Yubikey etc)
+        (udev-rules-service 'fido2 libfido2
+                            #:groups '("plugdev"))
+        (udev-rules-service 'yubikey-personalization yubikey-personalization)
+        (udev-rules-service 'u2f-host libu2f-host)
+
+        %sysctl-service
+
+        (simple-service 'u2f-pam pam-root-service-type
+                        (list u2f-pam-extension))))
