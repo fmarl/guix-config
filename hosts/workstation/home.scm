@@ -26,7 +26,7 @@
 		    home-environment-variables-service-type
 		    `(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
                       ("GPG_TTY" . "$(tty)")
-                      ("_JAVA_AWT_WM_NONREPARENTING" . #t)))
+                      ("_JAVA_AWT_WM_NONREPARENTING" . "1")))
     
     (service home-openssh-service-type
 	     (home-openssh-configuration

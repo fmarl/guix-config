@@ -1,30 +1,15 @@
 (define-module (my utils)
   #:use-module (ice-9 ftw)
-  #:export (flatten base-path
-                    relative-path
-                    relative-host-path
-                    relative-files
-                    relative-host-files
-                    load-by-hostname))
-
-(define (flatten lst)
-  (cond
-    ((null? lst)
-     '())
-    ((list? (car lst))
-     (append (flatten (car lst))
-             (flatten (cdr lst))))
-    (else (cons (car lst)
-                (flatten (cdr lst))))))
+  #:export (base-path
+	    relative-host-path
+	    relative-host-files
+	    load-by-hostname))
 
 (define (stat:type=? st type)
   (eq? (stat:type st) type))
 
 (define (base-path)
-  (getcwd))
-
-(define (relative-path rpath)
-  (string-append (base-path) rpath))
+  (dirname (dirname (canonicalize-path (%search-load-path "my/utils.scm")))))
 
 (define (relative-host-path hostname rpath)
   (string-append (base-path) "/hosts/" hostname rpath))
@@ -47,7 +32,7 @@
   (let* ((path (relative-host-path hostname
                                    (string-append "/" type ".scm"))))
     (cond
-      ((access? path R_OK)
-       (load path))
-      (else (load (string-append "./hosts/default-" type ".scm"))))))
+     ((access? path R_OK)
+      (load path))
+     (else (load (string-append (base-path) "./hosts/default-" type ".scm"))))))
 

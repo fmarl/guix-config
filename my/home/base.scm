@@ -13,7 +13,8 @@
 	    %my-home-packages
 	    %my-home-desktop-packages
 	    %my-home-services
-	    %my-home-desktop-services))
+	    %my-home-desktop-services
+	    %wayland-desktop-packages))
 
 (define %guile-services
   (list (simple-service 'guile-config
@@ -25,6 +26,10 @@
 (define %my-base-fonts
   (specifications->packages
    (list "font-hack" "font-aporetic")))
+
+(define %wayland-desktop-packages
+  (specifications->packages
+   (list "bemenu" "imv" "zathura" "mpv")))
 
 (define %my-home-packages
   (append
