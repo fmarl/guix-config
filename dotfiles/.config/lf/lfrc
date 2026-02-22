@@ -1,16 +1,21 @@
+set hidden
+set dirfirst
+set sortby name
+set previewer ~/.config/lf/preview
+
 map gg top
 map G bottom
 
 map D delete
-map yy yank
+map yy copy
 map pp paste
 map rr rename
 
 cmd fzf_select ${{
-    lf -remote "send select '$(
-       FZF_DEFAULT_COMMAND="rg --files --hidden --glob '!.git' --glob '!.direnv' --glob '!.cache'" fzf
-    )'"
+    res="$(fzf)"
+    [ -n "$res" ] || exit 0
+    res="$(printf '%s' "$res" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+    lf -remote "send $id select \"$res\""
 }}
 
 map f fzf_select
-
