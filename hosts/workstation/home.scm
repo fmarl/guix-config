@@ -1,59 +1,11 @@
-(use-modules
- (guix gexp)
- (gnu home)
- (gnu packages)
- (gnu services)
- (gnu home services)
- (gnu home services shells)
- (gnu home services ssh)
- (my utils)
- (my home base)
- (my home nucleotide)
- (my home waybar)
- (my home mail))
+(define-module (hosts workstation home)
+  #:use-module (guix gexp)
+  #:use-module (common home base)
+  #:export (%home))
 
-(home-environment
- (packages (append
-	    %mail-packages
-	    %nucleotide-packages
-	    %waybar-packages
-	    %my-home-desktop-packages))
- 
- (services
-  (append
-   (list
-    (simple-service 'env-vars-service
-		    home-environment-variables-service-type
-		    `(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
-                      ("GPG_TTY" . "$(tty)")
-                      ("_JAVA_AWT_WM_NONREPARENTING" . "1")))
-    
-    (service home-openssh-service-type
-	     (home-openssh-configuration
-	      (hosts
-	       (list
-		(openssh-host (name "codeberg.org")
-			      (host-name "codeberg.org")
-			      (user "git")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "github.com")
-			      (host-name "github.com")
-			      (user "git")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "boson")
-			      (host-name "192.168.0.171")
-			      (user "marrero")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))))
-	      (authorized-keys (map (lambda (file) (local-file file))
-				    (relative-host-files "workstation" "/pubkeys")))
-	      (add-keys-to-agent "yes")))
-    (service home-ssh-agent-service-type
-         (home-ssh-agent-configuration
-          (extra-options '("-t" "1h30m")))))
-   %waybar-services
-   %mail-services
-   %my-home-desktop-services
-   %base-home-services)))
+(define %home
+  (base-home-environment 'workstation
+                         #:mail? #t
+                         #:authorized-keys (list (local-file "pubkeys/0.pub"))))
+
+%home
