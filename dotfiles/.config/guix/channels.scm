@@ -23,5 +23,10 @@
   (name 'sagittarius)
   (url "https://codeberg.org/fmarl/sagittarius")
   (branch "main"))
+
+ (channel
+        (name 'guix-microvm)
+        (url "https://github.com/fmarl/guix-microvm")
+        (branch "main"))
  
  %default-channels)

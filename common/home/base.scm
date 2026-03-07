@@ -28,6 +28,10 @@
 	 (simple-service 'guile-config
 			 home-files-service-type
 			 `((".guile" ,(local-file "../../dotfiles/.guile" "guile"))))
+	 (simple-service 'guix-channels
+			 home-xdg-configuration-files-service-type
+			 `(("guix/channels.scm"
+			    ,(local-file "../../dotfiles/.config/guix/channels.scm"))))
 	 (service home-xdg-user-directories-service-type
 		  (home-xdg-user-directories-configuration
 		   (download "$HOME/downloads"))))
