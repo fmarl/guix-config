@@ -8,6 +8,7 @@
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
+  #:use-module (common system virtualization)
   #:export (%system))
 
 (define %system
@@ -24,6 +25,7 @@
     (services
      (append (niri-session)
              (network-services #:static 'workstation #:allow-ssh? #t)
+             (kvm-services "kvm_amd")
              (list (service openssh-service-type
                      (openssh-configuration
                        (password-authentication? #f)
