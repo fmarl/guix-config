@@ -23,6 +23,7 @@
 (define-module (common system installer)
   #:use-module (guix)
   #:use-module (guix channels)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages cryptsetup)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages disk)
@@ -67,7 +68,12 @@
                                  (guix-configuration
                                    (inherit config)
                                    (guix (guix-for-channels %channels))
-                                   (channels %channels))))))
+                                   (channels %channels)))
+              (special-files-service-type files =>
+                                          (cons `("/usr/bin/env"
+                                                  ,(file-append coreutils
+                                                                "/bin/env"))
+                                                files)))))
 
     (packages (append (list git curl emacs-no-x-toolkit
                             cryptsetup parted btrfs-progs dosfstools)
