@@ -1,7 +1,10 @@
 (define-module (common machines)
+  #:use-module (srfi srfi-1)
+  #:use-module (ice-9 match)
   #:export (%machines
             machine-ref
-            machine-address))
+            machine-address
+            machine-addresses))
 
 (define %machines
   '((workstation (address . "192.168.0.200")
@@ -17,3 +20,11 @@
 
 (define (machine-address name)
   (machine-ref name 'address))
+
+(define (machine-addresses)
+  "Return (NAME . ADDRESS) for every machine with a fixed address."
+  (filter-map (match-lambda
+                ((name . properties)
+                 (let ((address (assq-ref properties 'address)))
+                   (and address (cons name address)))))
+              %machines))
