@@ -31,21 +31,25 @@
                        "\"")
         str)))
 
+(define (sections-file name sections format-value)
+  "Return a file of [SECTION] headers followed by KEY = VALUE lines, with
+VALUE serialized by FORMAT-VALUE."
+  (define (entry->string entry)
+    (match entry
+      ((key . value)
+       (string-append key " = " (format-value value) "\n"))))
+
+  (define (section->string section)
+    (match section
+      ((header . entries)
+       (string-append "[" header "]\n"
+                      (string-concatenate (map entry->string entries))))))
+
+  (plain-file name (string-join (map section->string sections) "\n")))
+
 (define (ini-file name sections)
   "SECTIONS is a list of (SECTION (KEY . VALUE) ...), as used by git."
-  (plain-file name
-              (string-join
-               (map (match-lambda
-                      ((section . entries)
-                       (string-append
-                        "[" section "]\n"
-                        (string-concatenate
-                         (map (match-lambda
-                                ((key . value)
-                                 (string-append key " = " (ini-value value) "\n")))
-                              entries)))))
-                    sections)
-               "\n")))
+  (sections-file name sections ini-value))
 
 (define (toml-value value)
   (match value
@@ -59,19 +63,7 @@
 (define (toml-file name tables)
   "TABLES is a list of (TABLE (KEY . VALUE) ...); strings are quoted and
 vectors become arrays."
-  (plain-file name
-              (string-join
-               (map (match-lambda
-                      ((table . entries)
-                       (string-append
-                        "[" table "]\n"
-                        (string-concatenate
-                         (map (match-lambda
-                                ((key . value)
-                                 (string-append key " = " (toml-value value) "\n")))
-                              entries)))))
-                    tables)
-               "\n")))
+  (sections-file name tables toml-value))
 
 (define (key-value-file name entries)
   "ENTRIES is a list of (KEY . VALUE); #t writes just KEY, as gpg.conf expects."
