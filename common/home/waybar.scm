@@ -4,10 +4,12 @@
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (gnu packages)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home colors)
+  #:use-module (common home niri)
   #:export (waybar-services))
 
 (define %status-modules
@@ -164,4 +166,8 @@
                                         (scm->json-string
                                          (vector (waybar-config #:mobile? mobile?))
                                          #:pretty #t)))
-                          ("waybar/style.css" ,waybar-style)))))
+                          ("waybar/style.css" ,waybar-style)))
+        (simple-service 'waybar-autostart
+                        home-niri-service-type
+                        (list (niri-spawn-at-startup
+                               (file-append waybar "/bin/waybar"))))))
