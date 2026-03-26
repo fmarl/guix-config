@@ -20,7 +20,9 @@
   #:use-module (common home swayidle)
   #:use-module (common home theme)
   #:use-module (common home waybar)
-  #:export (base-home-environment))
+  #:export (base-home-environment
+	    desktop-services)
+  #:re-export (%mail-services))
 
 (define base-services
   (append
@@ -57,20 +59,16 @@
    %swayidle-services))
 
 (define* (base-home-environment host-name #:key
-				(desktop? #t)
-				mobile?
-				mail?
 				(authorized-keys #f)
 				(packages '())
 				(services '()))
-  "Return the home environment of HOST-NAME (a symbol, left out of the SSH hosts).
-MOBILE? selects the laptop variant of the desktop, MAIL? adds isync/msmtp."
+  "Return the home environment of HOST-NAME (a symbol, left out of the SSH
+hosts) with SERVICES, e.g. desktop-services or %mail-services, added to the
+base services."
   (home-environment
    (packages packages)
    (services (append services
 		     (ssh-services host-name
 				   #:authorized-keys authorized-keys)
 		     base-services
-		     (if desktop? (desktop-services #:mobile? mobile?) '())
-		     (if mail? %mail-services '())
 		     %base-home-services))))

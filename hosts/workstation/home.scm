@@ -5,7 +5,8 @@
 
 (define %home
   (base-home-environment 'workstation
-                         #:mail? #t
-                         #:authorized-keys (list (local-file "pubkeys/0.pub"))))
+                         #:authorized-keys (list (local-file "pubkeys/0.pub"))
+                         #:services (append (desktop-services)
+                                            %mail-services)))
 
 %home
