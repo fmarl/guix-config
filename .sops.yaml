@@ -1,0 +1,9 @@
+# Secrets are only encrypted to the OpenPGP key on the YubiKey, so no
+# decryption key has to be stored on disk.
+keys:
+  - &marrero D1912EEBC3FBEBB4
+creation_rules:
+  - path_regex: hosts/[^/]+/secrets\.yaml$
+    key_groups:
+      - pgp:
+          - *marrero
