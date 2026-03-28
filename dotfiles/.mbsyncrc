@@ -1,7 +1,7 @@
 IMAPAccount mailbox
 Host imap.mailbox.org
 User f.m.liestmann@fx-ttr.de
-PassCmd "age -d -i $HOME/.config/sops/age/keys.txt $HOME/.mailbox.age"
+PassCmd "~/.local/bin/secret mailbox-password"
 TLSType IMAPS
 
 IMAPStore mailbox-remote
