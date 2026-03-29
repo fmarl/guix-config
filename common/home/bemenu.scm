@@ -5,6 +5,7 @@
   #:use-module (common home colors)
   #:use-module (common home helpers)
   #:export (bemenu-run
+            bemenu-askpass
             pinentry-bemenu*))
 
 (define bemenu-settings
@@ -46,3 +47,8 @@
   (shell-script "pinentry-bemenu"
                 "export BEMENU_OPTS=\"" bemenu-arguments "\"\nexec "
                 pinentry-bemenu "/bin/pinentry-bemenu \"$@\"\n"))
+
+(define bemenu-askpass
+  (shell-script "bemenu-askpass"
+                "exec " bemenu "/bin/bemenu" bemenu-arguments
+                " --password indicator --prompt \"$1\" </dev/null\n"))

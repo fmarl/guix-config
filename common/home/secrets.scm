@@ -3,6 +3,7 @@
   #:use-module (gnu packages)
   #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (common home bemenu)
   #:use-module (common home helpers)
   #:use-module (common home ssh)
   #:export (secrets-services))
@@ -22,7 +23,8 @@
                 " -l -f \"$HOME/.ssh/id_ed25519.pub\" | cut -d' ' -f2)\n"
                 (file-append openssh "/bin/ssh-add")
                 " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0\n"
-                secret-script " ssh | " (file-append openssh "/bin/ssh-add") " -q -\n"))
+                secret-script " ssh | SSH_ASKPASS=" bemenu-askpass
+                " SSH_ASKPASS_REQUIRE=force " (file-append openssh "/bin/ssh-add") " -q -\n"))
 
 (define ssh-load-key-config
   (plain-file "ssh-load-key"
