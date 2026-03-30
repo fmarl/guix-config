@@ -76,6 +76,7 @@
                   (targets (list "/boot/efi"))
                   (keyboard-layout keyboard-layout)))
     (users (append (make-user-accounts) %base-user-accounts))
+    (sudoers-file %sudoers)
     (file-systems %base-file-systems)
     (services (append %desktop-services
                       %security-services

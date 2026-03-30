@@ -8,7 +8,8 @@
   #:use-module (gnu system pam)
   #:use-module (gnu packages security-token)
   #:use-module (common users)
-  #:export (%security-services))
+  #:export (%sudoers
+            %security-services))
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
@@ -40,6 +41,26 @@
                     (list "cue" "origin=pam://yubi"
                           #~(string-append "authfile=" #$u2f-mappings))))
                   (pam-service-auth pam)))))))
+
+(define umask-pam-extension
+  (pam-services-extension
+   '("login" "greetd" "sshd")
+   (lambda (pam)
+     (pam-service
+      (inherit pam)
+      (session (cons (pam-entry
+                      (control "optional")
+                      (module "pam_umask.so")
+                      (arguments '("umask=0077")))
+                     (pam-service-session pam)))))))
+
+(define %sudoers
+  (plain-file "sudoers" "\
+root ALL=(ALL) ALL
+%wheel ALL=(ALL) ALL
+Defaults umask=0022
+Defaults umask_override
+"))
 
 (define %hardened-sysctl-settings
   '(("kernel.core_uses_pid" . "1")
@@ -102,4 +123,4 @@
         %sysctl-service
 
         (simple-service 'pam-extensions pam-root-service-type
-                        (list u2f-pam-extension))))
+                        (list u2f-pam-extension umask-pam-extension))))
