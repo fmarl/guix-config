@@ -19,9 +19,6 @@
     (initrd-modules (list "nvme" "usbhid" "hid-generic"))
     (firmware (list amdgpu-firmware))
 
-    (users (append (make-user-accounts #:extra-groups '("kvm"))
-                   %base-user-accounts))
-
     (services
      (append (niri-session)
              (network-services #:static 'workstation #:allow-ssh? #t)
