@@ -35,11 +35,11 @@ wifi.cloned-mac-address=random
                    `(("mac-randomization.conf" ,nm-mac-randomization-conf)))))
         (service wpa-supplicant-service-type)))
 
-(define (firewall-service allow-ssh?)
-  (service nftables-service-type
-           (nftables-configuration
-            (ruleset (plain-file "nftables.conf"
-                                 (string-append "\
+(define (nftables-ruleset open-tcp-ports)
+  "Drop incoming traffic except replies, loopback and OPEN-TCP-PORTS."
+  (plain-file
+   "nftables.conf"
+   (string-append "\
 # A simple and safe firewall (based on %default-nftables-ruleset)
 table inet filter {
   chain input {
@@ -57,10 +57,11 @@ table inet filter {
     iif != lo ip daddr 127.0.0.1/8 drop
     iif != lo ip6 daddr ::1/128 drop
 "
-                                                (if allow-ssh?
-                                                    "\n    tcp dport ssh accept\n"
-                                                    "")
-                                                "
+                  (string-concatenate
+                   (map (lambda (port)
+                          (string-append "\n    tcp dport " port " accept\n"))
+                        open-tcp-ports))
+                  "
     # reject everything else
     reject with icmpx type port-unreachable
   }
@@ -68,7 +69,7 @@ table inet filter {
     type filter hook output priority 0; policy accept;
   }
 }
-"))))))
+")))
 
 (define lan-hosts-service
   (simple-service 'lan-hosts hosts-service-type
@@ -77,13 +78,15 @@ table inet filter {
                           (host address (symbol->string name))))
                        (machine-addresses))))
 
-(define* (network-services #:key static allow-ssh?)
+(define* (network-services #:key static (open-tcp-ports '()))
   "Return the network services: a static address for the machine STATIC from
-%machines, NetworkManager otherwise, and a firewall."
+%machines, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS."
   (append (if static
               (static-network-services static)
               network-manager-services)
-          (list (firewall-service allow-ssh?)
+          (list (service nftables-service-type
+                         (nftables-configuration
+                          (ruleset (nftables-ruleset open-tcp-ports))))
                 (service static-networking-service-type
                          (list %loopback-static-networking))
                 lan-hosts-service)))
