@@ -4,7 +4,7 @@
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services shepherd)
-  #:export (acpid-service-type acpi-files-service-type))
+  #:export (acpid-service-type))
 
 (define lid-handler
   (program-file "lid-handler"
@@ -52,15 +52,12 @@
 
 (define acpid-service-type
   (service-type (name 'acpid)
-                (description "ACPI daemon")
-                (extensions (list (service-extension
-                                   shepherd-root-service-type
-                                   (const (list acpid-shepherd-service)))))
-                (default-value '())))
-
-(define acpi-files-service-type
-  (service-type (name 'acpi-files)
-                (description "Providing ACPI related files")
-                (extensions (list (service-extension etc-service-type
-                                                     (const `(("acpi/events/lid" ,acpi-lid-event))))))
-                (default-value '())))
+                (description "Run acpid with a handler that suspends when the
+lid is closed.")
+                (extensions
+                 (list (service-extension shepherd-root-service-type
+                                          (const (list acpid-shepherd-service)))
+                       (service-extension etc-service-type
+                                          (const `(("acpi/events/lid"
+                                                    ,acpi-lid-event))))))
+                (default-value #f)))

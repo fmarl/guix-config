@@ -80,7 +80,6 @@
 (define %desktop-services
   (list fontconfig-file-system-service
         (service acpid-service-type)
-        (service acpi-files-service-type)
         (service mullvad-service-type)
         (service screen-locker-service-type
                  (screen-locker-configuration
