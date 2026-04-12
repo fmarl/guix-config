@@ -36,9 +36,6 @@
                                        "StreamLocalBindUnlink yes\n")))))
              (operating-system-user-services %base-os)))
 
-    (swap-devices (list (swap-space
-                          (target (uuid "2ed570db-c148-4e3f-a3b5-d0c71b4cc5e9")))))
-
     (mapped-devices %mapped-devices)
     (file-systems (append %file-systems %hardened-base-file-systems))))
 

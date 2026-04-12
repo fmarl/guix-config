@@ -191,8 +191,7 @@ function write_hardware {
   #:use-module (gnu)
   #:use-module (common system filesystem)
   #:export (%mapped-devices
-            %file-systems
-            %swap-devices))
+            %file-systems))
 
 (define %mapped-devices
   (list (mapped-device
@@ -216,8 +215,6 @@ EOF
                   (mount-point "/boot/efi")
                   (device (uuid "${esp_uuid}" 'fat32))
                   (type "vfat")))))
-
-(define %swap-devices '())
 EOF
     } >"${file}"
 

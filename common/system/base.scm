@@ -3,7 +3,9 @@
   #:use-module (gnu)
   #:use-module (gnu system locale)
   #:use-module (gnu services admin)
+  #:use-module (gnu services linux)
   #:use-module (gnu services shepherd)
+  #:use-module (gnu services sysctl)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages linux)
@@ -30,6 +32,15 @@
          ;; Extra Bash configuration including Bash completion and aliases.
          (service etc-bashrc-d-service-type)
          (service urandom-seed-service-type)
+         (service zram-device-service-type
+                  (zram-device-configuration
+                    (size "8G")
+                    (compression-algorithm 'zstd)
+                    (priority 100)))
+         ;; Swapping to zram is cheap
+         (simple-service 'zram-sysctl sysctl-service-type
+                         '(("vm.swappiness" . "180")
+                           ("vm.page-cluster" . "0")))
 
          (service guix-service-type)
          (service nscd-service-type)
