@@ -6,6 +6,7 @@
   #:use-module (gnu services shepherd)
   #:use-module (gnu packages backup)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages admin)
   #:use-module (gnu packages package-management)
   #:export (%time-servers
             %maintenance-services
@@ -26,13 +27,50 @@
                                         (options '("iburst"))))
                           %time-servers)))))
 
-(define guix-gc-timer
-  (simple-service 'guix-gc-timer shepherd-root-service-type
-                  (list (shepherd-timer '(guix-gc)
-                                        "0 12 * * *"
-                                        #~(#$(file-append guix "/bin/guix")
-                                           "gc" "--delete-generations=2w")
-                                        #:requirement '(guix-daemon)))))
+(define (run-when-due name days command)
+  "Run COMMAND unless it succeeded less than DAYS ago."
+  (let ((stamp (string-append "/var/lib/catch-up/" (symbol->string name))))
+    (program-file
+     (string-append (symbol->string name) "-when-due")
+     (with-imported-modules '((guix build utils))
+       #~(begin
+           (use-modules (guix build utils))
+
+           (define (due?)
+             (or (not (file-exists? #$stamp))
+                 (> (- (current-time) (stat:mtime (stat #$stamp)))
+                    #$(* days 24 60 60))))
+
+           (define (record-success)
+             (mkdir-p (dirname #$stamp))
+             (call-with-output-file #$stamp (const #t)))
+
+           (when (due?)
+             (if (zero? (system* #$@command))
+                 (record-success)
+                 (exit 1))))))))
+
+(define* (catch-up-timer name command #:key days minute (requirement '()))
+  "Check hourly at MINUTE and run COMMAND if it last succeeded more than DAYS
+ago, so that runs missed while the machine was off are caught up."
+  (shepherd-timer (list name)
+                  (string-append (number->string minute) " * * * *")
+                  #~(#$(run-when-due name days command))
+                  #:requirement requirement))
+
+(define catch-up-timers
+  (simple-service 'catch-up-timers shepherd-root-service-type
+                  (list (catch-up-timer 'guix-gc
+                                        (list (file-append guix "/bin/guix")
+                                              "gc" "--delete-generations=2w")
+                                        #:days 7 #:minute 20
+                                        #:requirement '(guix-daemon))
+                        ;; log-rotation itself only runs Sundays at 22:00
+                        (catch-up-timer 'rotate-logs
+                                        (list (file-append shepherd-1.0 "/bin/herd")
+                                              "trigger" "log-rotation")
+                                        #:days 7 #:minute 40
+                                        #:requirement '(log-rotation)))))
 
 (define* (btrbk-config subvolumes #:key (preserve "14d"))
   (plain-file "btrbk.conf"
@@ -67,14 +105,14 @@ and a monthly scrub of the file system at SCRUB-MOUNT-POINT."
                                            #~(#$(file-append btrbk "/bin/btrbk")
                                               "-c" #$config "run")
                                            #:requirement '(file-systems))
-                           (shepherd-timer '(btrfs-scrub)
-                                           "0 13 1 * *"
-                                           #~(#$(file-append btrfs-progs "/bin/btrfs")
-                                              "scrub" "start" "-B"
-                                              #$scrub-mount-point)
+                           (catch-up-timer 'btrfs-scrub
+                                           (list (file-append btrfs-progs "/bin/btrfs")
+                                                 "scrub" "start" "-B"
+                                                 scrub-mount-point)
+                                           #:days 30 #:minute 50
                                            #:requirement '(file-systems)))))))
 
 (define %maintenance-services
   (list ntp-service
-        guix-gc-timer
+        catch-up-timers
         (service earlyoom-service-type)))
