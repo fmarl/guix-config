@@ -36,37 +36,54 @@ wifi.cloned-mac-address=random
         (service wpa-supplicant-service-type)))
 
 (define (nftables-ruleset open-tcp-ports)
-  "Drop incoming traffic except replies, loopback and OPEN-TCP-PORTS."
+  "Drop incoming traffic except replies, loopback, what IPv6 needs to work,
+and ping and OPEN-TCP-PORTS from the LAN, which is answered with a reject."
   (plain-file
    "nftables.conf"
    (string-append "\
-# A simple and safe firewall (based on %default-nftables-ruleset)
 table inet filter {
+  # Reverse path filter, rp_filter only covers IPv4
+  chain prerouting {
+    type filter hook prerouting priority filter; policy accept;
+
+    icmpv6 type { nd-router-advert, nd-neighbor-solicit } accept
+    meta nfproto ipv6 fib saddr . mark . iif oif missing drop
+  }
+
   chain input {
-    type filter hook input priority 0; policy drop;
+    type filter hook input priority filter; policy drop;
 
-    # early drop of invalid connections
     ct state invalid drop
-
-    # allow established/related connections
     ct state { established, related } accept
 
-    # allow from loopback
     iif lo accept
-    # drop connections to lo not coming from lo
-    iif != lo ip daddr 127.0.0.1/8 drop
-    iif != lo ip6 daddr ::1/128 drop
+    iif != lo ip daddr 127.0.0.0/8 drop
+    iif != lo ip6 daddr ::1 drop
+
+    # Neighbor discovery, SLAAC and DHCPv6, only from the local link
+    icmpv6 type { nd-neighbor-solicit, nd-neighbor-advert, nd-router-advert } ip6 hoplimit 255 accept
+    ip6 saddr fe80::/10 udp sport 547 udp dport 546 accept
+
+    ip saddr " %lan-subnet " icmp type echo-request limit rate 10/second accept
+    ip6 saddr fe80::/10 icmpv6 type echo-request limit rate 10/second accept
 "
-                  (string-concatenate
-                   (map (lambda (port)
-                          (string-append "\n    tcp dport " port " accept\n"))
-                        open-tcp-ports))
+                  (if (null? open-tcp-ports)
+                      ""
+                      (string-append "
+    ip saddr " %lan-subnet " tcp dport { " (string-join open-tcp-ports ", ")
+                                     " } accept
+"))
                   "
-    # reject everything else
-    reject with icmpx type port-unreachable
+    # Outside the LAN, stay silent
+    ip saddr " %lan-subnet " reject with icmpx type port-unreachable
   }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
   chain output {
-    type filter hook output priority 0; policy accept;
+    type filter hook output priority filter; policy accept;
   }
 }
 ")))
@@ -80,7 +97,8 @@ table inet filter {
 
 (define* (network-services #:key static (open-tcp-ports '()))
   "Return the network services: a static address for the machine STATIC from
-%machines, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS."
+%machines, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS
+from the LAN."
   (append (if static
               (static-network-services static)
               network-manager-services)
