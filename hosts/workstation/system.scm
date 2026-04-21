@@ -1,5 +1,6 @@
 (define-module (hosts workstation system)
   #:use-module (gnu)
+  #:use-module (gnu services linux)
   #:use-module (gnu services ssh)
   #:use-module (nongnu packages linux)
   #:use-module (common users)
@@ -24,7 +25,9 @@
      (append (niri-session)
              (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
              (kvm-services "kvm_amd")
-             (list (service openssh-service-type
+             (list (simple-service 'sensors kernel-module-loader-service-type
+                                   (list "it87"))
+                   (service openssh-service-type
                      (openssh-configuration
                        (password-authentication? #f)
                        (permit-root-login #f)
