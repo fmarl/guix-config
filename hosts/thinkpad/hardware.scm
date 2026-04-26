@@ -25,4 +25,5 @@
           (list (file-system
                   (mount-point "/boot/efi")
                   (device (uuid "8368-1369" 'fat32))
-                  (type "vfat")))))
+                  (type "vfat")
+                  (options "umask=0077")))))
