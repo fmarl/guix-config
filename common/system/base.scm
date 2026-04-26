@@ -42,7 +42,9 @@
                          '(("vm.swappiness" . "180")
                            ("vm.page-cluster" . "0")))
 
-         (service guix-service-type)
+         ;; The /tmp tmpfs is too small for builds
+         (service guix-service-type
+                  (guix-configuration (tmpdir "/var/tmp")))
          (service nscd-service-type)
 
          (service log-rotation-service-type)
