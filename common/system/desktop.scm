@@ -25,7 +25,7 @@
                       (chown dir (passwd:uid greeter) (passwd:gid greeter)))))
 
 (define (greetd-services session)
-  "Run tuigreet starting SESSION on tty1, plain shells on tty2-7."
+  "Run tuigreet starting SESSION on tty1, plain shells on tty2-3."
   (define (shell-terminal vt)
     (greetd-terminal-configuration
       (terminal-vt (number->string vt))
@@ -45,7 +45,7 @@
                                #~(execl #$(file-append tuigreet "/bin/tuigreet")
                                         "tuigreet" "--time" "--remember"
                                         "--asterisks" "--cmd" #$session))))
-                          (map shell-terminal (iota 6 2))))))
+                          (map shell-terminal (iota 2 2))))))
         tuigreet-cache-service
         (service mingetty-service-type
                  (mingetty-configuration (tty "tty8")))))
