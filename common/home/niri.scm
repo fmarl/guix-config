@@ -19,7 +19,7 @@
             niri-spawn-sh-at-startup
             niri-bind
             niri-spawn
-            %niri-services))
+            niri-services))
 
 (define (kdl-arguments arguments)
   (append-map (lambda (argument)
@@ -156,19 +156,26 @@ window-rule {
                                     (string-append "move-column-to-workspace " n)))))
                (iota 9 1))))
 
-(define media-binds
-  (let ((wpctl (file-append wireplumber "/bin/wpctl"))
-        (brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
-    (map (match-lambda
-           ((key program . arguments)
-            (niri-bind (string-append key " allow-when-locked=true")
-                       (apply niri-spawn program arguments))))
-         `(("XF86AudioRaiseVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+")
-           ("XF86AudioLowerVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-")
-           ("XF86AudioMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle")
-           ("XF86AudioMicMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle")
-           ("XF86MonBrightnessUp" ,brightnessctl "--class=backlight" "set" "+10%")
-           ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight" "set" "10%-")))))
+(define (media-binds bindings)
+  (map (match-lambda
+         ((key program . arguments)
+          (niri-bind (string-append key " allow-when-locked=true")
+                     (apply niri-spawn program arguments))))
+       bindings))
+
+(define audio-binds
+  (let ((wpctl (file-append wireplumber "/bin/wpctl")))
+    (media-binds
+     `(("XF86AudioRaiseVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+")
+       ("XF86AudioLowerVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-")
+       ("XF86AudioMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle")
+       ("XF86AudioMicMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle")))))
+
+(define brightness-binds
+  (let ((brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
+    (media-binds
+     `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight" "set" "+10%")
+       ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight" "set" "10%-")))))
 
 (define action-binds
   (map (match-lambda
@@ -269,7 +276,7 @@ window-rule {
 commands and key bindings that other services contribute through
 niri-spawn-at-startup and niri-bind.")))
 
-(define %niri-services
+(define* (niri-services #:key (audio? #t))
   (list (home-packages "xwayland-satellite"
                        "wl-clipboard"
                        "xdg-desktop-portal"
@@ -283,7 +290,8 @@ niri-spawn-at-startup and niri-bind.")))
                  (append (list (niri-spawn-sh-at-startup
                                 swaybg "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
                          launcher-binds
-                         media-binds
+                         brightness-binds
+                         (if audio? audio-binds '())
                          action-binds
                          directional-binds
                          workspace-binds))))

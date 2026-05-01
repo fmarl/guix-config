@@ -15,8 +15,11 @@
 (define %status-modules
   '("idle_inhibitor" "network" "wireplumber" "memory" "cpu"))
 
-(define (status-modules mobile?)
-  (append %status-modules (list (if mobile? "battery" "disk"))))
+(define* (status-modules #:key mobile? audio?)
+  (append (if audio?
+              %status-modules
+              (delete "wireplumber" %status-modules))
+          (list (if mobile? "battery" "disk"))))
 
 (define %clock-formats
   '("{:%a}" "{:%H:%M}" "{:%d.%m}"))
@@ -41,7 +44,7 @@
        (iota (length %clock-formats) 1)
        %clock-formats))
 
-(define* (waybar-config #:key mobile?)
+(define* (waybar-config #:key mobile? audio?)
   `(("modules-left" . #("niri/workspaces"
                         "custom/right-arrow-dark"
                         "niri/window"))
@@ -56,7 +59,8 @@
                           "custom/right-arrow-dark"))
     ("modules-right"
      . ,(list->vector
-         (append (append-map segment (status-modules mobile?))
+         (append (append-map segment (status-modules #:mobile? mobile?
+                                                     #:audio? audio?))
                  (list "custom/left-arrow-dark" "tray"))))
 
     ("custom/left-arrow-dark" . ,(arrow ""))
@@ -157,14 +161,15 @@
      (("#clock" ,@%styled-status-modules)
       ("padding" . "0 10px")))))
 
-(define* (waybar-services #:key mobile?)
+(define* (waybar-services #:key mobile? (audio? #t))
   (list (home-packages "waybar" "wireplumber")
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config"
                            ,(plain-file "waybar-config"
                                         (scm->json-string
-                                         (vector (waybar-config #:mobile? mobile?))
+                                         (vector (waybar-config #:mobile? mobile?
+                                                                #:audio? audio?))
                                          #:pretty #t)))
                           ("waybar/style.css" ,waybar-style)))
         (simple-service 'waybar-autostart
