@@ -282,7 +282,7 @@ niri-spawn-at-startup and niri-bind.")))
                        "xdg-desktop-portal"
                        "xdg-desktop-portal-gnome"
                        "xdg-desktop-portal-gtk"
-                       "imv"
+                       "imv-locked"
                        "zathura"
                        "zathura-pdf-mupdf"
                        "mpv")
