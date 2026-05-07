@@ -99,7 +99,7 @@
     "emacs-geiser"
     "emacs-circe"
     "emacs-elfeed"
-    "mu" ;mu4e
+    "mu-locked" ;mu4e
     "emacs-app-launcher"
 
     ;; Treesitter
