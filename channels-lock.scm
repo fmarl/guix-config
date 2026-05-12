@@ -22,9 +22,9 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "0db4d7204a62c06d86ec996c78600c405ed8fe98"))
+       (commit "c869a0d33e9c42272a27ddf08cfb3780fe1c47e8"))
       (channel
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "0144cb86e303e9072047f99a34a59a2225b475c7")))
+       (commit "20593b1625d4b6a17dd161043b046256a6139d5d")))
