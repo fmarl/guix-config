@@ -30,7 +30,7 @@
 (define ssh-load-key-config
   (plain-file "ssh-load-key"
               (string-append "Match originalhost "
-                             (string-join (ssh-host-names) ",")
+                             (string-join %ssh-host-names ",")
                              " exec ~/.local/bin/ssh-load-key\n"
                              "  IdentityFile ~/.ssh/id_ed25519.pub\n")))
 
