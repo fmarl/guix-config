@@ -19,7 +19,8 @@
   (append (if audio?
               %status-modules
               (delete "wireplumber" %status-modules))
-          (list (if mobile? "battery" "disk"))))
+          (if mobile? '("battery") '())
+          '("disk")))
 
 (define %clock-formats
   '("{:%a}" "{:%H:%M}" "{:%d.%m}"))
