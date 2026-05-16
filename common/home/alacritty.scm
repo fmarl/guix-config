@@ -1,5 +1,5 @@
 (define-module (common home alacritty)
-  #:use-module (gnu packages)
+  #:use-module (gnu packages terminals)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home colors)
@@ -49,7 +49,7 @@
       ("white" . ,(color 'dim_0))))))
 
 (define %alacritty-services
-  (list (home-packages "alacritty")
+  (list (home-packages alacritty)
 	(simple-service 'alacritty-config
 			home-xdg-configuration-files-service-type
 			`(("alacritty/alacritty.toml" ,alacritty-config)))))

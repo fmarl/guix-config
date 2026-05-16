@@ -1,7 +1,7 @@
 (define-module (common home gnupg)
   #:use-module (guix gexp)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu services)
-  #:use-module (gnu packages)
   #:use-module (gnu home services)
   #:use-module (gnu home services gnupg)
   #:use-module (common home bemenu)
@@ -38,7 +38,7 @@
                   '(("disable-ccid" . #t))))
 
 (define %gpg-services
-  (list (home-packages "gnupg")
+  (list (home-packages gnupg)
         (service home-gpg-agent-service-type
                  (home-gpg-agent-configuration
                   (pinentry-program pinentry-bemenu*)

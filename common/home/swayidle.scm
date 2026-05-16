@@ -1,6 +1,5 @@
 (define-module (common home swayidle)
   #:use-module (guix gexp)
-  #:use-module (gnu packages)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages zig-xyz)
@@ -21,7 +20,7 @@
 		   "timeout 900 '" niri "/bin/niri msg action power-off-monitors'\n"))
 
 (define %swayidle-services
-  (list (home-packages "swayidle" "waylock")
+  (list (home-packages swayidle waylock)
 	(simple-service 'swayidle-config
 			home-xdg-configuration-files-service-type
 			`(("swayidle/config" ,swayidle-config)))

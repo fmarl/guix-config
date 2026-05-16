@@ -3,8 +3,8 @@
   #:use-module (json)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (gnu packages)
   #:use-module (gnu packages window-management)
+  #:use-module (gnu packages linux)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
@@ -162,7 +162,7 @@
       ("padding" . "0 10px")))))
 
 (define* (waybar-services #:key mobile? (audio? #t))
-  (list (home-packages "waybar" "wireplumber")
+  (list (home-packages waybar wireplumber)
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config"

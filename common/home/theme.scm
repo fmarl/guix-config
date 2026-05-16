@@ -1,6 +1,9 @@
 (define-module (common home theme)
   #:use-module (guix gexp)
-  #:use-module (gnu packages)
+  #:use-module (gnu packages fonts)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnome-xyz)
+  #:use-module (nongnu packages fonts)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
@@ -51,12 +54,12 @@ gtk-application-prefer-dark-theme=1
 	   ("error_color" . red))))))
 
 (define %theme-services
-  (list (home-packages "adw-gtk3-theme"
-		       "papirus-icon-theme"
-		       "adwaita-icon-theme"
+  (list (home-packages adw-gtk3-theme
+		       papirus-icon-theme
+		       adwaita-icon-theme
 		       ;; waybar uses Font Awesome 6 and powerline glyphs
-		       "font-awesome-nonfree"
-		       "font-nerd-symbols")
+		       font-awesome-nonfree
+		       font-nerd-symbols)
 	(simple-service 'gtk-theme
 			home-xdg-configuration-files-service-type
 			`(("gtk-3.0/settings.ini" ,gtk-settings)

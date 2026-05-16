@@ -1,7 +1,10 @@
 (define-module (common home shell)
   #:use-module (guix gexp)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages shellutils)
+  #:use-module (gnu packages terminals)
   #:use-module (gnu services)
-  #:use-module (gnu packages)
   #:use-module (gnu home services)
   #:use-module (gnu home services shells)
   #:use-module (common home helpers)
@@ -17,7 +20,7 @@
 			 "LC_TELEPHONE" "LC_TIME"))))
 
 (define %shell-services
-  (list (home-packages "direnv" "fzf" "ripgrep" "htop" "zsh-syntax-highlighting")
+  (list (home-packages direnv fzf ripgrep htop zsh-syntax-highlighting)
 	(service home-zsh-service-type
 		 (home-zsh-configuration
 		  (zshrc (list (local-file

@@ -1,6 +1,10 @@
 (define-module (common home base)
   #:use-module (guix gexp)
   #:use-module (gnu home)
+  #:use-module (gnu packages fonts)
+  #:use-module (gnu packages librewolf)
+  #:use-module (gnu packages ssh)
+  #:use-module (nongnu packages messaging)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
@@ -28,7 +32,7 @@
 
 (define base-services
   (append
-   (list (home-packages "openssh" "font-hack" "font-aporetic")
+   (list (home-packages openssh font-hack font-aporetic)
 	 (simple-service 'guile-config
 			 home-files-service-type
 			 `((".guile" ,(local-file "../../dotfiles/.guile" "guile"))))
@@ -47,7 +51,7 @@
 
 (define* (desktop-services #:key mobile? (audio? #t))
   (append
-   (list (home-packages "librewolf" "signal-desktop")
+   (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
 	 (service home-pipewire-service-type)
 	 (simple-service 'java-wayland
