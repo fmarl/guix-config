@@ -12,8 +12,8 @@
   #:use-module (gnu packages zig-xyz)
   #:use-module (sagittarius packages wm)
   #:export (compositor-session
-            niri-session
-            nucleotide-session
+            %niri-session
+            %nucleotide-session
             %desktop-services))
 
 (define tuigreet-cache-service
@@ -62,14 +62,14 @@
             (extra-env `(("XDG_CURRENT_DESKTOP" . ,desktop-name)
                          ("XDG_SESSION_DESKTOP" . ,desktop-name)))))))
 
-(define (niri-session)
+(define %niri-session
   ;; niri --session exports XDG_CURRENT_DESKTOP to the D-Bus activation
   ;; environment, which xdg-desktop-portal needs
   (compositor-session niri
                       (list (file-append niri "/bin/niri") "--session")
                       #:desktop-name "niri"))
 
-(define (nucleotide-session)
+(define %nucleotide-session
   (compositor-session river-0.4
                       (list (file-append river-0.4 "/bin/river")
                             "-c" (file-append nucleotide "/bin/nucleotide"))

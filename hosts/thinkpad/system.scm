@@ -22,7 +22,7 @@
     (firmware (cons* ibt-hw-firmware iwlwifi-firmware %base-firmware))
 
     (services
-     (append (niri-session)
+     (append %niri-session
              (network-services)
              (kvm-services "kvm_intel")
              (list (service bluetooth-service-type)
