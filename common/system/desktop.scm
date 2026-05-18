@@ -57,7 +57,9 @@
          (greetd-services
           (greetd-user-session
             (command (file-append dbus "/bin/dbus-run-session"))
-            (command-args session-command)
+            (command-args (cons* "--dbus-daemon"
+                                 (file-append dbus "/bin/dbus-daemon")
+                                 session-command))
             (xdg-session-type "wayland")
             (extra-env `(("XDG_CURRENT_DESKTOP" . ,desktop-name)
                          ("XDG_SESSION_DESKTOP" . ,desktop-name)))))))
