@@ -84,5 +84,6 @@
                    (name "waylock")
                    (program (file-append waylock "/bin/waylock"))))
         (service polkit-service-type)
+        (service rtkit-service-type)
         (service fwupd-service-type)
         (service dbus-root-service-type)))
