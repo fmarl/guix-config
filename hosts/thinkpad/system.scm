@@ -19,7 +19,9 @@
     (host-name "thinkpad")
     (kernel (linux-with-defconfig (local-file "defconfig")))
     (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
-    (firmware (cons* ibt-hw-firmware iwlwifi-firmware %base-firmware))
+    ;; i915 disables runtime PM without its DMC firmware
+    (firmware (cons* i915-firmware ibt-hw-firmware iwlwifi-firmware
+                     %base-firmware))
 
     (services
      (append %niri-session
