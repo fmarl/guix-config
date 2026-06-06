@@ -29,8 +29,7 @@
      ("with-fingerprint" . #t)
      ("require-cross-certification" . #t)
      ("no-symkey-cache" . #t)
-     ("use-agent" . #t)
-     ("throw-keyids" . #t))))
+     ("use-agent" . #t))))
 
 ;; https://support.yubico.com/hc/en-us/articles/4819584884124-Resolving-GPG-s-CCID-conflicts
 (define scdaemon-conf
