@@ -16,7 +16,7 @@
       ("name" . ,(user-full-name %primary-user))
       ("signingKey" . ,(user-gpg-key %primary-user)))
      ("commit"
-      ("gpgSign" . #f))
+      ("gpgSign" . #t))
      ("core"
       ("editor" . ,(string-append "emacsclient -s " %emacs-socket " -t -a ''"))
       ("whitespace" . "fix,-indent-with-non-tab,trailing-space,cr-at-eol")
@@ -27,7 +27,7 @@
      ("pull"
       ("rebase" . #t))
      ("tag"
-      ("gpgSign" . #f))
+      ("gpgSign" . #t))
      ("diff"
       ("renames" . "copies")
       ("algorithm" . "patience")
