@@ -27,6 +27,12 @@
  (channel
         (name 'guix-microvm)
         (url "https://github.com/fmarl/guix-microvm")
-        (branch "main"))
+        (branch "main")
+        ;; Enable signature verification:
+        (introduction
+         (make-channel-introduction
+          "98a7990c273bae32085240cc762e6aac45e82fd9"
+          (openpgp-fingerprint
+           "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D"))))
  
  %default-channels)
