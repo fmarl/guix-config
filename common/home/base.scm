@@ -39,7 +39,10 @@
 	 (simple-service 'guix-channels
 			 home-xdg-configuration-files-service-type
 			 `(("guix/channels.scm"
-			    ,(local-file "../../dotfiles/.config/guix/channels.scm"))))
+			    ,(local-file "../../dotfiles/.config/guix/channels.scm"))
+			   ("guix/trusted-channels.scm"
+			    ,(local-file "../../dotfiles/.config/guix/channels.scm"
+					 "trusted-channels.scm"))))
 	 (service home-xdg-user-directories-service-type
 		  (home-xdg-user-directories-configuration
 		   (download "$HOME/downloads"))))
