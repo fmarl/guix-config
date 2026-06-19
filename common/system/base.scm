@@ -20,16 +20,12 @@
 
 (define base-services
   (cons* (service login-service-type)
-
          (service virtual-terminal-service-type)
          (service console-font-service-type
                   (map (lambda (tty)
                          (cons tty %default-console-font))
                        '("tty1" "tty2" "tty3")))
-
          (service shepherd-system-log-service-type)
-
-         ;; Extra Bash configuration including Bash completion and aliases.
          (service etc-bashrc-d-service-type)
          (service urandom-seed-service-type)
          (service zram-device-service-type
@@ -37,12 +33,9 @@
                     (size "8G")
                     (compression-algorithm 'zstd)
                     (priority 100)))
-         ;; Swapping to zram is cheap
          (simple-service 'zram-sysctl sysctl-service-type
                          '(("vm.swappiness" . "180")
                            ("vm.page-cluster" . "0")))
-
-         ;; The /tmp tmpfs is too small for builds
          (service guix-service-type
                   (guix-configuration (tmpdir "/var/tmp")))
          (service nscd-service-type)
@@ -52,8 +45,6 @@
          ;; Convenient services brought by the Shepherd.
          (service shepherd-timer-service-type)
          (service shepherd-transient-service-type)
-
-         ;; Periodically delete old build logs.
          (service log-cleanup-service-type
                   (log-cleanup-configuration (directory "/var/log/guix/drvs")))
 
@@ -69,8 +60,6 @@
 
          %maintenance-services))
 
-;; Hosts inherit from this and set at least host-name, kernel and
-;; file-systems, which are placeholders here.
 (define %base-os
   (operating-system
     (host-name "guix")

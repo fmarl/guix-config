@@ -98,8 +98,6 @@ and a monthly scrub of the file system at SCRUB-MOUNT-POINT."
      (simple-service 'btrbk-config etc-service-type
                      `(("btrbk/btrbk.conf" ,config)))
      (simple-service 'btrfs-maintenance shepherd-root-service-type
-                     ;; Hourly, so that missed runs (machine off) don't matter;
-                     ;; the preserve policy thins out the snapshots
                      (list (shepherd-timer '(btrbk)
                                            "0 * * * *"
                                            #~(#$(file-append btrbk "/bin/btrbk")

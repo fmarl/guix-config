@@ -13,7 +13,6 @@ system:
 home:
 	$(GUIX) home reconfigure home.scm
 
-# Evaluate all hosts without building, like `nix flake check`
 check:
 	@for host in $(HOSTS); do \
 	    if [ -f hosts/$$host/system.scm ]; then \
@@ -24,7 +23,6 @@ check:
 	    $(GUIX) home build --dry-run hosts/$$host/home.scm >/dev/null || exit 1; \
 	done
 
-# Pin the channels in channels.scm to their latest commits
 update:
 	guix time-machine -C dotfiles/.config/guix/channels.scm -- \
 	    describe -f channels > channels-lock.scm.new
@@ -33,6 +31,5 @@ update:
 installer:
 	$(GUIX) system image -t iso9660 common/system/installer.scm
 
-# Reformat all Scheme files, like `nix fmt`
 fmt:
 	guix style -f $(shell git ls-files '*.scm' | grep -v '^channels-lock.scm$$')
