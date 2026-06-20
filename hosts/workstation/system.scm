@@ -9,7 +9,6 @@
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
-  #:use-module (common system virtualization)
   #:use-module (hosts workstation hardware)
   #:export (%system))
 
@@ -24,7 +23,6 @@
     (services
      (append %niri-session
              (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
-             (kvm-services "kvm_amd")
              (list (simple-service 'sensors kernel-module-loader-service-type
                                    (list "it87"))
                    (service openssh-service-type

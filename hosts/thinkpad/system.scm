@@ -9,7 +9,6 @@
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
-  #:use-module (common system virtualization)
   #:use-module (hosts thinkpad hardware)
   #:export (%system))
 
@@ -26,7 +25,6 @@
     (services
      (append %niri-session
              (network-services)
-             (kvm-services "kvm_intel")
              (list (service bluetooth-service-type)
                    (service acpid-service-type)
                    (service upower-service-type)
