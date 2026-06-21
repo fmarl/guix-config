@@ -56,7 +56,6 @@
    emacs-ace-window
    emacs-avy
    emacs-envrc
-   emacs-posframe
    emacs-magit
    emacs-dirvish
    emacs-yasnippet
@@ -78,7 +77,6 @@
    emacs-meow
    emacs-org-modern
    emacs-denote
-   emacs-eat
 
    ;; Clojure
    emacs-cider
@@ -86,12 +84,7 @@
    ;; Common Lisp
    emacs-sly
 
-   ;; Zig
-   emacs-zig-mode
-
    ;; Misc modes
-   emacs-terraform-mode
-   emacs-yaml-mode
    emacs-haskell-mode
    emacs-nasm-mode
 
@@ -103,8 +96,6 @@
    emacs-geiser
    emacs-circe
    emacs-elfeed
-   mu-locked ;mu4e
-   emacs-app-launcher
 
    ;; Treesitter
    tree-sitter-bash
