@@ -89,6 +89,8 @@
 
    ;; OCaml
    emacs-tuareg
+   ocaml-utop
+   dune
 
    ;; Utils
    emacs-guix
