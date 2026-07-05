@@ -42,8 +42,7 @@
                  (home-gpg-agent-configuration
                   (pinentry-program pinentry-bemenu*)
                   (default-cache-ttl 60)
-                  (max-cache-ttl 120)
-                  (extra-content "allow-emacs-pinentry\n")))
+                  (max-cache-ttl 120)))
         (simple-service 'gpg-config
                         home-files-service-type
                         `((".gnupg/gpg.conf" ,gpg-conf)
