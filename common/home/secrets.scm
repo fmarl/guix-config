@@ -29,8 +29,7 @@
   (plain-file "ssh-load-key"
               (string-append "Match originalhost "
                              (string-join %ssh-host-names ",")
-                             " exec ~/.local/bin/ssh-load-key\n"
-                             "  IdentityFile ~/.ssh/id_ed25519.pub\n")))
+                             " exec ~/.local/bin/ssh-load-key\n")))
 
 (define (secrets-services host-name)
   "Deploy the SOPS secrets and SSH public key of HOST-NAME.  Secrets are
