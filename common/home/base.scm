@@ -52,10 +52,12 @@
   (append
    (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
-	 (service home-pipewire-service-type)
 	 (simple-service 'java-wayland
 			 home-environment-variables-service-type
 			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1"))))
+   (if audio?
+       (list (service home-pipewire-service-type))
+       '())
    %alacritty-services
    %theme-services
    (niri-services #:audio? audio?)
