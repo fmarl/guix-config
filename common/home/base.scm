@@ -52,9 +52,10 @@
   (append
    (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
-	 (simple-service 'java-wayland
+	 (simple-service 'wayland-environment
 			 home-environment-variables-service-type
-			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1"))))
+			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1")
+			   ("ELECTRON_OZONE_PLATFORM_HINT" . "auto"))))
    (if audio?
        (list (service home-pipewire-service-type))
        '())
