@@ -60,6 +60,10 @@ niri-spawn."
 (define niri-settings
   (list "prefer-no-csd
 
+hotkey-overlay {
+    skip-at-startup
+}
+
 xwayland-satellite {
     path \"" xwayland-satellite "/bin/xwayland-satellite\"
 }
