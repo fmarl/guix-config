@@ -86,7 +86,6 @@ input {
         click-method \"button-areas\"
     }
 
-    trackpoint { off; }
     trackball { off; }
     tablet { off; }
     touch { off; }
