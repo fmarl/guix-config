@@ -7,10 +7,9 @@
 
 (define-public %shell-packages
   (specifications->packages
-     (list "direnv"
-	   "starship"
-	   "fzf"
-	   "ripgrep")))
+   (list "direnv"
+	 "fzf"
+	 "ripgrep")))
 
 (define-public %shell-services
   (list(service home-zsh-service-type
