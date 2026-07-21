@@ -4,6 +4,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services sound)
+  #:use-module (gnu home services)
   #:use-module (my home lf)
   #:use-module (my home shell)
   #:use-module (my home emacs)
@@ -59,6 +60,12 @@
   (append
    (list
     (service home-dbus-service-type)
-    (service home-pipewire-service-type))
+    (service home-pipewire-service-type)
+    (simple-service 'alacritty-config
+		    home-files-service-type
+		    `((".config/alacritty/alacritty.toml"
+		       ,(local-file "../../dotfiles/.config/alacritty/alacritty.toml"))
+		      (".config/alacritty/ef_owl.toml"
+		       ,(local-file "../../dotfiles/.config/alacritty/ef_owl.toml")))))
    %my-home-services))
 
