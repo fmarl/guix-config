@@ -3,9 +3,7 @@
   #:use-module (gnu packages)
   #:use-module (gnu services)
   #:use-module (gnu home services)
-  #:export (
-	    %lf-services
-	    %lf-packages))
+  #:export (%lf-services %lf-packages))
 
 (define %lf-services
   (list (simple-service 'lf-config

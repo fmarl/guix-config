@@ -58,7 +58,7 @@
      "emacs-smex"
      "emacs-ace-window"
      "emacs-avy"
-     "emacs-direnv"
+     "emacs-envrc"
      "emacs-posframe"
      "emacs-magit"
      "emacs-projectile"
@@ -71,32 +71,46 @@
      "emacs-marginalia"
      "emacs-orderless"
      "emacs-embark"
+     "emacs-wgrep"
+     "emacs-apheleia"
      "emacs-consult"
      "emacs-vertico"
      "emacs-consult-eglot"
      "emacs-cape"
      "emacs-corfu"
-     "emacs-clang-format"
-     "emacs-geiser"
-     "emacs-tuareg"
-     "emacs-rustic"
+     
+     ;; Clojure
      "emacs-cider"
+
+     ;; Common Lisp
+     "emacs-sly"
+
+     ;; Rust
+     "emacs-rustic"
+     
+     ;; Zig
+     "emacs-zig-mode"
+
+     ;; Utils
      "emacs-guix"
+     "emacs-geiser"
      "emacs-circe"
-     "emacs-gleam-mode"
      "emacs-elfeed"
+     "emacs-org-modern"
+     "emacs-denote"
 
-
+     ;; Movement
+     "emacs-meow"
+     
+     ;; Treesitter
      "tree-sitter-rust"
-
+     "tree-sitter-zig"
      )))
 
 (define-public %emacs-packages
   (append
    (specifications->packages
-    (list
-     "emacs-next-pgtk"
-     "mu"))
+    (list "emacs-next-pgtk"))
    emacs-packages))
 
 (define-public %emacs-services
