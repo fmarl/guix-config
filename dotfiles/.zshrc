@@ -19,12 +19,14 @@ PROMPT="%~ ${${SHLVL:#1}:+[$((SHLVL-1))] }λ "
 
 autoload -U compinit
 
-if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
-    compinit
-else
-    compinit -C
-fi
-
+() {
+    setopt LOCAL_OPTIONS EXTENDED_GLOB
+    if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+        compinit
+    else
+        compinit -C
+    fi
+}
 
 if (( $+commands[direnv] )); then
     eval "$(direnv hook zsh)"
