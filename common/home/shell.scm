@@ -19,14 +19,21 @@
 			 "LC_MONETARY" "LC_NAME" "LC_NUMERIC" "LC_PAPER"
 			 "LC_TELEPHONE" "LC_TIME"))))
 
+(define fzf-command
+  "rg --files --hidden --glob '!.git' --glob '!.direnv' --glob '!.cache'")
+
+(define fzf-variables
+  (simple-service 'fzf-variables
+		  home-environment-variables-service-type
+		  `(("FZF_DEFAULT_COMMAND" . ,fzf-command)
+		    ("FZF_CTRL_T_COMMAND" . ,fzf-command))))
+
 (define %shell-services
   (list (home-packages direnv fzf ripgrep htop zsh-syntax-highlighting)
 	(service home-zsh-service-type
 		 (home-zsh-configuration
 		  (zshrc (list (local-file
 				"./../../dotfiles/.zshrc"
-				"zshrc")))
-		  (zshenv (list (local-file
-				 "./../../dotfiles/.zshenv"
-				 "zshenv")))))
-	locale-variables))
+				"zshrc")))))
+	locale-variables
+	fzf-variables))
