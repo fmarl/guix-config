@@ -1,0 +1,422 @@
+thinkpad
+    description: Notebook
+    product: 20LTS1RE03 (LENOVO_MT_20LT_BU_Think_FM_ThinkPad L480)
+    vendor: LENOVO
+    version: ThinkPad L480
+    serial: PF1K8A63
+    width: 64 bits
+    capabilities: smbios-3.0.0 dmi-3.0.0 smp vsyscall32
+    configuration: administrator_password=disabled chassis=notebook family=ThinkPad L480 power-on_password=disabled sku=LENOVO_MT_20LT_BU_Think_FM_ThinkPad L480 uuid=CC01D345-7225-B211-A85C-84C70F2CB578
+  *-core
+       description: Motherboard
+       product: 20LTS1RE03
+       vendor: LENOVO
+       physical id: 0
+       version: SDK0J40697 WIN
+       serial: L1HF8CX008H
+       slot: Not Available
+     *-memory
+          description: System Memory
+          physical id: 3
+          slot: System board or motherboard
+          size: 16GiB
+        *-bank:0
+             description: SODIMM DDR4 Synchronous Unbuffered (Unregistered) 2400 MHz (0.4 ns)
+             product: RMSA3260ME78HAF-2666
+             vendor: Ramaxel
+             physical id: 0
+             serial: 12FEB06C
+             slot: ChannelA-DIMM0
+             size: 8GiB
+             width: 64 bits
+             clock: 2400MHz (0.4ns)
+        *-bank:1
+             description: SODIMM DDR4 Synchronous Unbuffered (Unregistered) 2400 MHz (0.4 ns)
+             product: RMSA3260MB78HAF2400
+             vendor: Ramaxel
+             physical id: 1
+             serial: 12EDFC0E
+             slot: ChannelB-DIMM0
+             size: 8GiB
+             width: 64 bits
+             clock: 2400MHz (0.4ns)
+     *-cache:0
+          description: L1 cache
+          physical id: 7
+          slot: L1 Cache
+          size: 256KiB
+          capacity: 256KiB
+          capabilities: synchronous internal write-back unified
+          configuration: level=1
+     *-cache:1
+          description: L2 cache
+          physical id: 8
+          slot: L2 Cache
+          size: 1MiB
+          capacity: 1MiB
+          capabilities: synchronous internal write-back unified
+          configuration: level=2
+     *-cache:2
+          description: L3 cache
+          physical id: 9
+          slot: L3 Cache
+          size: 6MiB
+          capacity: 6MiB
+          capabilities: synchronous internal write-back unified
+          configuration: level=3
+     *-cpu
+          description: CPU
+          product: Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
+          vendor: Intel Corp.
+          physical id: a
+          bus info: cpu@0
+          version: Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
+          serial: None
+          slot: U3E1
+          size: 2048MHz
+          capacity: 3600MHz
+          width: 64 bits
+          clock: 100MHz
+          capabilities: lm fpu fpu_exception wp vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp x86-64 constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb pti ssbd ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust sgx bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp vnmi md_clear flush_l1d arch_capabilities cpufreq
+          configuration: cores=4 enabledcores=4 threads=8
+     *-firmware
+          description: BIOS
+          vendor: LENOVO
+          physical id: b
+          version: R0QET69W (1.46 )
+          date: 01/03/2023
+          size: 128KiB
+          capacity: 16MiB
+          capabilities: pci pnp upgrade shadowing cdboot bootselect edd int13floppy720 int5printscreen int9keyboard int14serial int17printer int10video acpi usb biosbootspecification uefi
+     *-pci
+          physical id: 100
+          bus info: pci@0000:00:00.0
+          version: 08
+          width: 32 bits
+          clock: 33MHz
+          configuration: driver=skl_uncore
+          resources: irq:0
+        *-display
+             physical id: 2
+             bus info: pci@0000:00:02.0
+             version: 07
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pciexpress msi pm bus_master cap_list rom
+             configuration: driver=i915 latency=0
+             resources: irq:147 memory:f0000000-f0ffffff memory:e0000000-efffffff ioport:e000(size=64) memory:c0000-dffff
+        *-generic:0
+             physical id: 4
+             bus info: pci@0000:00:04.0
+             version: 08
+             width: 64 bits
+             clock: 33MHz
+             capabilities: msi pm cap_list
+             configuration: driver=proc_thermal latency=0
+             resources: irq:16 memory:f1340000-f1347fff
+        *-generic:1 UNCLAIMED
+             physical id: 8
+             bus info: pci@0000:00:08.0
+             version: 00
+             width: 64 bits
+             clock: 33MHz
+             capabilities: msi pm cap_list
+             configuration: latency=0
+             resources: memory:f1350000-f1350fff
+        *-usb
+             physical id: 14
+             bus info: pci@0000:00:14.0
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi bus_master cap_list
+             configuration: driver=xhci_hcd latency=0
+             resources: irq:126 memory:f1320000-f132ffff
+           *-usbhost:0
+                product: xHCI Host Controller
+                vendor: Linux 7.0.14 xhci-hcd
+                physical id: 0
+                bus info: usb@1
+                logical name: usb1
+                version: 7.00
+                capabilities: usb-2.00
+                configuration: driver=hub slots=12 speed=480Mbit/s
+              *-usb:0
+                   description: Bluetooth wireless interface
+                   physical id: 6
+                   bus info: usb@1:6
+                   version: 0.10
+                   capabilities: bluetooth usb-2.00
+                   configuration: driver=btusb maxpower=100mA speed=12Mbit/s
+              *-usb:1
+                   description: Video
+                   product: Integrated Camera
+                   vendor: SunplusIT Inc
+                   physical id: 7
+                   bus info: usb@1:7
+                   version: 54.22
+                   capabilities: usb-2.01
+                   configuration: driver=uvcvideo maxpower=500mA speed=480Mbit/s
+              *-usb:2 UNCLAIMED
+                   description: Generic USB device
+                   physical id: 8
+                   bus info: usb@1:8
+                   version: 1.64
+                   serial: 324db48624b2
+                   capabilities: usb-2.00
+                   configuration: maxpower=100mA speed=12Mbit/s
+           *-usbhost:1
+                product: xHCI Host Controller
+                vendor: Linux 7.0.14 xhci-hcd
+                physical id: 1
+                bus info: usb@2
+                logical name: usb2
+                version: 7.00
+                capabilities: usb-3.00
+                configuration: driver=hub slots=6 speed=5000Mbit/s
+        *-generic:2
+             physical id: 14.2
+             bus info: pci@0000:00:14.2
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi cap_list
+             configuration: driver=intel_pch_thermal latency=0
+             resources: irq:18 memory:f1351000-f1351fff
+        *-generic:3
+             physical id: 15
+             bus info: pci@0000:00:15.0
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm bus_master cap_list
+             configuration: driver=intel-lpss latency=0
+             resources: irq:16 memory:f1352000-f1352fff
+        *-generic:4
+             physical id: 15.2
+             bus info: pci@0000:00:15.2
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm bus_master cap_list
+             configuration: driver=intel-lpss latency=0
+             resources: irq:18 memory:f1353000-f1353fff
+        *-communication:0
+             physical id: 16
+             bus info: pci@0000:00:16.0
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi bus_master cap_list
+             configuration: driver=mei_me latency=0
+             resources: irq:125 memory:f1354000-f1354fff
+        *-communication:1
+             physical id: 16.3
+             bus info: pci@0000:00:16.3
+             version: 21
+             width: 32 bits
+             clock: 66MHz
+             capabilities: msi pm cap_list
+             configuration: driver=serial latency=0
+             resources: irq:19 ioport:e060(size=8) memory:f1356000-f1356fff
+        *-pci:0
+             physical id: 1c
+             bus info: pci@0000:00:1c.0
+             version: f1
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:120 ioport:2000(size=4096) memory:dc800000-dc9fffff ioport:dca00000(size=2097152)
+        *-pci:1
+             physical id: 1c.4
+             bus info: pci@0000:00:1c.4
+             version: f1
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:121 memory:f1200000-f12fffff
+           *-nvme
+                description: NVMe device
+                product: SAMSUNG MZVLB512HBJQ-000H1
+                physical id: 0
+                bus info: pci@0000:03:00.0
+                logical name: /dev/nvme0
+                version: HPS0NEXF
+                serial: S4GLNX0N938983
+                width: 64 bits
+                clock: 33MHz
+                capabilities: nvme pm msi pciexpress msix bus_master cap_list
+                configuration: driver=nvme latency=0 nqn=nqn.2014.08.org.nvmexpress:144d144dS4GLNX0N938983      SAMSUNG MZVLB512HBJQ-000H1 state=live
+                resources: irq:16 memory:f1200000-f1203fff
+              *-namespace:0
+                   description: NVMe disk
+                   physical id: 0
+                   logical name: hwmon1
+              *-namespace:1
+                   description: NVMe disk
+                   physical id: 2
+                   logical name: /dev/ng0n1
+              *-namespace:2
+                   description: NVMe disk
+                   physical id: 1
+                   bus info: nvme@0:1
+                   logical name: /dev/nvme0n1
+                   size: 476GiB (512GB)
+                   capabilities: gpt-1.00 partitioned partitioned:gpt
+                   configuration: guid=ba486f4d-6cbc-49c4-a41d-e7c7a326cbcd logicalsectorsize=512 sectorsize=512 wwid=eui.0025388901b15fe3
+                 *-volume:0
+                      description: Windows FAT volume
+                      vendor: mkfs.fat
+                      physical id: 1
+                      bus info: nvme@0:1,1
+                      logical name: /dev/nvme0n1p1
+                      logical name: /boot/efi
+                      version: FAT32
+                      serial: 8368-1369
+                      size: 1022MiB
+                      capacity: 1023MiB
+                      capabilities: boot fat initialized
+                      configuration: FATs=2 filesystem=fat mount.fstype=vfat mount.options=rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro state=mounted
+                 *-volume:1
+                      description: Linux swap volume
+                      vendor: Linux
+                      physical id: 2
+                      bus info: nvme@0:1,2
+                      logical name: /dev/nvme0n1p2
+                      version: 1
+                      serial: 30698a64-604a-4cb9-9e24-d51a64c22c4e
+                      size: 6142MiB
+                      capacity: 6143MiB
+                      capabilities: nofs swap initialized
+                      configuration: filesystem=swap pagesize=4095
+                 *-volume:2
+                      description: EFI partition
+                      physical id: 3
+                      bus info: nvme@0:1,3
+                      logical name: /dev/nvme0n1p3
+                      serial: ed1fc6be-23bc-4514-bca3-11ce09fb7af6
+                      size: 469GiB
+                      capacity: 469GiB
+                      width: 512 bits
+                      capabilities: encrypted luks initialized
+                      configuration: bits=512 cipher=aes filesystem=luks hash=sha256 mode=xts-plain64 version=1
+        *-pci:2
+             physical id: 1c.7
+             bus info: pci@0000:00:1c.7
+             version: f1
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:122 memory:f1100000-f11fffff
+           *-generic
+                description: MMC Host
+                physical id: 0
+                bus info: pci@0000:04:00.0
+                logical name: mmc0
+                version: 01
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pm msi pciexpress bus_master cap_list
+                configuration: driver=sdhci-pci latency=0
+                resources: irq:144 memory:f1101000-f1101fff memory:f1100000-f11007ff
+        *-pci:3
+             physical id: 1d
+             bus info: pci@0000:00:1d.0
+             version: f1
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:123 ioport:3000(size=4096) memory:dcc00000-dcdfffff ioport:dce00000(size=2097152)
+        *-pci:4
+             physical id: 1d.2
+             bus info: pci@0000:00:1d.2
+             version: f1
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pciexpress msi pm bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:124 memory:f1000000-f10fffff
+           *-network
+                description: Wireless interface
+                physical id: 0
+                bus info: pci@0000:06:00.0
+                logical name: wlp6s0
+                version: 78
+                serial: 50:76:af:d6:43:a4
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm msi pciexpress bus_master cap_list ethernet physical wireless
+                configuration: broadcast=yes driver=iwlwifi driverversion=7.0.14 firmware=36.c8e8e144.0 8265-36.ucode ip=192.168.0.148 latency=0 link=yes multicast=yes wireless=IEEE 802.11
+                resources: irq:145 memory:f1000000-f1001fff
+        *-isa
+             physical id: 1f
+             bus info: pci@0000:00:1f.0
+             version: 21
+             width: 32 bits
+             clock: 33MHz
+             capabilities: isa bus_master
+             configuration: latency=0
+        *-memory UNCLAIMED
+             physical id: 1f.2
+             bus info: pci@0000:00:1f.2
+             version: 21
+             width: 32 bits
+             clock: 33MHz (30.3ns)
+             configuration: latency=0
+             resources: memory:f134c000-f134ffff
+        *-multimedia
+             physical id: 1f.3
+             bus info: pci@0000:00:1f.3
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             capabilities: pm msi bus_master cap_list
+             configuration: driver=snd_hda_intel latency=64
+             resources: irq:148 memory:f1348000-f134bfff memory:f1330000-f133ffff
+        *-serial
+             physical id: 1f.4
+             bus info: pci@0000:00:1f.4
+             version: 21
+             width: 64 bits
+             clock: 33MHz
+             configuration: driver=i801_smbus latency=0
+             resources: irq:16 memory:f1355000-f13550ff ioport:efa0(size=32)
+        *-network
+             description: Ethernet interface
+             physical id: 1f.6
+             bus info: pci@0000:00:1f.6
+             logical name: enp0s31f6
+             version: 21
+             serial: e8:6a:64:90:53:8f
+             capacity: 1Gbit/s
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pm msi bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+             configuration: autonegotiation=on broadcast=yes driver=e1000e driverversion=7.0.14 firmware=0.1-4 latency=0 link=no multicast=yes port=twisted pair
+             resources: irq:143 memory:f1300000-f131ffff
+     *-pnp00:00
+          product: PnP device PNP0b00
+          physical id: 0
+          capabilities: pnp
+          configuration: driver=rtc_cmos
+     *-pnp00:01
+          product: PnP device LEN0071
+          physical id: 1
+          capabilities: pnp
+          configuration: driver=i8042 kbd
+     *-pnp00:02
+          product: PnP device LEN2036
+          physical id: 2
+          capabilities: pnp
+          configuration: driver=i8042 aux
+  *-battery
+       product: 01AV465
+       vendor: SMP
+       physical id: 1
+       slot: Front
+       capacity: 45730mWh
+       configuration: voltage=11.1V
