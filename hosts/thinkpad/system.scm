@@ -10,8 +10,9 @@
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux-hardened)
+ (kernel (linux-default (local-file "defconfig")))
  (initrd microcode-initrd)
+ (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
  (firmware (cons*
 	    iwlwifi-firmware
 	    %base-firmware))
@@ -52,7 +53,8 @@
    (mapped-device
     (source "/dev/nvme0n1p3")
     (target "guix-root")
-    (type luks-device-mapping))))
+    (type (luks-device-mapping-with-options
+	   #:allow-discards? #t)))))
  
  (file-systems (append
 		(btrfs-filesystems
