@@ -1,0 +1,572 @@
+workstation
+    description: Desktop Computer
+    product: B550 GAMING X V2 (Default string)
+    vendor: Gigabyte Technology Co., Ltd.
+    version: -CF
+    serial: Default string
+    width: 64 bits
+    capabilities: smbios-3.3.0 dmi-3.3.0 smp vsyscall32
+    configuration: boot=normal chassis=desktop family=B550 MB sku=Default string uuid=74025603-3C04-6505-8806-010700080009
+  *-core
+       description: Motherboard
+       product: B550 GAMING X V2
+       vendor: Gigabyte Technology Co., Ltd.
+       physical id: 0
+       version: x.x
+       serial: Default string
+       slot: Default string
+     *-firmware
+          description: BIOS
+          vendor: American Megatrends International, LLC.
+          physical id: 0
+          version: FE
+          date: 03/22/2024
+          size: 64KiB
+          capacity: 16MiB
+          capabilities: pci upgrade shadowing cdboot bootselect socketedrom edd int13floppynec int13floppytoshiba int13floppy360 int13floppy1200 int13floppy720 int13floppy2880 int5printscreen int14serial int17printer int10video usb biosbootspecification uefi
+     *-memory
+          description: System Memory
+          physical id: b
+          slot: System board or motherboard
+          size: 32GiB
+        *-bank:0
+             description: [empty]
+             product: Unknown
+             vendor: Unknown
+             physical id: 0
+             serial: Unknown
+             slot: DIMM 0
+        *-bank:1
+             description: DIMM DDR4 Synchronous Unbuffered (Unregistered) 2400 MHz (0.4 ns)
+             product: KF3600C16D4/16GX
+             vendor: Kingston
+             physical id: 1
+             serial: A552A81F
+             slot: DIMM 1
+             size: 16GiB
+             width: 64 bits
+             clock: 2400MHz (0.4ns)
+        *-bank:2
+             description: [empty]
+             product: Unknown
+             vendor: Unknown
+             physical id: 2
+             serial: Unknown
+             slot: DIMM 0
+        *-bank:3
+             description: DIMM DDR4 Synchronous Unbuffered (Unregistered) 2400 MHz (0.4 ns)
+             product: KF3600C16D4/16GX
+             vendor: Kingston
+             physical id: 3
+             serial: 2052A76D
+             slot: DIMM 1
+             size: 16GiB
+             width: 64 bits
+             clock: 2400MHz (0.4ns)
+     *-cache:0
+          description: L1 cache
+          physical id: e
+          slot: L1 - Cache
+          size: 768KiB
+          capacity: 768KiB
+          clock: 1GHz (1.0ns)
+          capabilities: pipeline-burst internal write-back unified
+          configuration: level=1
+     *-cache:1
+          description: L2 cache
+          physical id: f
+          slot: L2 - Cache
+          size: 6MiB
+          capacity: 6MiB
+          clock: 1GHz (1.0ns)
+          capabilities: pipeline-burst internal write-back unified
+          configuration: level=2
+     *-cache:2
+          description: L3 cache
+          physical id: 10
+          slot: L3 - Cache
+          size: 64MiB
+          capacity: 64MiB
+          clock: 1GHz (1.0ns)
+          capabilities: pipeline-burst internal write-back unified
+          configuration: level=3
+     *-cpu
+          description: CPU
+          product: AMD Ryzen 9 5900X 12-Core Processor
+          vendor: Advanced Micro Devices [AMD]
+          physical id: 11
+          bus info: cpu@0
+          version: AMD Ryzen 9 5900X 12-Core Processor
+          serial: Unknown
+          slot: AM4
+          size: 3473MHz
+          capacity: 4954MHz
+          width: 64 bits
+          clock: 100MHz
+          capabilities: lm fpu fpu_exception wp vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp x86-64 constant_tsc rep_good nopl xtopology nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr rdpru wbnoinvd arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca fsrm debug_swap cpufreq
+          configuration: cores=12 enabledcores=12 threads=24
+     *-pci:0
+          physical id: 100
+          bus info: pci@0000:00:00.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+        *-generic UNCLAIMED
+             physical id: 0.2
+             bus info: pci@0000:00:00.2
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: msi ht cap_list
+             configuration: latency=0
+        *-pci:0
+             physical id: 1.1
+             bus info: pci@0000:00:01.1
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm pciexpress msi ht bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:27 memory:fcf00000-fcffffff
+           *-nvme
+                description: NVMe device
+                product: CT1000P3SSD8
+                physical id: 0
+                bus info: pci@0000:01:00.0
+                logical name: /dev/nvme0
+                version: P9CR311
+                serial: 233843663E6D
+                width: 64 bits
+                clock: 33MHz
+                capabilities: nvme pciexpress msix msi pm bus_master cap_list
+                configuration: driver=nvme latency=0 nqn=nqn.2016-08.com.micron:nvme:nvm-subsystem-sn-233843663E6D state=live
+                resources: irq:38 memory:fcf00000-fcf03fff
+              *-namespace:0
+                   description: NVMe disk
+                   physical id: 0
+                   logical name: hwmon2
+              *-namespace:1
+                   description: NVMe disk
+                   physical id: 2
+                   logical name: /dev/ng0n1
+              *-namespace:2
+                   description: NVMe disk
+                   physical id: 1
+                   bus info: nvme@0:1
+                   logical name: /dev/nvme0n1
+                   size: 931GiB (1TB)
+                   capabilities: gpt-1.00 partitioned partitioned:gpt
+                   configuration: guid=9a5f2f3a-d360-4638-98e0-68dd787fbc56 logicalsectorsize=512 sectorsize=512 wwid=eui.000000000000000100a0752343663e6d
+                 *-volume:0
+                      description: Windows FAT volume
+                      vendor: mkfs.fat
+                      physical id: 1
+                      bus info: nvme@0:1,1
+                      logical name: /dev/nvme0n1p1
+                      version: FAT32
+                      serial: 80d2-2198
+                      size: 509MiB
+                      capacity: 510MiB
+                      capabilities: boot fat initialized
+                      configuration: FATs=2 filesystem=fat label=boot name=ESP
+                 *-volume:1
+                      description: EFI partition
+                      physical id: 2
+                      bus info: nvme@0:1,2
+                      logical name: /dev/nvme0n1p2
+                      serial: d9446fd7-d4bd-4f46-8c45-dc6b669ba0b7
+                      capacity: 931GiB
+                      configuration: name=primary
+        *-pci:1
+             physical id: 1.2
+             bus info: pci@0000:00:01.2
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm pciexpress msi ht bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:28 ioport:f000(size=4096) memory:fcb00000-fcdfffff
+           *-usb
+                physical id: 0
+                bus info: pci@0000:02:00.0
+                version: 00
+                width: 64 bits
+                clock: 33MHz
+                capabilities: msi msix pm pciexpress bus_master cap_list
+                configuration: driver=xhci_hcd latency=0
+                resources: irq:34 memory:fcda0000-fcda7fff
+              *-usbhost:0
+                   product: xHCI Host Controller
+                   vendor: Linux 7.1.4 xhci-hcd
+                   physical id: 0
+                   bus info: usb@1
+                   logical name: usb1
+                   version: 7.01
+                   capabilities: usb-2.00
+                   configuration: driver=hub slots=10 speed=480Mbit/s
+                 *-usb:0
+                      description: Human interface device
+                      product: ITE Device
+                      vendor: ITE Tech. Inc.
+                      physical id: 3
+                      bus info: usb@1:3
+                      version: 0.01
+                      capabilities: usb-2.00
+                      configuration: driver=usbhid maxpower=100mA speed=12Mbit/s
+                 *-usb:1
+                      description: Keyboard
+                      product: USB Receiver
+                      vendor: Logitech
+                      physical id: 5
+                      bus info: usb@1:5
+                      version: 12.11
+                      capabilities: usb-2.00
+                      configuration: driver=usbhid maxpower=98mA speed=12Mbit/s
+                 *-usb:2
+                      description: Keyboard
+                      product: Keychron K1
+                      vendor: Keychron
+                      physical id: 6
+                      bus info: usb@1:6
+                      version: 1.05
+                      capabilities: usb-2.00
+                      configuration: driver=usbhid maxpower=100mA speed=12Mbit/s
+              *-usbhost:1
+                   product: xHCI Host Controller
+                   vendor: Linux 7.1.4 xhci-hcd
+                   physical id: 1
+                   bus info: usb@2
+                   logical name: usb2
+                   version: 7.01
+                   capabilities: usb-3.10
+                   configuration: driver=hub slots=4 speed=10000Mbit/s
+           *-sata
+                physical id: 0.1
+                bus info: pci@0000:02:00.1
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: sata msi pm pciexpress bus_master cap_list rom
+                configuration: driver=ahci latency=0
+                resources: irq:106 memory:fcd80000-fcd9ffff memory:fcd00000-fcd7ffff
+           *-pci
+                physical id: 0.2
+                bus info: pci@0000:02:00.2
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pci msi pm pciexpress bus_master cap_list
+                configuration: driver=pcieport
+                resources: irq:33 ioport:f000(size=4096) memory:fcb00000-fccfffff
+              *-pci:0
+                   physical id: 4
+                   bus info: pci@0000:03:04.0
+                   version: 00
+                   width: 32 bits
+                   clock: 33MHz
+                   capabilities: pci msi pm pciexpress bus_master cap_list
+                   configuration: driver=pcieport
+                   resources: irq:35 memory:fcc00000-fccfffff
+                 *-nvme
+                      description: NVMe device
+                      product: Samsung SSD 980 PRO 1TB
+                      physical id: 0
+                      bus info: pci@0000:04:00.0
+                      logical name: /dev/nvme1
+                      version: 5B2QGXA7
+                      serial: S5GXNX0W259337A
+                      width: 64 bits
+                      clock: 33MHz
+                      capabilities: nvme pm msi pciexpress msix bus_master cap_list
+                      configuration: driver=nvme latency=0 nqn=nqn.1994-11.com.samsung:nvme:980PRO:M.2:S5GXNX0W259337A state=live
+                      resources: irq:34 memory:fcc00000-fcc03fff
+                    *-namespace:0
+                         description: NVMe disk
+                         physical id: 0
+                         logical name: hwmon1
+                    *-namespace:1
+                         description: NVMe disk
+                         physical id: 2
+                         logical name: /dev/ng1n1
+                    *-namespace:2
+                         description: NVMe disk
+                         physical id: 1
+                         bus info: nvme@1:1
+                         logical name: /dev/nvme1n1
+                         size: 931GiB (1TB)
+                         capabilities: gpt-1.00 partitioned partitioned:gpt
+                         configuration: guid=7e3b8387-014c-4113-91ca-f81b01158545 logicalsectorsize=512 sectorsize=512 wwid=eui.002538b231bbc4dd
+                       *-volume:0 UNCLAIMED
+                            description: Windows FAT volume
+                            vendor: mkfs.fat
+                            physical id: 1
+                            bus info: nvme@1:1,1
+                            version: FAT32
+                            serial: a196-47a5
+                            size: 1021MiB
+                            capacity: 1023MiB
+                            capabilities: boot fat initialized
+                            configuration: FATs=2 filesystem=fat label=EFI name=EFI system partition
+                       *-volume:1
+                            description: Linux swap volume
+                            vendor: Linux
+                            physical id: 2
+                            bus info: nvme@1:1,2
+                            logical name: /dev/nvme1n1p2
+                            version: 1
+                            serial: 2ed570db-c148-4e3f-a3b5-d0c71b4cc5e9
+                            size: 4095MiB
+                            capacity: 4095MiB
+                            capabilities: nofs swap initialized
+                            configuration: filesystem=swap name=Linux swap pagesize=4095
+                       *-volume:2
+                            description: EFI partition
+                            physical id: 3
+                            bus info: nvme@1:1,3
+                            logical name: /dev/nvme1n1p3
+                            logical name: /
+                            logical name: /var/log
+                            logical name: /gnu
+                            logical name: /home
+                            logical name: /boot
+                            logical name: /.snapshots
+                            logical name: /gnu/store
+                            serial: 150a132b-48c3-4219-8c95-57617b31b930
+                            capacity: 926GiB
+                            configuration: mount.fstype=btrfs mount.options=ro,noatime,compress-force=zstd:3,ssd,discard=async,space_cache=v2,subvolid=257,subvol=/@gnu name=Linux filesystem state=mounted
+              *-pci:1
+                   physical id: 9
+                   bus info: pci@0000:03:09.0
+                   version: 00
+                   width: 32 bits
+                   clock: 33MHz
+                   capabilities: pci msi pm pciexpress bus_master cap_list
+                   configuration: driver=pcieport
+                   resources: irq:37 ioport:f000(size=4096) memory:fcb00000-fcbfffff
+                 *-network
+                      description: Ethernet interface
+                      physical id: 0
+                      bus info: pci@0000:05:00.0
+                      logical name: enp5s0
+                      version: 15
+                      serial: 74:56:3c:65:88:01
+                      size: 1Gbit/s
+                      capacity: 1Gbit/s
+                      width: 64 bits
+                      clock: 33MHz
+                      capabilities: pm msi pciexpress msix bus_master cap_list ethernet physical tp mii 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+                      configuration: autonegotiation=on broadcast=yes driver=r8169 driverversion=7.1.4 duplex=full ip=192.168.0.200 latency=0 link=yes multicast=yes port=twisted pair speed=1Gbit/s
+                      resources: irq:36 ioport:f000(size=256) memory:fcb04000-fcb04fff memory:fcb00000-fcb03fff
+        *-pci:2
+             physical id: 3.1
+             bus info: pci@0000:00:03.1
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm pciexpress msi ht bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:29 ioport:e000(size=4096) memory:fce00000-fcefffff ioport:d0000000(size=270532608)
+           *-display
+                physical id: 0
+                bus info: pci@0000:06:00.0
+                version: e7
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm pciexpress msi bus_master cap_list rom
+                configuration: driver=amdgpu latency=0
+                resources: irq:116 memory:d0000000-dfffffff memory:e0000000-e01fffff ioport:e000(size=256) memory:fce00000-fce3ffff memory:c0000-dffff
+           *-multimedia
+                physical id: 0.1
+                bus info: pci@0000:06:00.1
+                version: 00
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm pciexpress msi bus_master cap_list
+                configuration: driver=snd_hda_intel latency=0
+                resources: irq:113 memory:fce60000-fce63fff
+        *-pci:3
+             physical id: 7.1
+             bus info: pci@0000:00:07.1
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm pciexpress msi ht bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:31
+           *-generic UNCLAIMED
+                physical id: 0
+                bus info: pci@0000:07:00.0
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pm pciexpress cap_list
+                configuration: latency=0
+        *-pci:4
+             physical id: 8.1
+             bus info: pci@0000:00:08.1
+             version: 00
+             width: 32 bits
+             clock: 33MHz
+             capabilities: pci pm pciexpress msi ht bus_master cap_list
+             configuration: driver=pcieport
+             resources: irq:32 memory:fc800000-fcafffff
+           *-generic:0 UNCLAIMED
+                physical id: 0
+                bus info: pci@0000:08:00.0
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pm pciexpress cap_list
+                configuration: latency=0
+           *-generic:1
+                physical id: 0.1
+                bus info: pci@0000:08:00.1
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pm pciexpress msi msix bus_master cap_list
+                configuration: driver=ccp latency=0
+                resources: irq:107 memory:fc900000-fc9fffff memory:fca08000-fca09fff
+           *-usb
+                physical id: 0.3
+                bus info: pci@0000:08:00.3
+                version: 00
+                width: 64 bits
+                clock: 33MHz
+                capabilities: pm pciexpress msi msix bus_master cap_list
+                configuration: driver=xhci_hcd latency=0
+                resources: irq:97 memory:fc800000-fc8fffff
+              *-usbhost:0
+                   product: xHCI Host Controller
+                   vendor: Linux 7.1.4 xhci-hcd
+                   physical id: 0
+                   bus info: usb@3
+                   logical name: usb3
+                   version: 7.01
+                   capabilities: usb-2.00
+                   configuration: driver=hub slots=4 speed=480Mbit/s
+              *-usbhost:1
+                   product: xHCI Host Controller
+                   vendor: Linux 7.1.4 xhci-hcd
+                   physical id: 1
+                   bus info: usb@4
+                   logical name: usb4
+                   version: 7.01
+                   capabilities: usb-3.10
+                   configuration: driver=hub slots=4 speed=10000Mbit/s
+           *-multimedia
+                physical id: 0.4
+                bus info: pci@0000:08:00.4
+                version: 00
+                width: 32 bits
+                clock: 33MHz
+                capabilities: pm pciexpress msi bus_master cap_list
+                configuration: driver=snd_hda_intel latency=0
+                resources: irq:114 memory:fca00000-fca07fff
+        *-serial UNCLAIMED
+             physical id: 14
+             bus info: pci@0000:00:14.0
+             version: 61
+             width: 32 bits
+             clock: 66MHz
+             configuration: latency=0
+        *-isa
+             physical id: 14.3
+             bus info: pci@0000:00:14.3
+             version: 51
+             width: 32 bits
+             clock: 66MHz
+             capabilities: isa bus_master
+             configuration: latency=0
+     *-pci:1
+          physical id: 101
+          bus info: pci@0000:00:01.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:2
+          physical id: 102
+          bus info: pci@0000:00:02.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:3
+          physical id: 103
+          bus info: pci@0000:00:03.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:4
+          physical id: 104
+          bus info: pci@0000:00:04.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:5
+          physical id: 105
+          bus info: pci@0000:00:05.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:6
+          physical id: 106
+          bus info: pci@0000:00:07.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:7
+          physical id: 107
+          bus info: pci@0000:00:08.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:8
+          physical id: 108
+          bus info: pci@0000:00:18.0
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:9
+          physical id: 109
+          bus info: pci@0000:00:18.1
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:10
+          physical id: 10a
+          bus info: pci@0000:00:18.2
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:11
+          physical id: 10b
+          bus info: pci@0000:00:18.3
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+          configuration: driver=k10temp
+          resources: irq:0
+     *-pci:12
+          physical id: 10c
+          bus info: pci@0000:00:18.4
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:13
+          physical id: 10d
+          bus info: pci@0000:00:18.5
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:14
+          physical id: 10e
+          bus info: pci@0000:00:18.6
+          version: 00
+          width: 32 bits
+          clock: 33MHz
+     *-pci:15
+          physical id: 10f
+          bus info: pci@0000:00:18.7
+          version: 00
+          width: 32 bits
+          clock: 33MHz
