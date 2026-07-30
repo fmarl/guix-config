@@ -10,15 +10,16 @@
 (use-service-modules desktop ssh xorg)
 
 (operating-system
- (kernel linux-hardened)
+ (kernel (linux-default (local-file "defconfig")))
  (initrd microcode-initrd)
+ (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
  (firmware (cons*
 	    iwlwifi-firmware
 	    %base-firmware))
  (locale "en_US.utf8")
  (timezone "Europe/Berlin")
  (keyboard-layout (keyboard-layout "us" "altgr-intl"))
- (host-name "lepton")
+ (host-name "thinkpad")
 
  ;; The list of user accounts ('root' is implicit).
  (users (cons* (user-account
@@ -45,30 +46,32 @@
  
  (swap-devices (list (swap-space
                       (target (uuid
-                               "98f80efd-ddbe-4556-b70a-e317fe8c539d")))))
+                               "30698a64-604a-4cb9-9e24-d51a64c22c4e")))))
 
  (mapped-devices
   (list
    (mapped-device
     (source "/dev/nvme0n1p3")
-    (target "cryptroot")
-    (type luks-device-mapping))))
+    (target "guix-root")
+    (type (luks-device-mapping-with-options
+	   #:allow-discards? #t)))))
  
  (file-systems (append
 		(btrfs-filesystems
-		 "/dev/mapper/cryptroot"
-		 '(("/"           "subvol=@,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/home"       "subvol=@home,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/boot"       "subvol=@boot,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/var/log"    "subvol=@volatile-log,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/gnu/store"        "subvol=@gnu,compress-force=zstd,space_cache=v2,ssd,discard=async")
-		   ("/.snapshots" "subvol=.snapshots,compress-force=zstd,space_cache=v2,ssd,discard=async"))
+		 "/dev/mapper/guix-root"
+		 '(("/"           "subvol=@,compress=zstd:3,discard=async")
+		   ("/home"       "subvol=@home,compress=zstd:3,discard=async")
+		   ("/var/tmp"    "subvol=@tmp,compress=zstd:3,discard=async")
+		   ("/var/cache"  "subvol=@cache,compress=zstd:3,discard=async")
+		   ("/var/log"    "subvol=@log,compress=zstd:3,discard=async")
+		   ("/gnu/store"  "subvol=@store,compress=zstd:3,discard=async")
+		   ("/.snapshots" "subvol=@snapshots,compress=zstd:3,discard=async"))
                  mapped-devices)
 		
 		(list
 		 (file-system
                   (mount-point "/boot/efi")
-                  (device (uuid "CE94-679E"
+                  (device (uuid "8368-1369"
 				'fat32))
                   (type "vfat")))
 		
