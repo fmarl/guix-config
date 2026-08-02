@@ -8,7 +8,8 @@
             machine-name
             machine-address
             machine-interface
-            machine-gateway))
+            machine-gateway
+            machine-wm))
 
 (define %lan-subnet "192.168.0.0/24")
 
@@ -17,7 +18,8 @@
   (name      machine-name)
   (address   machine-address (default #f))
   (interface machine-interface (default #f))
-  (gateway   machine-gateway (default #f)))
+  (gateway   machine-gateway (default #f))
+  (wm        machine-wm (default 'nucleotide)))
 
 (define %machines
   (list (machine (name 'workstation)
