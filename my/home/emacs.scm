@@ -53,15 +53,12 @@
 (define emacs-packages
    (specifications->packages
     (list
-     "emacs-use-package"
      "emacs-ef-themes"
-     "emacs-smex"
      "emacs-ace-window"
      "emacs-avy"
      "emacs-envrc"
      "emacs-posframe"
      "emacs-magit"
-     "emacs-projectile"
      "emacs-dirvish"
      "emacs-yasnippet"
      "emacs-yasnippet-snippets"
@@ -79,6 +76,9 @@
      "emacs-cape"
      "emacs-corfu"
      "emacs-diff-hl"
+     "emacs-meow"
+     "emacs-org-modern"
+     "emacs-denote"
      
      ;; Clojure
      "emacs-cider"
@@ -86,9 +86,6 @@
      ;; Common Lisp
      "emacs-sly"
 
-     ;; Rust
-     "emacs-rustic"
-     
      ;; Zig
      "emacs-zig-mode"
 
@@ -97,15 +94,12 @@
      "emacs-geiser"
      "emacs-circe"
      "emacs-elfeed"
-     "emacs-org-modern"
-     "emacs-denote"
-
-     ;; Movement
-     "emacs-meow"
+     "emacs-app-launcher"
      
      ;; Treesitter
      "tree-sitter-rust"
      "tree-sitter-zig"
+     "tree-sitter-clojure"
      )))
 
 (define-public %emacs-packages
