@@ -28,7 +28,8 @@
                  (gateway "192.168.0.1"))
         (machine (name 'boson)
                  (address "192.168.0.201"))
-        (machine (name 'thinkpad))))
+        (machine (name 'thinkpad)
+                 (wm 'niri))))
 
 (define %addressed-machines
   (filter machine-address %machines))
