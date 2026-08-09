@@ -6,8 +6,8 @@
   #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home colors)
-  #:use-module (common home niri)
-  #:export (%mako-services))
+  #:use-module (common home wm)
+  #:export (mako-services))
 
 (define mako-config
   (plain-file "mako-config"
@@ -16,11 +16,10 @@
 			     "border-radius=12\n"
 			     "progress-color=" (color 'cyan) "\n")))
 
-(define %mako-services
+(define (mako-services wm)
   (list (home-packages mako libnotify)
 	(simple-service 'mako-config
 			home-xdg-configuration-files-service-type
 			`(("mako/config" ,mako-config)))
-	(simple-service 'mako-autostart
-			home-niri-service-type
-			(list (niri-spawn-at-startup (file-append mako "/bin/mako"))))))
+	(wm-extensions wm 'mako-autostart
+		       (wm-autostart (file-append mako "/bin/mako")))))

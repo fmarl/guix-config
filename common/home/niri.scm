@@ -5,25 +5,15 @@
   #:use-module (gnu services)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages gnome)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages pdf)
-  #:use-module (gnu packages terminals)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
-  #:use-module (sagittarius locked image-viewers)
-  #:use-module (sagittarius locked pdf)
-  #:use-module (sagittarius locked video)
-  #:use-module (sagittarius locked wm)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home bemenu)
   #:use-module (common home colors)
-  #:use-module (common home emacs)
   #:use-module (common home theme)
   #:export (home-niri-service-type
             niri-spawn-at-startup
-            niri-spawn-sh-at-startup
             niri-bind
             niri-spawn
             niri-services))
@@ -39,9 +29,6 @@
 
 (define (niri-spawn-at-startup program . arguments)
   `(startup "spawn-at-startup" ,@(kdl-arguments (cons program arguments)) "\n"))
-
-(define (niri-spawn-sh-at-startup . command)
-  `(startup "spawn-sh-at-startup \"" ,@command "\"\n"))
 
 (define* (niri-bind key action #:key title)
   "Bind KEY (with its properties) to ACTION, a string or a list as returned by
@@ -190,27 +177,6 @@ org.freedesktop.impl.portal.Notification=gtk;
                                     (string-append "move-column-to-workspace " n)))))
                (iota 9 1))))
 
-(define (media-binds bindings)
-  (map (match-lambda
-         ((key program . arguments)
-          (niri-bind (string-append key " allow-when-locked=true")
-                     (apply niri-spawn program arguments))))
-       bindings))
-
-(define audio-binds
-  (let ((wpctl (file-append wireplumber "/bin/wpctl")))
-    (media-binds
-     `(("XF86AudioRaiseVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+")
-       ("XF86AudioLowerVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-")
-       ("XF86AudioMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle")
-       ("XF86AudioMicMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle")))))
-
-(define brightness-binds
-  (let ((brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
-    (media-binds
-     `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight" "set" "+10%")
-       ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight" "set" "10%-")))))
-
 (define action-binds
   (map (match-lambda
          ((key action) (niri-bind key action)))
@@ -267,20 +233,6 @@ org.freedesktop.impl.portal.Notification=gtk;
          ("Ctrl+Alt+Delete" "quit")
          ("Mod+Shift+P" "power-off-monitors"))))
 
-(define launcher-binds
-  (list (niri-bind "Mod+Shift+Return"
-                   (niri-spawn (file-append alacritty "/bin/alacritty"))
-                   #:title "Open alacritty")
-        (niri-bind "Mod+P" (niri-spawn bemenu-run)
-                   #:title "Run bemenu")
-        (niri-bind "Mod+E"
-                   (apply niri-spawn (emacsclient-command "-c" "-n"))
-                   #:title "Open Emacs")
-        (niri-bind "Mod+Shift+D"
-                   (apply niri-spawn (emacsclient-command "-c" "-n" "-e"
-                                                          "(dirvish-dwim)"))
-                   #:title "Start dirvish")))
-
 (define (niri-config-file entries)
   (define (section name)
     (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
@@ -313,25 +265,12 @@ org.freedesktop.impl.portal.Notification=gtk;
 commands and key bindings that other services contribute through
 niri-spawn-at-startup and niri-bind.")))
 
-(define* (niri-services #:key (audio? #t))
-  (list (home-packages xwayland-satellite
-                       wl-clipboard
-                       xdg-desktop-portal
-                       xdg-desktop-portal-gnome
-                       xdg-desktop-portal-gtk
-                       imv-locked
-                       zathura-locked
-                       zathura-pdf-mupdf
-                       mpv-locked)
+(define niri-services
+  (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)
         (simple-service 'niri-portals
                         home-xdg-configuration-files-service-type
                         `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
         (service home-niri-service-type
-                 (append (list (niri-spawn-sh-at-startup
-                                swaybg-locked "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
-                         launcher-binds
-                         brightness-binds
-                         (if audio? audio-binds '())
-                         action-binds
+                 (append action-binds
                          directional-binds
                          workspace-binds))))

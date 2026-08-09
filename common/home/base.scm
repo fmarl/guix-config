@@ -17,13 +17,14 @@
   #:use-module (common home helpers)
   #:use-module (common home mail)
   #:use-module (common home mako)
-  #:use-module (common home niri)
   #:use-module (common home secrets)
   #:use-module (common home shell)
   #:use-module (common home ssh)
   #:use-module (common home swayidle)
   #:use-module (common home theme)
   #:use-module (common home waybar)
+  #:use-module (common home wm)
+  #:use-module (common machines)
   #:export (base-home-environment
 	    desktop-services)
   #:re-export (%mail-services
@@ -48,7 +49,9 @@
    %git-services
    %emacs-services))
 
-(define* (desktop-services #:key mobile? (audio? #t))
+(define* (desktop-services host-name #:key mobile? (audio? #t))
+  (define wm (machine-wm (lookup-machine host-name)))
+
   (append
    (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
@@ -61,10 +64,10 @@
        '())
    %alacritty-services
    %theme-services
-   (niri-services #:audio? audio?)
-   (waybar-services #:mobile? mobile? #:audio? audio?)
-   %mako-services
-   %swayidle-services))
+   (wm-services wm #:audio? audio?)
+   (waybar-services wm #:mobile? mobile? #:audio? audio?)
+   (mako-services wm)
+   (swayidle-services wm)))
 
 (define* (base-home-environment host-name #:key
 				(authorized-keys #f)

@@ -10,7 +10,7 @@
   #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home colors)
-  #:use-module (common home niri)
+  #:use-module (common home wm)
   #:export (waybar-services))
 
 (define %status-modules
@@ -46,10 +46,18 @@
        (iota (length %clock-formats) 1)
        %clock-formats))
 
-(define* (waybar-config #:key mobile? audio?)
-  `(("modules-left" . #("niri/workspaces"
-                        "custom/right-arrow-dark"
-                        "niri/window"))
+(define %window-modules
+  `((niri . (("modules-left" . #("niri/workspaces"
+                                 "custom/right-arrow-dark"
+                                 "niri/window"))
+             ("niri/window" . (("max-length" . 60)))))
+    (nucleotide . (("modules-left" . #("wlr/taskbar"
+                                       "custom/right-arrow-dark"))
+                   ("wlr/taskbar" . (("format" . "{title:.40}")
+                                     ("tooltip-format" . "{title}")))))))
+
+(define* (waybar-config wm #:key mobile? audio?)
+  `(,@(assq-ref %window-modules wm)
     ("modules-center" . #("custom/left-arrow-dark"
                           "clock#1"
                           "custom/left-arrow-light"
@@ -69,8 +77,6 @@
     ("custom/left-arrow-light" . ,(arrow ""))
     ("custom/right-arrow-dark" . ,(arrow ""))
     ("custom/right-arrow-light" . ,(arrow ""))
-
-    ("niri/window" . (("max-length" . 60)))
 
     ,@(clock-modules)
 
@@ -131,15 +137,17 @@
      (("#custom-right-arrow-light" "#custom-left-arrow-light")
       ("color" . ,(color 'bg_0))
       ("background" . ,(color 'bg_1)))
-     (("#workspaces" ,@%clock-selectors ,@%styled-status-modules "#tray")
+     (("#workspaces" "#taskbar" ,@%clock-selectors ,@%styled-status-modules
+       "#tray")
       ("background" . ,(color 'bg_1)))
-     (("#workspaces button")
+     (("#workspaces button" "#taskbar button")
       ("padding" . "0 2px")
       ("color" . ,(color 'fg_0)))
-     (("#workspaces button.active" "#workspaces button.focused")
+     (("#workspaces button.active" "#workspaces button.focused"
+       "#taskbar button.active")
       ("color" . ,(color 'br_blue)))
      ,(foreground "#workspaces button.urgent" 'red)
-     (("#workspaces button:hover")
+     (("#workspaces button:hover" "#taskbar button:hover")
       ("box-shadow" . "inherit")
       ("text-shadow" . "inherit")
       ("background" . ,(color 'bg_1))
@@ -163,9 +171,9 @@
      (("#clock" ,@%styled-status-modules)
       ("padding" . "0 10px")))))
 
-(define (waybar-config-file mobile? audio?)
+(define (waybar-config-file wm mobile? audio?)
   (let* ((json (scm->json-string
-                (vector (waybar-config #:mobile? mobile? #:audio? audio?))
+                (vector (waybar-config wm #:mobile? mobile? #:audio? audio?))
                 #:pretty #t))
          (index (string-contains json "@wpctl@")))
     (mixed-text-file "waybar-config"
@@ -192,17 +200,15 @@
                 "    sleep 60\n"
                 "done\n"))
 
-(define* (waybar-services #:key mobile? (audio? #t))
+(define* (waybar-services wm #:key mobile? (audio? #t))
   (list (apply home-packages waybar (if audio? (list wireplumber) '()))
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config"
-                           ,(waybar-config-file mobile? audio?))
+                           ,(waybar-config-file wm mobile? audio?))
                           ("waybar/style.css" ,waybar-style)))
-        (simple-service 'waybar-autostart
-                        home-niri-service-type
-                        (cons (niri-spawn-at-startup
-                               (file-append waybar "/bin/waybar"))
-                              (if mobile?
-                                  (list (niri-spawn-at-startup battery-alert))
-                                  '())))))
+        (apply wm-extensions wm 'waybar-autostart
+               (wm-autostart (file-append waybar "/bin/waybar"))
+               (if mobile?
+                   (list (wm-autostart battery-alert))
+                   '()))))
