@@ -21,7 +21,7 @@
     (firmware (list amdgpu-firmware realtek-firmware))
 
     (services
-     (append %niri-session
+     (append (desktop-session 'workstation)
              (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
              (list (simple-service 'sensors kernel-module-loader-service-type
                                    (list "it87"))
