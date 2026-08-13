@@ -1,3 +1,6 @@
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
+
 (define-module (common home alacritty)
   #:use-module (gnu packages terminals)
   #:use-module (gnu services)
