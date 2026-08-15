@@ -10,8 +10,7 @@
   #:use-module (gnu packages backup)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages package-management)
-  #:export (%time-servers
-            %maintenance-services
+  #:export (%maintenance-services
             btrfs-maintenance-services))
 
 (define %time-servers

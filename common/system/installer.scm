@@ -24,8 +24,7 @@
   #:use-module (gnu services base)
   #:use-module (gnu system)
   #:use-module (gnu system install)
-  #:use-module (nongnu packages linux)
-  #:export (installation-os-nonfree))
+  #:use-module (nongnu packages linux))
 
 (define %root
   (dirname (dirname (dirname (current-filename)))))
