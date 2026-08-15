@@ -14,7 +14,6 @@
   #:use-module (sagittarius locked image-viewers)
   #:use-module (sagittarius locked pdf)
   #:use-module (sagittarius locked video)
-  #:use-module (sagittarius locked wm)
   #:use-module (common home helpers)
   #:use-module (common home bemenu)
   #:use-module (common home emacs)
@@ -58,11 +57,6 @@
      (simple-service name home-nucleotide-service-type
                      (map entry->nucleotide entries)))))
 
-(define wallpaper
-  (shell-script "wallpaper"
-                "exec " swaybg-locked "/bin/swaybg"
-                " -i \"$HOME/Pictures/wallpaper.svg\"\n"))
-
 (define launcher-binds
   (list (wm-bind "Mod+Shift+Return"
                  (list (file-append alacritty "/bin/alacritty"))
@@ -105,7 +99,6 @@
                         zathura-pdf-mupdf
                         mpv-locked)
          (apply wm-extensions wm 'desktop
-                (wm-autostart wallpaper)
                 (append launcher-binds
                         brightness-binds
                         (if audio? audio-binds '()))))
