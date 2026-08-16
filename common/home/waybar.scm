@@ -36,6 +36,28 @@
 (define (segment module)
   (list "custom/left-arrow-dark" module "custom/left-arrow-light"))
 
+(define %pinned-modules
+  '("network" "battery"))
+
+(define (right-modules modules)
+  `(("modules-right"
+     . ,(list->vector
+         (cons "group/status"
+               (append-map segment
+                           (lset-intersection equal? modules
+                                              %pinned-modules)))))
+    ("group/status"
+     . (("orientation" . "inherit")
+        ("drawer" . (("click-to-reveal" . #t)
+                     ("transition-left-to-right" . #f)))
+        ("modules"
+         . ,(list->vector
+             (cons "custom/expand"
+                   (append-map segment
+                               (append (lset-difference equal? modules
+                                                        %pinned-modules)
+                                       '("tray"))))))))))
+
 (define (arrow glyph)
   `(("format" . ,glyph)
     ("tooltip" . #f)))
@@ -71,15 +93,13 @@
                           "custom/right-arrow-light"
                           "clock#3"
                           "custom/right-arrow-dark"))
-    ("modules-right"
-     . ,(list->vector
-         (append (append-map segment (status-modules machine))
-                 (list "custom/left-arrow-dark" "tray"))))
+    ,@(right-modules (status-modules machine))
 
     ("custom/left-arrow-dark" . ,(arrow ""))
     ("custom/left-arrow-light" . ,(arrow ""))
     ("custom/right-arrow-dark" . ,(arrow ""))
     ("custom/right-arrow-light" . ,(arrow ""))
+    ("custom/expand" . ,(arrow ""))
 
     ,@(clock-modules)
 
@@ -171,7 +191,11 @@
               ("#battery.warning" yellow)
               ("#battery.critical" red)
               ("#disk" yellow)))
-     (("#clock" ,@%styled-status-modules)
+     (("#custom-expand")
+      ("color" . ,(color theme 'dim_0))
+      ("transition" . "color 300ms"))
+     ,(foreground theme "#status:hover #custom-expand" 'fg_0)
+     (("#clock" "#custom-expand" ,@%styled-status-modules)
       ("padding" . "0 10px")))))
 
 (define (waybar-config-file machine)
