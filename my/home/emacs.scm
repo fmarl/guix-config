@@ -79,6 +79,7 @@
      "emacs-meow"
      "emacs-org-modern"
      "emacs-denote"
+     "emacs-eat"
      
      ;; Clojure
      "emacs-cider"
