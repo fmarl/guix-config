@@ -4,6 +4,7 @@
 (define-module (common machines)
   #:use-module (guix records)
   #:use-module (srfi srfi-1)
+  #:use-module (common themes)
   #:export (%lan-subnet
             %machines
             %addressed-machines
@@ -13,6 +14,7 @@
             machine-interface
             machine-gateway
             machine-wm
+            machine-theme
             machine-mobile?
             machine-audio?))
 
@@ -25,6 +27,7 @@
   (interface machine-interface (default #f))
   (gateway   machine-gateway (default #f))
   (wm        machine-wm (default 'nucleotide))
+  (theme     machine-theme (default ef-owl))
   (mobile?   machine-mobile? (default #f))
   (audio?    machine-audio? (default #t)))
 
@@ -38,7 +41,8 @@
                  (address "192.168.0.201"))
         (machine (name 'thinkpad)
                  (wm 'niri)
-                 (mobile? #t))
+                 (mobile? #t)
+                 (theme modus-operandi-tinted))
         (machine (name 'default))))
 
 (define %addressed-machines

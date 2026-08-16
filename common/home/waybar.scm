@@ -12,9 +12,9 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home colors)
   #:use-module (common home wm)
   #:use-module (common machines)
+  #:use-module (common themes)
   #:export (waybar-services))
 
 (define %status-modules
@@ -123,43 +123,43 @@
          (string-append "#clock." (number->string index)))
        (iota (length %clock-formats) 1)))
 
-(define (foreground selector name)
-  `((,selector) ("color" . ,(color name))))
+(define (foreground theme selector name)
+  `((,selector) ("color" . ,(color theme name))))
 
-(define waybar-style
+(define (waybar-style theme)
   (css-file
    "waybar-style.css"
    `((("*")
       ("font-size" . "18px")
       ("font-family" . "\"Aporetic Sans Mono\""))
      (("window#waybar")
-      ("background" . ,(color 'bg_0))
-      ("color" . ,(color 'fg_0)))
+      ("background" . ,(color theme 'bg_0))
+      ("color" . ,(color theme 'fg_0)))
      (("#custom-right-arrow-dark" "#custom-left-arrow-dark")
-      ("color" . ,(color 'bg_1)))
+      ("color" . ,(color theme 'bg_1)))
      (("#custom-right-arrow-light" "#custom-left-arrow-light")
-      ("color" . ,(color 'bg_0))
-      ("background" . ,(color 'bg_1)))
+      ("color" . ,(color theme 'bg_0))
+      ("background" . ,(color theme 'bg_1)))
      (("#workspaces" "#taskbar" ,@%clock-selectors ,@%styled-status-modules
        "#tray")
-      ("background" . ,(color 'bg_1)))
+      ("background" . ,(color theme 'bg_1)))
      (("#workspaces button" "#taskbar button")
       ("padding" . "0 2px")
-      ("color" . ,(color 'fg_0)))
+      ("color" . ,(color theme 'fg_0)))
      (("#workspaces button.active" "#workspaces button.focused"
        "#taskbar button.active")
-      ("color" . ,(color 'br_blue)))
-     ,(foreground "#workspaces button.urgent" 'red)
+      ("color" . ,(color theme 'br_blue)))
+     ,(foreground theme "#workspaces button.urgent" 'red)
      (("#workspaces button:hover" "#taskbar button:hover")
       ("box-shadow" . "inherit")
       ("text-shadow" . "inherit")
-      ("background" . ,(color 'bg_1))
-      ("border" . ,(color 'bg_1))
+      ("background" . ,(color theme 'bg_1))
+      ("border" . ,(color theme 'bg_1))
       ("padding" . "0 3px"))
      (("#window")
-      ("color" . ,(color 'dim_0))
+      ("color" . ,(color theme 'dim_0))
       ("padding" . "0 10px"))
-     ,@(map (cut apply foreground <>)
+     ,@(map (cut apply foreground theme <>)
             '(("#idle_inhibitor" dim_0)
               ("#idle_inhibitor.activated" br_yellow)
               ("#network" blue)
@@ -207,7 +207,8 @@
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config" ,(waybar-config-file machine))
-                          ("waybar/style.css" ,waybar-style)))
+                          ("waybar/style.css"
+                           ,(waybar-style (machine-theme machine)))))
         (apply wm-extensions (machine-wm machine) 'waybar-autostart
                (wm-autostart (file-append waybar "/bin/waybar"))
                (if (machine-mobile? machine)

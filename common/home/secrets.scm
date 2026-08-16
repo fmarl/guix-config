@@ -19,14 +19,14 @@
                 " --decrypt --extract \"[\\\"$1\\\"]\""
                 " \"$HOME/.config/sops/secrets.yaml\"\n"))
 
-(define ssh-load-key-script
+(define (ssh-load-key-script theme)
   (let ((ssh-add (file-append openssh "/bin/ssh-add"))
         (ssh-keygen (file-append openssh "/bin/ssh-keygen")))
     (shell-script "ssh-load-key"
                   "fingerprint=$(" ssh-keygen
                   " -l -f \"$HOME/.ssh/id_ed25519.pub\" | cut -d' ' -f2)\n"
                   ssh-add " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0\n"
-                  secret-script " ssh | SSH_ASKPASS=" bemenu-askpass
+                  secret-script " ssh | SSH_ASKPASS=" (bemenu-askpass theme)
                   " SSH_ASKPASS_REQUIRE=force " ssh-add " -q -\n")))
 
 (define ssh-load-key-config
@@ -40,12 +40,14 @@
 decrypted on demand with the YubiKey by ~/.local/bin/secret NAME, the SSH key
 on the first connection to one of the configured hosts."
   (let ((host (string-append "../../hosts/"
-                             (symbol->string (machine-name machine)))))
+                             (symbol->string (machine-name machine))))
+        (theme (machine-theme machine)))
     (list (home-packages sops)
           (simple-service 'secret-files
                           home-files-service-type
                           `((".local/bin/secret" ,secret-script)
-                            (".local/bin/ssh-load-key" ,ssh-load-key-script)
+                            (".local/bin/ssh-load-key"
+                             ,(ssh-load-key-script theme))
                             (".ssh/config.d/ssh-load-key" ,ssh-load-key-config)
                             (".config/sops/secrets.yaml"
                              ,(local-file (assume-source-relative-file-name

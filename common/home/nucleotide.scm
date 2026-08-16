@@ -3,6 +3,7 @@
 
 (define-module (common home nucleotide)
   #:use-module (guix gexp)
+  #:use-module (guix records)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (gnu services)
@@ -12,7 +13,7 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home colors)
+  #:use-module (common themes)
   #:export (home-nucleotide-service-type
             nucleotide-autostart
             nucleotide-bind
@@ -71,17 +72,18 @@
             ") " ,(keysym key)
             " " ,@(if (string? action) (list action) action) ")"))))
 
-(define (rgba name)
-  (let ((hex (color name)))
+(define (rgba theme name)
+  (let ((hex (color theme name)))
     (string-join (map (lambda (start)
                         (number->string
                          (string->number (substring hex start (+ start 2)) 16)))
                       '(1 3 5))
                  " ")))
 
-(define nucleotide-settings
-  (string-append "(defparameter *focused-border-rgba* '(" (rgba 'br_blue) " 255))
-(defparameter *unfocused-border-rgba* '(" (rgba 'border) " 255))
+(define (nucleotide-settings theme)
+  (string-append "(defparameter *focused-border-rgba* '("
+                 (rgba theme 'br_blue) " 255))
+(defparameter *unfocused-border-rgba* '(" (rgba theme 'border) " 255))
 
 (clear-keybinds)
 (define-workspace-keybinds :super '(:super :shift))
@@ -95,16 +97,22 @@
    (#\\c (reload-config wm))))
 "))
 
-(define (nucleotide-config-file entries)
-  (define (section name)
-    (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
+(define-record-type* <home-nucleotide-configuration>
+  home-nucleotide-configuration make-home-nucleotide-configuration
+  home-nucleotide-configuration?
+  (theme   home-nucleotide-configuration-theme)
+  (entries home-nucleotide-configuration-entries (default '())))
+
+(define (nucleotide-config-file config)
+  (define entries (home-nucleotide-configuration-entries config))
 
   (apply mixed-text-file "init.lisp"
-         (append (list nucleotide-settings
-                       "\n(defparameter *autostart-programs*\n  '(")
-                 (section 'autostart)
+         (append (list (nucleotide-settings
+                        (home-nucleotide-configuration-theme config)))
+                 '("\n(defparameter *autostart-programs*\n  '(")
+                 (tagged-entries entries 'autostart)
                  '("))\n\n(define-keybinds (wm)")
-                 (section 'bind)
+                 (tagged-entries entries 'bind)
                  '(")\n"))))
 
 (define home-nucleotide-service-type
@@ -112,12 +120,17 @@
                 (extensions
                  (list (service-extension
                         home-xdg-configuration-files-service-type
-                        (lambda (entries)
+                        (lambda (config)
                           `(("nucleotide/init.lisp"
-                             ,(nucleotide-config-file entries)))))))
+                             ,(nucleotide-config-file config)))))))
                 (compose concatenate)
-                (extend append)
-                (default-value '())
+                (extend (lambda (config entries)
+                          (home-nucleotide-configuration
+                           (inherit config)
+                           (entries (append
+                                     (home-nucleotide-configuration-entries
+                                      config)
+                                     entries)))))
                 (description "Generate the nucleotide init file from the
 autostart programs and key bindings that other services contribute through
 nucleotide-autostart and nucleotide-bind.")))
@@ -156,13 +169,19 @@ org.freedesktop.impl.portal.Screenshot=wlr;
   (list (nucleotide-bind "Print" (nucleotide-spawn screenshot))
         (nucleotide-bind "Ctrl+Print" (nucleotide-spawn screenshot "screen"))))
 
-(define nucleotide-services
+(define dbus-update-activation-environment
+  (file-append dbus "/bin/dbus-update-activation-environment"))
+
+(define (nucleotide-services theme)
   (list (home-packages xdg-desktop-portal-wlr xorg-server-xwayland)
         (simple-service 'nucleotide-portals
                         home-xdg-configuration-files-service-type
                         `(("xdg-desktop-portal/river-portals.conf" ,portals-conf)))
         (service home-nucleotide-service-type
-                 (cons (nucleotide-autostart
-                        (file-append dbus "/bin/dbus-update-activation-environment")
-                        "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP")
-                       (append action-binds screenshot-binds)))))
+                 (home-nucleotide-configuration
+                  (theme theme)
+                  (entries
+                   (cons (nucleotide-autostart
+                          dbus-update-activation-environment
+                          "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP")
+                         (append action-binds screenshot-binds)))))))

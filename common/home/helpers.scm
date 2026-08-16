@@ -4,6 +4,7 @@
 (define-module (common home helpers)
   #:use-module (guix gexp)
   #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:use-module (guix packages)
   #:use-module (gnu services)
   #:use-module (gnu home services)
@@ -12,7 +13,8 @@
             css-file
             key-value-file
             shell-script
-            home-packages))
+            home-packages
+            tagged-entries))
 
 (define (value->string value)
   (match value
@@ -108,3 +110,7 @@ vectors become arrays."
                    (string-append (package-name (car packages)) "-packages"))
                   home-profile-service-type
                   packages))
+
+(define (tagged-entries entries tag)
+  "Return the contents of the ENTRIES tagged TAG, in order."
+  (append-map cdr (filter (lambda (entry) (eq? (car entry) tag)) entries)))

@@ -9,7 +9,7 @@
   #:use-module (gnu home services gnupg)
   #:use-module (common home bemenu)
   #:use-module (common home helpers)
-  #:export (%gpg-services))
+  #:export (gpg-services))
 
 ;; https://github.com/drduh/config/blob/master/gpg.conf
 (define gpg-conf
@@ -30,11 +30,11 @@
   (key-value-file "scdaemon.conf"
                   '(("disable-ccid" . #t))))
 
-(define %gpg-services
+(define (gpg-services theme)
   (list (home-packages gnupg)
         (service home-gpg-agent-service-type
                  (home-gpg-agent-configuration
-                  (pinentry-program pinentry-bemenu*)
+                  (pinentry-program (pinentry-bemenu* theme))
                   (default-cache-ttl 60)
                   (max-cache-ttl 120)))
         (simple-service 'gpg-config
