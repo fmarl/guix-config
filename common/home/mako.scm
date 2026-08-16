@@ -10,6 +10,7 @@
   #:use-module (common home helpers)
   #:use-module (common home colors)
   #:use-module (common home wm)
+  #:use-module (common machines)
   #:export (mako-services))
 
 (define mako-config
@@ -19,10 +20,10 @@
 			     "border-radius=12\n"
 			     "progress-color=" (color 'cyan) "\n")))
 
-(define (mako-services wm)
+(define (mako-services machine)
   (list (home-packages mako libnotify)
 	(simple-service 'mako-config
 			home-xdg-configuration-files-service-type
 			`(("mako/config" ,mako-config)))
-	(wm-extensions wm 'mako-autostart
+	(wm-extensions (machine-wm machine) 'mako-autostart
 		       (wm-autostart (file-append mako "/bin/mako")))))

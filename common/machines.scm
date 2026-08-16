@@ -12,7 +12,9 @@
             machine-address
             machine-interface
             machine-gateway
-            machine-wm))
+            machine-wm
+            machine-mobile?
+            machine-audio?))
 
 (define %lan-subnet "192.168.0.0/24")
 
@@ -22,17 +24,22 @@
   (address   machine-address (default #f))
   (interface machine-interface (default #f))
   (gateway   machine-gateway (default #f))
-  (wm        machine-wm (default 'nucleotide)))
+  (wm        machine-wm (default 'nucleotide))
+  (mobile?   machine-mobile? (default #f))
+  (audio?    machine-audio? (default #t)))
 
 (define %machines
   (list (machine (name 'workstation)
                  (address "192.168.0.200")
                  (interface "enp5s0")
-                 (gateway "192.168.0.1"))
+                 (gateway "192.168.0.1")
+                 (audio? #f))
         (machine (name 'boson)
                  (address "192.168.0.201"))
         (machine (name 'thinkpad)
-                 (wm 'niri))))
+                 (wm 'niri)
+                 (mobile? #t))
+        (machine (name 'default))))
 
 (define %addressed-machines
   (filter machine-address %machines))

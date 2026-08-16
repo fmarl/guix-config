@@ -3,9 +3,12 @@
 
 (define-module (hosts default home)
   #:use-module (common home base)
+  #:use-module (common machines)
   #:export (%home))
 
+(define %machine (lookup-machine 'default))
+
 (define %home
-  (base-home-environment 'default))
+  (base-home-environment %machine))
 
 %home

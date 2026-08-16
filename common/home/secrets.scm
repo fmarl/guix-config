@@ -10,6 +10,7 @@
   #:use-module (common home bemenu)
   #:use-module (common home helpers)
   #:use-module (common home ssh)
+  #:use-module (common machines)
   #:export (secrets-services))
 
 (define secret-script
@@ -34,11 +35,12 @@
                              (string-join %ssh-host-names ",")
                              " exec ~/.local/bin/ssh-load-key\n")))
 
-(define (secrets-services host-name)
-  "Deploy the SOPS secrets and SSH public key of HOST-NAME.  Secrets are
+(define (secrets-services machine)
+  "Deploy the SOPS secrets and SSH public key of MACHINE.  Secrets are
 decrypted on demand with the YubiKey by ~/.local/bin/secret NAME, the SSH key
 on the first connection to one of the configured hosts."
-  (let ((host (string-append "../../hosts/" (symbol->string host-name))))
+  (let ((host (string-append "../../hosts/"
+                             (symbol->string (machine-name machine)))))
     (list (home-packages sops)
           (simple-service 'secret-files
                           home-files-service-type

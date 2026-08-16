@@ -85,8 +85,8 @@
                       #:extra-env '(("XKB_DEFAULT_LAYOUT" . "us")
                                     ("XKB_DEFAULT_VARIANT" . "altgr-intl"))))
 
-(define (desktop-session host-name)
-  (match (machine-wm (lookup-machine host-name))
+(define (desktop-session machine)
+  (match (machine-wm machine)
     ('niri %niri-session)
     ('nucleotide %nucleotide-session)))
 

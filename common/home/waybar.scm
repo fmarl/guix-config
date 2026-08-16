@@ -14,16 +14,17 @@
   #:use-module (common home helpers)
   #:use-module (common home colors)
   #:use-module (common home wm)
+  #:use-module (common machines)
   #:export (waybar-services))
 
 (define %status-modules
   '("idle_inhibitor" "network" "wireplumber" "memory" "cpu"))
 
-(define* (status-modules #:key mobile? audio?)
-  (append (if audio?
+(define (status-modules machine)
+  (append (if (machine-audio? machine)
               %status-modules
               (delete "wireplumber" %status-modules))
-          (if mobile? '("battery") '())
+          (if (machine-mobile? machine) '("battery") '())
           '("disk")))
 
 (define %clock-formats
@@ -59,8 +60,8 @@
                    ("wlr/taskbar" . (("format" . "{title:.40}")
                                      ("tooltip-format" . "{title}")))))))
 
-(define* (waybar-config wm #:key mobile? audio?)
-  `(,@(assq-ref %window-modules wm)
+(define (waybar-config machine)
+  `(,@(assq-ref %window-modules (machine-wm machine))
     ("modules-center" . #("custom/left-arrow-dark"
                           "clock#1"
                           "custom/left-arrow-light"
@@ -72,8 +73,7 @@
                           "custom/right-arrow-dark"))
     ("modules-right"
      . ,(list->vector
-         (append (append-map segment (status-modules #:mobile? mobile?
-                                                     #:audio? audio?))
+         (append (append-map segment (status-modules machine))
                  (list "custom/left-arrow-dark" "tray"))))
 
     ("custom/left-arrow-dark" . ,(arrow ""))
@@ -174,10 +174,8 @@
      (("#clock" ,@%styled-status-modules)
       ("padding" . "0 10px")))))
 
-(define (waybar-config-file wm mobile? audio?)
-  (let* ((json (scm->json-string
-                (vector (waybar-config wm #:mobile? mobile? #:audio? audio?))
-                #:pretty #t))
+(define (waybar-config-file machine)
+  (let* ((json (scm->json-string (vector (waybar-config machine)) #:pretty #t))
          (index (string-contains json "@wpctl@")))
     (mixed-text-file "waybar-config"
                      (substring json 0 index)
@@ -203,15 +201,15 @@
                 "    sleep 60\n"
                 "done\n"))
 
-(define* (waybar-services wm #:key mobile? (audio? #t))
-  (list (apply home-packages waybar (if audio? (list wireplumber) '()))
+(define (waybar-services machine)
+  (list (apply home-packages waybar
+               (if (machine-audio? machine) (list wireplumber) '()))
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
-                        `(("waybar/config"
-                           ,(waybar-config-file wm mobile? audio?))
+                        `(("waybar/config" ,(waybar-config-file machine))
                           ("waybar/style.css" ,waybar-style)))
-        (apply wm-extensions wm 'waybar-autostart
+        (apply wm-extensions (machine-wm machine) 'waybar-autostart
                (wm-autostart (file-append waybar "/bin/waybar"))
-               (if mobile?
+               (if (machine-mobile? machine)
                    (list (wm-autostart battery-alert))
                    '()))))
