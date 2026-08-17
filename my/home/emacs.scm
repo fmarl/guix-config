@@ -90,6 +90,9 @@
      ;; Zig
      "emacs-zig-mode"
 
+     ;; OCaml
+     "emacs-tuareg"
+
      ;; Utils
      "emacs-guix"
      "emacs-geiser"
