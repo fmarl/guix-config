@@ -8,13 +8,15 @@
  (gnu home services ssh)
  (my utils)
  (my home base)
- (my home niri)
+ (my home nucleotide)
  (my home waybar)
  (my home mail))
 
 (home-environment
  (packages (append
 	    %mail-packages
+	    %nucleotide-packages
+	    %waybar-packages
 	    %my-home-desktop-packages))
  
  (services
@@ -51,6 +53,7 @@
     (service home-ssh-agent-service-type
          (home-ssh-agent-configuration
           (extra-options '("-t" "1h30m")))))
+   %waybar-services
    %mail-services
    %my-home-desktop-services
    %base-home-services)))
