@@ -20,8 +20,8 @@
             "battery"
 	],
 
-	"niri/workspaces": {
-            "disable-scroll": true
+	"river/tags": {
+            "num-tags": 9
 	},
 
 	"clock": {

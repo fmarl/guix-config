@@ -15,6 +15,13 @@
 	    %my-home-services
 	    %my-home-desktop-services))
 
+(define %guile-services
+  (list (simple-service 'guile-config
+			home-files-service-type
+			`((".guile"
+			   ,(local-file "../../dotfiles/.guile" "guile")))
+			)))
+
 (define %my-base-fonts
   (specifications->packages
    (list "font-hack" "font-aporetic")))
@@ -50,7 +57,8 @@
   (append
    %gpg-services
    %shell-services
-   %git-services))
+   %git-services
+   %guile-services))
 
 (define %my-home-desktop-services
   (append

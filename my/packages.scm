@@ -18,9 +18,12 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu packages zig)
   #:use-module (gnu packages zig-xyz)
+  #:use-module (gnu packages lisp)
+  #:use-module (gnu packages lisp-xyz)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system meson)
   #:use-module (guix build-system zig)
+  #:use-module (guix build-system asdf)
   #:use-module (guix git-download)
   #:use-module (guix licenses)
   #:use-module (guix packages)
@@ -295,4 +298,25 @@
     "River is a dynamic tiling Wayland compositor with flexible
 	runtime configuration.  It can run nested in an X11/Wayland session or also
 	directly from a tty using KMS/DRM.")
+   (license gpl3)))
+
+(define-public nucleotide
+  (package
+   (name "nucleotide")
+   (version "0.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://codeberg.org/fmarl/nucleotide")
+	   (commit "d4512162b369e2790c5efa10863040bf99c2a8ac")))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "1mq6c2ajr7dwiy4s9r8sh5b9b2q9ggj0bq4cd46131hi5j7vhfxq"))))
+   (build-system asdf-build-system/sbcl)
+   (native-inputs
+    (list sbcl sbcl-slynk))
+   (synopsis "A hackable Wayland window manager")
+   (description "A hackable Wayland window manager")
+   (home-page "https://codeberg.org/fmarl/nucleotide")
    (license gpl3)))
