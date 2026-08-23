@@ -49,8 +49,8 @@
 
 ;; Greetd
 
-(define (make-greetd-login-manager-services default-runner-command)
-  (define (make-runner run-command num)
+(define (make-greetd-login-manager-services default-runner-args)
+  (define (make-runner run-args num)
     (greetd-terminal-configuration (terminal-vt num)
                                    (terminal-switch #t)
                                    (default-session-command (greetd-agreety-session
@@ -60,8 +60,7 @@
                                                                          dbus
                                                                          "/bin/dbus-run-session"))
                                                                        (command-args
-                                                                        (list
-                                                                         run-command))))))))
+                                                                        run-args)))))))
 
   (define (make-terminal num)
     (greetd-terminal-configuration (terminal-vt num)
@@ -74,7 +73,7 @@
                                                                        "seat"
                                                                        "users"))
                                        (terminals (list (make-runner
-                                                         default-runner-command
+                                                         default-runner-args
                                                          "1")
                                                         (make-terminal "2")
                                                         (make-terminal "3")
@@ -88,14 +87,13 @@
 
 ;; River
 
-(define-record-type* <river-desktop-configuration>
-  river-desktop-configuration
-  make-river-desktop-configuration
+(define-record-type* <river-desktop-configuration> river-desktop-configuration
+                     make-river-desktop-configuration
   river-desktop-configuration?
   (river-package river-package
                  (default river-0.4))
-  (command river-command
-           (default '("river"))))
+  (arguments river-arguments
+             (default '())))
 
 (define river-desktop-service-type
   (service-type (name 'river-desktop)
@@ -107,11 +105,12 @@
 
 (define (river-desktop-services config)
   (match-record config <river-desktop-configuration>
-    (command)
-    (cons*
-     (service river-desktop-service-type config)
-     (service seatd-service-type)
-     (make-greetd-login-manager-services #~(string-join #$command " ")))))
+    (river-package arguments)
+    (cons* (service river-desktop-service-type config)
+           (service seatd-service-type)
+           (make-greetd-login-manager-services (cons (file-append
+                                                      river-package
+                                                      "/bin/river") arguments)))))
 
 ;; Niri
 
@@ -129,29 +128,29 @@
                                                               niri-package))))
                 (default-value (niri-desktop-configuration))))
 
-(define niri-desktop-services
-  (cons* (service niri-desktop-service-type)
-         (service seatd-service-type)
-         (make-greetd-login-manager-services "niri")))
+(define* (niri-desktop-services #:optional (config (niri-desktop-configuration)))
+  (match-record config <niri-desktop-configuration>
+    (niri-package)
+    (cons* (service niri-desktop-service-type config)
+           (service seatd-service-type)
+           (make-greetd-login-manager-services (list (file-append niri-package
+                                                      "/bin/niri"))))))
 
-;; Mate
-
-(define mate-desktop-services
-  (cons* (service mate-desktop-service-type)
-         (service elogind-service-type)
-         (make-mingetty+agetty-services)))
-
-(define* (make-desktop #:key (desktop-services (river-desktop-services
-						(river-desktop-configuration
-						 (command '("river" "-c" (file-append nucleotide "/nucleotide")))))))
+(define* (make-desktop #:key (desktop-services (river-desktop-services (river-desktop-configuration
+                                                                        (arguments
+                                                                         (list
+                                                                          "-c"
+                                                                          (file-append
+                                                                           nucleotide
+                                                                           "/bin/nucleotide")))))))
   (append desktop-services %security-services
           (list fontconfig-file-system-service
-		;; acpid
-		(service acpid-service-type)
-		(service acpi-files-service-type)
+                ;; acpid
+                (service acpid-service-type)
+                (service acpi-files-service-type)
 
-		;; VPN
-		(service mullvad-service-type)
+                ;; VPN
+                (service mullvad-service-type)
 
                 ;; Screen Locking
                 (service screen-locker-service-type
