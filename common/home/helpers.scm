@@ -154,5 +154,8 @@ vectors become arrays."
   (apply mixed-text-file name (kdl-nodes nodes 0)))
 
 (define (tagged-entries entries tag)
-  "Return the contents of the ENTRIES tagged TAG, in order."
-  (append-map cdr (filter (lambda (entry) (eq? (car entry) tag)) entries)))
+  "Return the payloads of the (TAG . PAYLOAD) ENTRIES tagged TAG, in order."
+  (filter-map (match-lambda
+                ((entry-tag . payload)
+                 (and (eq? entry-tag tag) payload)))
+              entries))

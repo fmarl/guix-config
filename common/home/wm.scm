@@ -36,11 +36,9 @@
     (('autostart . command)
      (apply niri-spawn-at-startup command))
     (('bind key command title locked?)
-     (niri-bind (if locked?
-                    (string-append key " allow-when-locked=true")
-                    key)
-                (apply niri-spawn command)
-                #:title title))))
+     (niri-bind key (apply niri-spawn command)
+                #:title title
+                #:allow-when-locked? locked?))))
 
 (define (entry->nucleotide entry)
   (match entry
