@@ -6,7 +6,6 @@
   #:use-module (json)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:use-module (gnu packages gnome)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages linux)
   #:use-module (gnu services)
@@ -202,25 +201,6 @@
   (plain-file "waybar-config"
               (scm->json-string (vector (waybar-config machine)) #:pretty #t)))
 
-(define battery-alert
-  (shell-script "battery-alert"
-                "notified=\n"
-                "while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do\n"
-                "    for battery in /sys/class/power_supply/BAT*; do\n"
-                "        capacity=$(cat \"$battery/capacity\")\n"
-                "        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&\n"
-                "           [ \"$capacity\" -le 15 ]; then\n"
-                "            [ -n \"$notified\" ] ||\n"
-                "                " libnotify "/bin/notify-send -u critical"
-                " \"Akku fast leer\" \"Noch $capacity %\"\n"
-                "            notified=1\n"
-                "        else\n"
-                "            notified=\n"
-                "        fi\n"
-                "    done\n"
-                "    sleep 60\n"
-                "done\n"))
-
 (define (waybar-services machine)
   (list (apply home-packages waybar
                (if (machine-audio? machine) (list wireplumber) '()))
@@ -229,8 +209,5 @@
                         `(("waybar/config" ,(waybar-config-file machine))
                           ("waybar/style.css"
                            ,(waybar-style (machine-theme machine)))))
-        (apply wm-extensions (machine-wm machine) 'waybar-autostart
-               (wm-autostart (file-append waybar "/bin/waybar"))
-               (if (machine-mobile? machine)
-                   (list (wm-autostart battery-alert))
-                   '()))))
+        (wm-extensions (machine-wm machine) 'waybar-autostart
+                       (wm-autostart (file-append waybar "/bin/waybar")))))
