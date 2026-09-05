@@ -29,86 +29,89 @@
   #:use-module (common home waybar)
   #:use-module (common home wm)
   #:use-module (common machines)
-  #:export (base-home-environment
-	    desktop-services)
-  #:re-export (%mail-services
-	       secrets-services))
+  #:export (base-home-environment desktop-services)
+  #:re-export (%mail-services secrets-services))
 
 (define (base-services theme)
-  (append
-   (list (home-packages openssh font-aporetic)
-	 (simple-service 'guile-config
-			 home-files-service-type
-			 `((".guile" ,(local-file "../../dotfiles/.guile" "guile"))))
-	 (simple-service 'guix-channels
-			 home-xdg-configuration-files-service-type
-			 `(("guix/channels.scm"
-			    ,(local-file "../../dotfiles/.config/guix/channels.scm"))
-			   ("guix/trusted-channels.scm"
-			    ,(local-file "../../dotfiles/.config/guix/channels.scm"
-					 "trusted-channels.scm"))))
-	 (service home-xdg-user-directories-service-type))
-   (gpg-services theme)
-   %shell-services
-   %git-services
-   %emacs-services))
+  (append (list (home-packages openssh font-aporetic)
+                (simple-service 'guile-config home-files-service-type
+                                `((".guile" ,(local-file
+                                              "../../dotfiles/.guile" "guile"))))
+                (simple-service 'guix-channels
+                                home-xdg-configuration-files-service-type
+                                `(("guix/channels.scm" ,(local-file
+                                                         "../../dotfiles/.config/guix/channels.scm"))
+                                  ("guix/trusted-channels.scm" ,(local-file
+                                                                 "../../dotfiles/.config/guix/channels.scm"
+                                                                 "trusted-channels.scm"))))
+                (service home-xdg-user-directories-service-type))
+          (gpg-services theme) %shell-services %git-services %emacs-services))
 
 (define battery-alert
   (shell-script "battery-alert"
-		"notified=\"$XDG_RUNTIME_DIR/battery-alert\"\n"
-		"mkdir -p \"$notified\"\n"
-		"while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do\n"
-		"    for battery in /sys/class/power_supply/BAT*; do\n"
-		"        marker=\"$notified/${battery##*/}\"\n"
-		"        capacity=$(cat \"$battery/capacity\")\n"
-		"        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&\n"
-		"           [ \"$capacity\" -le 15 ]; then\n"
-		"            [ -e \"$marker\" ] ||\n"
-		"                " libnotify "/bin/notify-send -u critical"
-		" \"Akku fast leer\" \"Noch $capacity %\"\n"
-		"            touch \"$marker\"\n"
-		"        else\n"
-		"            rm -f \"$marker\"\n"
-		"        fi\n"
-		"    done\n"
-		"    sleep 60\n"
-		"done\n"))
+                "notified=\"$XDG_RUNTIME_DIR/battery-alert\"
+"
+                "mkdir -p \"$notified\"\n"
+                "while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do
+"
+                "    for battery in /sys/class/power_supply/BAT*; do
+"
+                "        marker=\"$notified/${battery##*/}\"
+"
+                "        capacity=$(cat \"$battery/capacity\")
+"
+                "        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&
+"
+                "           [ \"$capacity\" -le 15 ]; then\n"
+                "            [ -e \"$marker\" ] ||\n"
+                "                "
+                libnotify
+                "/bin/notify-send -u critical"
+                " \"Akku fast leer\" \"Noch $capacity %\"\n"
+                "            touch \"$marker\"\n"
+                "        else\n"
+                "            rm -f \"$marker\"\n"
+                "        fi\n"
+                "    done\n"
+                "    sleep 60\n"
+                "done\n"))
 
 (define (desktop-services machine)
-  (define theme (machine-theme machine))
+  (define theme
+    (machine-theme machine))
 
-  (append
-   (list (home-packages librewolf signal-desktop)
-	 (service home-dbus-service-type)
-	 (simple-service 'wayland-environment
-			 home-environment-variables-service-type
-			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1")
-			   ("ELECTRON_OZONE_PLATFORM_HINT" . "auto"))))
-   (if (machine-audio? machine)
-       (list (service home-pipewire-service-type))
-       '())
-   (alacritty-services theme)
-   (theme-services theme)
-   (wm-services machine)
-   (waybar-services machine)
-   (mako-services machine)
-   (swayidle-services (machine-wm machine))
-   (if (machine-mobile? machine)
-       (list (wm-extensions (machine-wm machine) 'battery-alert
-			    (wm-autostart battery-alert)))
-       '())))
+  (append (list (home-packages librewolf signal-desktop)
+                (service home-dbus-service-type)
+                (simple-service 'wayland-environment
+                                home-environment-variables-service-type
+                                '(("_JAVA_AWT_WM_NONREPARENTING" . "1")
+                                  ("ELECTRON_OZONE_PLATFORM_HINT" . "auto"))))
+          (if (machine-audio? machine)
+              (list (service home-pipewire-service-type))
+              '())
+          (alacritty-services theme)
+          (theme-services theme)
+          (wm-services machine)
+          (waybar-services machine)
+          (mako-services machine)
+          (swayidle-services (machine-wm machine))
+          (if (machine-mobile? machine)
+              (list (wm-extensions (machine-wm machine)
+                                   'battery-alert
+                                   (wm-autostart battery-alert)))
+              '())))
 
-(define* (base-home-environment machine #:key
-				(authorized-keys #f)
-				(packages '())
-				(services '()))
+(define* (base-home-environment machine
+                                #:key (authorized-keys #f)
+                                (packages '())
+                                (services '()))
   "Return the home environment of MACHINE (left out of the SSH hosts) with
 SERVICES, e.g. desktop-services, %mail-services or secrets-services, added to
 the base services."
   (home-environment
-   (packages packages)
-   (services (append services
-		     (ssh-services (machine-name machine)
-				   #:authorized-keys authorized-keys)
-		     (base-services (machine-theme machine))
-		     %base-home-services))))
+    (packages packages)
+    (services
+     (append services
+             (ssh-services (machine-name machine)
+                           #:authorized-keys authorized-keys)
+             (base-services (machine-theme machine)) %base-home-services))))

@@ -5,8 +5,7 @@
   #:use-module (gnu system file-systems)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:export (btrfs-file-systems
-            %hardened-base-file-systems))
+  #:export (btrfs-file-systems %hardened-base-file-systems))
 
 (define %tmp-file-system
   (file-system
@@ -26,8 +25,11 @@
                   (string=? (file-system-type fs) "debugfs"))
                 %base-file-systems)))
 
-(define* (btrfs-file-systems device options subvolumes
-                             #:key (flags '()) (dependencies '()))
+(define* (btrfs-file-systems device
+                             options
+                             subvolumes
+                             #:key (flags '())
+                             (dependencies '()))
   (map (match-lambda
          ((mount-point subvolume)
           (file-system
@@ -36,5 +38,4 @@
             (type "btrfs")
             (options (string-append "subvol=" subvolume "," options))
             (flags flags)
-            (dependencies dependencies))))
-       subvolumes))
+            (dependencies dependencies)))) subvolumes))

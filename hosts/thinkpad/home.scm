@@ -7,7 +7,8 @@
   #:use-module (sagittarius packages vpn)
   #:export (%home))
 
-(define %machine (lookup-machine 'thinkpad))
+(define %machine
+  (lookup-machine 'thinkpad))
 
 (define %home
   (base-home-environment %machine

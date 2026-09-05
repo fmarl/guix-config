@@ -6,7 +6,8 @@
   #:use-module (common machines)
   #:export (%home))
 
-(define %machine (lookup-machine 'default))
+(define %machine
+  (lookup-machine 'default))
 
 (define %home
   (base-home-environment %machine))

@@ -16,7 +16,8 @@
   #:use-module (hosts workstation hardware)
   #:export (%system))
 
-(define %machine (lookup-machine 'workstation))
+(define %machine
+  (lookup-machine 'workstation))
 
 (define %system
   (operating-system
@@ -28,19 +29,24 @@
 
     (services
      (append (desktop-session %machine)
-             (network-services #:static %machine #:open-tcp-ports '("ssh"))
+             (network-services #:static %machine
+                               #:open-tcp-ports '("ssh"))
              (list (simple-service 'sensors kernel-module-loader-service-type
                                    (list "it87"))
                    (service openssh-service-type
-                     (openssh-configuration
-                       (password-authentication? #f)
-                       (permit-root-login #f)
-                       (challenge-response-authentication? #f)
-                       (x11-forwarding? #f)
-                       ;; StreamLocalBindUnlink is needed for gpg-agent forwarding
-                       (extra-content (string-append
-                                       "AllowUsers " (user-name %primary-user) "\n"
-                                       "StreamLocalBindUnlink yes\n")))))
+                            (openssh-configuration (password-authentication?
+                                                                             #f)
+                                                   (permit-root-login #f)
+                                                   (challenge-response-authentication?
+                                                    #f)
+                                                   (x11-forwarding? #f)
+                                                   ;; StreamLocalBindUnlink is needed for gpg-agent forwarding
+                                                   (extra-content (string-append
+                                                                   "AllowUsers "
+                                                                   (user-name
+                                                                    %primary-user)
+                                                                   "\n"
+                                                                   "StreamLocalBindUnlink yes\n")))))
              (operating-system-user-services %base-os)))
 
     (mapped-devices %mapped-devices)

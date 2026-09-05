@@ -11,9 +11,8 @@
 
 (define %mail-services
   (list (home-packages mbsync-locked msmtp-locked mu-locked)
-	(simple-service 'mail-config
-			home-files-service-type
-			`((".mbsyncrc"
-			   ,(local-file "../../dotfiles/.mbsyncrc" "mbsyncrc"))
-			  (".msmtprc"
-			   ,(local-file "../../dotfiles/.msmtprc" "msmtprc"))))))
+        (simple-service 'mail-config home-files-service-type
+                        `((".mbsyncrc" ,(local-file "../../dotfiles/.mbsyncrc"
+                                         "mbsyncrc"))
+                          (".msmtprc" ,(local-file "../../dotfiles/.msmtprc"
+                                                   "msmtprc"))))))

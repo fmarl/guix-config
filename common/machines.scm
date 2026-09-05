@@ -5,31 +5,38 @@
   #:use-module (guix records)
   #:use-module (srfi srfi-1)
   #:use-module (common themes)
-  #:export (%lan-subnet
-            %machines
-            %addressed-machines
-            lookup-machine
-            machine-name
-            machine-address
-            machine-interface
-            machine-gateway
-            machine-wm
-            machine-theme
-            machine-mobile?
-            machine-audio?))
+  #:export (%lan-subnet %machines
+                        %addressed-machines
+                        lookup-machine
+                        machine-name
+                        machine-address
+                        machine-interface
+                        machine-gateway
+                        machine-wm
+                        machine-theme
+                        machine-mobile?
+                        machine-audio?))
 
-(define %lan-subnet "192.168.0.0/24")
+(define %lan-subnet
+  "192.168.0.0/24")
 
 (define-record-type* <machine> machine make-machine
   machine?
-  (name      machine-name)
-  (address   machine-address (default #f))
-  (interface machine-interface (default #f))
-  (gateway   machine-gateway (default #f))
-  (wm        machine-wm (default 'nucleotide))
-  (theme     machine-theme (default ef-owl))
-  (mobile?   machine-mobile? (default #f))
-  (audio?    machine-audio? (default #t)))
+  (name machine-name)
+  (address machine-address
+           (default #f))
+  (interface machine-interface
+             (default #f))
+  (gateway machine-gateway
+           (default #f))
+  (wm machine-wm
+      (default 'nucleotide))
+  (theme machine-theme
+         (default ef-owl))
+  (mobile? machine-mobile?
+           (default #f))
+  (audio? machine-audio?
+          (default #t)))
 
 (define %machines
   (list (machine (name 'workstation)
@@ -50,6 +57,5 @@
 
 (define (lookup-machine name)
   (or (find (lambda (machine)
-              (eq? (machine-name machine) name))
-            %machines)
+              (eq? (machine-name machine) name)) %machines)
       (error "unknown machine" name)))

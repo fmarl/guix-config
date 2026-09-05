@@ -13,32 +13,37 @@
   #:use-module (common home helpers)
   #:use-module (common home theme)
   #:use-module (common themes)
-  #:export (home-niri-service-type
-            niri-spawn-at-startup
-            niri-bind
-            niri-spawn
-            niri-services))
+  #:export (home-niri-service-type niri-spawn-at-startup niri-bind niri-spawn
+                                   niri-services))
 
 (define (niri-spawn program . arguments)
   "Return the spawn action for PROGRAM, a string or file-like."
-  `(spawn ,program ,@arguments))
+  `(spawn ,program
+          ,@arguments))
 
 (define (niri-spawn-at-startup program . arguments)
-  `(startup . (spawn-at-startup ,program ,@arguments)))
+  `(startup spawn-at-startup
+            ,program
+            ,@arguments))
 
-(define* (niri-bind key action #:key title allow-when-locked?)
+(define* (niri-bind key action
+                    #:key title allow-when-locked?)
   "Bind KEY to ACTION, a node such as (close-window) or one returned by
 niri-spawn."
-  `(bind . (,key
-            ,@(if title `(#:hotkey-overlay-title ,title) '())
-            ,@(if allow-when-locked? '(#:allow-when-locked #t) '())
-            ,action)))
+  `(bind ,key
+         ,@(if title
+               `(#:hotkey-overlay-title ,title)
+               '())
+         ,@(if allow-when-locked?
+               '(#:allow-when-locked #t)
+               '())
+         ,action))
 
 (define (niri-settings theme)
   `((prefer-no-csd)
     (hotkey-overlay (skip-at-startup))
-    (xwayland-satellite
-     (path ,(file-append xwayland-satellite "/bin/xwayland-satellite")))
+    (xwayland-satellite (path ,(file-append xwayland-satellite
+                                            "/bin/xwayland-satellite")))
     (cursor (xcursor-theme ,%cursor-theme)
             (xcursor-size 24))
     (input (keyboard (xkb (layout "us")
@@ -51,30 +56,40 @@ niri-spawn."
            (mod-key "Super")
            (mod-key-nested "Alt"))
     (layout (gaps 10)
-            (background-color ,(color theme 'bg_0))
+            (background-color ,(color theme
+                                      'bg_0))
             (center-focused-column "never")
             (preset-column-widths (proportion 0.33333)
                                   (proportion 0.5)
                                   (proportion 0.66667))
             (default-column-width (proportion 0.5))
             (focus-ring (width 2)
-                        (active-color ,(color theme 'br_blue))
-                        (inactive-color ,(color theme 'border)))
+                        (active-color ,(color theme
+                                              'br_blue))
+                        (inactive-color ,(color theme
+                                                'border)))
             (border (off))
             (shadow (softness 30)
                     (spread 5)
-                    (offset #:x 0 #:y 5)
+                    (offset #:x 0
+                            #:y 5)
                     (color "#0007")))
-    (overview (backdrop-color ,(color theme 'bg_0)))
+    (overview (backdrop-color ,(color theme
+                                      'bg_0)))
     (screenshot-path
      "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")
-    (window-rule (match #:app-id "librewolf$" #:title "^Picture-in-Picture$")
+    (window-rule (match #:app-id
+                   "librewolf$"
+                   #:title "^Picture-in-Picture$")
                  (open-floating #t))
-    (window-rule (match #:app-id "(?i)signal")
+    (window-rule (match #:app-id
+                   "(?i)signal")
                  (block-out-from "screencast"))
-    (layer-rule (match #:namespace "^notifications$")
+    (layer-rule (match #:namespace
+                  "^notifications$")
                 (block-out-from "screencast"))
-    (layer-rule (match #:namespace "^waybar$")
+    (layer-rule (match #:namespace
+                  "^waybar$")
                 (block-out-from "screencast"))))
 
 (define portals-conf
@@ -88,8 +103,10 @@ org.freedesktop.impl.portal.Notification=gtk;
 
 (define %binds
   `((Mod+Shift+Slash (show-hotkey-overlay))
-    (Mod+O #:repeat #f (toggle-overview))
-    (Mod+Shift+C #:repeat #f (close-window))
+    (Mod+O #:repeat #f
+           (toggle-overview))
+    (Mod+Shift+C #:repeat #f
+                 (close-window))
 
     (Mod+Left (focus-column-left))
     (Mod+H (focus-column-left))
@@ -145,10 +162,14 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Mod+Shift+Page_Up (move-workspace-up))
     (Mod+Shift+I (move-workspace-up))
 
-    (Mod+WheelScrollDown #:cooldown-ms 150 (focus-workspace-down))
-    (Mod+WheelScrollUp #:cooldown-ms 150 (focus-workspace-up))
-    (Mod+Ctrl+WheelScrollDown #:cooldown-ms 150 (move-column-to-workspace-down))
-    (Mod+Ctrl+WheelScrollUp #:cooldown-ms 150 (move-column-to-workspace-up))
+    (Mod+WheelScrollDown #:cooldown-ms 150
+                         (focus-workspace-down))
+    (Mod+WheelScrollUp #:cooldown-ms 150
+                       (focus-workspace-up))
+    (Mod+Ctrl+WheelScrollDown #:cooldown-ms 150
+                              (move-column-to-workspace-down))
+    (Mod+Ctrl+WheelScrollUp #:cooldown-ms 150
+                            (move-column-to-workspace-up))
     (Mod+WheelScrollRight (focus-column-right))
     (Mod+WheelScrollLeft (focus-column-left))
     (Mod+Ctrl+WheelScrollRight (move-column-right))
@@ -184,7 +205,8 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Ctrl+Print (screenshot-screen))
     (Alt+Print (screenshot-window))
 
-    (Mod+Escape #:allow-inhibiting #f (toggle-keyboard-shortcuts-inhibit))
+    (Mod+Escape #:allow-inhibiting #f
+                (toggle-keyboard-shortcuts-inhibit))
     (Mod+Shift+E (quit))
     (Ctrl+Alt+Delete (quit))
     (Mod+Shift+P (power-off-monitors))
@@ -192,46 +214,51 @@ org.freedesktop.impl.portal.Notification=gtk;
     ,@(append-map (lambda (index)
                     (let ((n (number->string index)))
                       `((,(string-append "Mod+" n) (focus-workspace ,index))
-                        (,(string-append "Mod+Ctrl+" n)
-                         (move-column-to-workspace ,index)))))
+                        (,(string-append "Mod+Ctrl+" n) (move-column-to-workspace ,index)))))
                   (iota 9 1))))
 
-(define-record-type* <home-niri-configuration>
-  home-niri-configuration make-home-niri-configuration
+(define-record-type* <home-niri-configuration> home-niri-configuration
+                     make-home-niri-configuration
   home-niri-configuration?
-  (theme   home-niri-configuration-theme)
-  (entries home-niri-configuration-entries (default '())))
+  (theme home-niri-configuration-theme)
+  (entries home-niri-configuration-entries
+           (default '())))
 
 (define (niri-config-file config)
-  (define entries (home-niri-configuration-entries config))
+  (define entries
+    (home-niri-configuration-entries config))
 
   (let ((text (kdl-file "config.kdl"
-                        (append (niri-settings
-                                 (home-niri-configuration-theme config))
-                                (tagged-entries entries 'startup)
-                                `((binds ,@(tagged-entries entries 'bind)))))))
+                        (append (niri-settings (home-niri-configuration-theme
+                                                config))
+                                (tagged-entries entries
+                                                'startup)
+                                `((binds ,@(tagged-entries entries
+                                                           'bind)))))))
     (computed-file "niri-config.kdl"
                    #~(begin
                        (unless (zero? (system* #$(file-append niri "/bin/niri")
-                                               "validate" "-c" #$text))
+                                               "validate" "-c"
+                                               #$text))
                          (error "invalid niri configuration"))
-                       (copy-file #$text #$output)))))
+                       (copy-file #$text
+                                  #$output)))))
 
 (define home-niri-service-type
   (service-type (name 'home-niri)
-                (extensions
-                 (list (service-extension
-                        home-xdg-configuration-files-service-type
-                        (lambda (config)
-                          `(("niri/config.kdl" ,(niri-config-file config)))))))
+                (extensions (list (service-extension
+                                   home-xdg-configuration-files-service-type
+                                   (lambda (config)
+                                     `(("niri/config.kdl" ,(niri-config-file
+                                                            config)))))))
                 (compose concatenate)
                 (extend (lambda (config entries)
-                          (home-niri-configuration
-                           (inherit config)
-                           (entries (append (home-niri-configuration-entries
-                                             config)
-                                            entries)))))
-                (description "Generate the niri configuration from the startup
+                          (home-niri-configuration (inherit config)
+                                                   (entries (append (home-niri-configuration-entries
+                                                                     config)
+                                                                    entries)))))
+                (description
+                 "Generate the niri configuration from the startup
 commands and key bindings that other services contribute through
 niri-spawn-at-startup and niri-bind.")))
 
@@ -241,6 +268,7 @@ niri-spawn-at-startup and niri-bind.")))
                         home-xdg-configuration-files-service-type
                         `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
         (service home-niri-service-type
-                 (home-niri-configuration
-                  (theme theme)
-                  (entries (map (lambda (node) (cons 'bind node)) %binds))))))
+                 (home-niri-configuration (theme theme)
+                                          (entries (map (lambda (node)
+                                                          (cons 'bind node))
+                                                        %binds))))))

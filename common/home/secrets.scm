@@ -14,8 +14,8 @@
   #:export (secrets-services))
 
 (define secret-script
-  (shell-script "secret"
-                "exec " (file-append sops "/bin/sops")
+  (shell-script "secret" "exec "
+                (file-append sops "/bin/sops")
                 " --decrypt --extract \"[\\\"$1\\\"]\""
                 " \"$HOME/.config/sops/secrets.yaml\"\n"))
 
@@ -23,11 +23,19 @@
   (let ((ssh-add (file-append openssh "/bin/ssh-add"))
         (ssh-keygen (file-append openssh "/bin/ssh-keygen")))
     (shell-script "ssh-load-key"
-                  "fingerprint=$(" ssh-keygen
-                  " -l -f \"$HOME/.ssh/id_ed25519.pub\" | cut -d' ' -f2)\n"
-                  ssh-add " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0\n"
-                  secret-script " ssh | SSH_ASKPASS=" (bemenu-askpass theme)
-                  " SSH_ASKPASS_REQUIRE=force " ssh-add " -q -\n")))
+                  "fingerprint=$("
+                  ssh-keygen
+                  " -l -f \"$HOME/.ssh/id_ed25519.pub\" | cut -d' ' -f2)
+"
+                  ssh-add
+                  " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0
+"
+                  secret-script
+                  " ssh | SSH_ASKPASS="
+                  (bemenu-askpass theme)
+                  " SSH_ASKPASS_REQUIRE=force "
+                  ssh-add
+                  " -q -\n")))
 
 (define ssh-load-key-config
   (plain-file "ssh-load-key"
@@ -43,17 +51,18 @@ on the first connection to one of the configured hosts."
                              (symbol->string (machine-name machine))))
         (theme (machine-theme machine)))
     (list (home-packages sops)
-          (simple-service 'secret-files
-                          home-files-service-type
+          (simple-service 'secret-files home-files-service-type
                           `((".local/bin/secret" ,secret-script)
-                            (".local/bin/ssh-load-key"
-                             ,(ssh-load-key-script theme))
+                            (".local/bin/ssh-load-key" ,(ssh-load-key-script
+                                                         theme))
                             (".ssh/config.d/ssh-load-key" ,ssh-load-key-config)
-                            (".config/sops/secrets.yaml"
-                             ,(local-file (assume-source-relative-file-name
-                                           (string-append host "/secrets.yaml"))
-                                          "secrets.yaml"))
-                            (".ssh/id_ed25519.pub"
-                             ,(local-file (assume-source-relative-file-name
-                                           (string-append host "/ssh.pub"))
-                                          "id_ed25519.pub")))))))
+                            (".config/sops/secrets.yaml" ,(local-file (assume-source-relative-file-name
+                                                                       (string-append
+                                                                        host
+                                                                        "/secrets.yaml"))
+                                                           "secrets.yaml"))
+                            (".ssh/id_ed25519.pub" ,(local-file (assume-source-relative-file-name
+                                                                 (string-append
+                                                                  host
+                                                                  "/ssh.pub"))
+                                                     "id_ed25519.pub")))))))

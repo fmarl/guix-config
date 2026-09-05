@@ -7,52 +7,99 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (common home helpers)
   #:use-module (common themes)
-  #:export (bemenu-run
-            bemenu-askpass
-            pinentry-bemenu*))
+  #:export (bemenu-run bemenu-askpass pinentry-bemenu*))
 
 (define (bemenu-settings theme)
-  `(("tb" . ,(color theme 'bg_1))
-    ("tf" . ,(color theme 'br_blue))
-    ("fb" . ,(color theme 'bg_1))
-    ("ff" . ,(color theme 'fg_0))
-    ("cb" . ,(color theme 'bg_1))
-    ("cf" . ,(color theme 'cursor))
-    ("nb" . ,(color theme 'bg_0))
-    ("nf" . ,(color theme 'fg_1))
-    ("ab" . ,(color theme 'bg_0))
-    ("af" . ,(color theme 'fg_1))
-    ("hb" . ,(color theme 'bg_region))
-    ("hf" . ,(color theme 'fg_0))
-    ("sb" . ,(color theme 'bg_accent))
-    ("sf" . ,(color theme 'fg_0))
-    ("fbb" . ,(color theme 'bg_0))
-    ("fbf" . ,(color theme 'yellow))
-    ("scb" . ,(color theme 'bg_1))
-    ("scf" . ,(color theme 'bg_active))
-    ("bdr" . ,(color theme 'border))
+  `(("tb" unquote
+     (color theme
+            'bg_1))
+    ("tf" unquote
+     (color theme
+            'br_blue))
+    ("fb" unquote
+     (color theme
+            'bg_1))
+    ("ff" unquote
+     (color theme
+            'fg_0))
+    ("cb" unquote
+     (color theme
+            'bg_1))
+    ("cf" unquote
+     (color theme
+            'cursor))
+    ("nb" unquote
+     (color theme
+            'bg_0))
+    ("nf" unquote
+     (color theme
+            'fg_1))
+    ("ab" unquote
+     (color theme
+            'bg_0))
+    ("af" unquote
+     (color theme
+            'fg_1))
+    ("hb" unquote
+     (color theme
+            'bg_region))
+    ("hf" unquote
+     (color theme
+            'fg_0))
+    ("sb" unquote
+     (color theme
+            'bg_accent))
+    ("sf" unquote
+     (color theme
+            'fg_0))
+    ("fbb" unquote
+     (color theme
+            'bg_0))
+    ("fbf" unquote
+     (color theme
+            'yellow))
+    ("scb" unquote
+     (color theme
+            'bg_1))
+    ("scf" unquote
+     (color theme
+            'bg_active))
+    ("bdr" unquote
+     (color theme
+            'border))
     ("fn" . "Aporetic Sans Mono 12")
     ("line-height" . "26")
     ("prompt" . "λ ~>")))
 
 (define (bemenu-arguments theme)
-  (string-concatenate
-   (map (lambda (setting)
-          (string-append " --" (car setting) " '" (cdr setting) "'"))
-        (bemenu-settings theme))))
+  (string-concatenate (map (lambda (setting)
+                             (string-append " --"
+                                            (car setting) " '"
+                                            (cdr setting) "'"))
+                           (bemenu-settings theme))))
 
 (define (bemenu-run theme)
   (shell-script "bemenu-run"
-                "exec " bemenu "/bin/bemenu-run" (bemenu-arguments theme)
+                "exec "
+                bemenu
+                "/bin/bemenu-run"
+                (bemenu-arguments theme)
                 " \"$@\"\n"))
 
 ;; pinentry-bemenu takes its options only from BEMENU_OPTS
 (define (pinentry-bemenu* theme)
   (shell-script "pinentry-bemenu"
-                "export BEMENU_OPTS=\"" (bemenu-arguments theme) "\"\nexec "
-                pinentry-bemenu-locked "/bin/pinentry-bemenu \"$@\"\n"))
+                "export BEMENU_OPTS=\""
+                (bemenu-arguments theme)
+                "\"\nexec "
+                pinentry-bemenu-locked
+                "/bin/pinentry-bemenu \"$@\"\n"))
 
 (define (bemenu-askpass theme)
   (shell-script "bemenu-askpass"
-                "exec " bemenu "/bin/bemenu" (bemenu-arguments theme)
-                " --password indicator --prompt \"$1\" </dev/null\n"))
+                "exec "
+                bemenu
+                "/bin/bemenu"
+                (bemenu-arguments theme)
+                " --password indicator --prompt \"$1\" </dev/null
+"))

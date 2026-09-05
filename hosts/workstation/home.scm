@@ -7,11 +7,13 @@
   #:use-module (common machines)
   #:export (%home))
 
-(define %machine (lookup-machine 'workstation))
+(define %machine
+  (lookup-machine 'workstation))
 
 (define %home
   (base-home-environment %machine
-                         #:authorized-keys (list (local-file "../thinkpad/ssh.pub"))
+                         #:authorized-keys (list (local-file
+                                                  "../thinkpad/ssh.pub"))
                          #:services (append (desktop-services %machine)
                                             %mail-services
                                             (secrets-services %machine))))

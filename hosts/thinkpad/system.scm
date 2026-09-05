@@ -16,7 +16,8 @@
   #:use-module (hosts thinkpad hardware)
   #:export (%system))
 
-(define %machine (lookup-machine 'thinkpad))
+(define %machine
+  (lookup-machine 'thinkpad))
 
 (define %system
   (operating-system

@@ -11,63 +11,62 @@
   #:use-module (gnu system pam)
   #:use-module (gnu packages security-token)
   #:use-module (common users)
-  #:export (%sudoers
-            %security-services))
+  #:export (%sudoers %security-services))
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
               (string-join (map (lambda (user)
                                   (string-append (user-name user) ":"
                                                  (user-u2f-keys user)))
-                                (filter user-u2f-keys %users))
-                           "\n" 'suffix)))
+                                (filter user-u2f-keys %users)) "\n"
+                           'suffix)))
 
 (define (pam-services-extension names transform)
   "Apply TRANSFORM to the PAM services called NAMES."
-  (pam-extension
-   (transformer
-    (lambda (pam)
-      (if (member (pam-service-name pam) names)
-          (transform pam)
-          pam)))))
+  (pam-extension (transformer (lambda (pam)
+                                (if (member (pam-service-name pam) names)
+                                    (transform pam) pam)))))
 
 (define u2f-pam-extension
-  (pam-services-extension
-   '("login" "greetd" "sudo")
-   (lambda (pam)
-     (pam-service
-      (inherit pam)
-      (auth (cons (pam-entry
-                   (control "sufficient")
-                   (module (file-append pam-u2f "/lib/security/pam_u2f.so"))
-                   (arguments
-                    (list "cue" "origin=pam://yubi"
-                          #~(string-append "authfile=" #$u2f-mappings))))
-                  (pam-service-auth pam)))))))
+  (pam-services-extension '("login" "greetd" "sudo")
+                          (lambda (pam)
+                            (pam-service (inherit pam)
+                                         (auth (cons (pam-entry (control
+                                                                 "sufficient")
+                                                                (module (file-append
+                                                                         pam-u2f
+                                                                         "/lib/security/pam_u2f.so"))
+                                                                (arguments (list
+                                                                            "cue"
+                                                                            "origin=pam://yubi"
+                                                                            #~
+                                                                            (string-append
+                                                                             "authfile="
+                                                                             #$u2f-mappings))))
+                                                     (pam-service-auth pam)))))))
 
 (define umask-pam-extension
-  (pam-services-extension
-   '("login" "greetd" "sshd")
-   (lambda (pam)
-     (pam-service
-      (inherit pam)
-      (session (cons (pam-entry
-                      (control "optional")
-                      (module "pam_umask.so")
-                      (arguments '("umask=0077")))
-                     (pam-service-session pam)))))))
+  (pam-services-extension '("login" "greetd" "sshd")
+                          (lambda (pam)
+                            (pam-service (inherit pam)
+                                         (session (cons (pam-entry (control
+                                                                    "optional")
+                                                                   (module
+                                                                    "pam_umask.so")
+                                                                   (arguments '
+                                                                              ("umask=0077")))
+                                                        (pam-service-session
+                                                         pam)))))))
 
 (define %sudoers
-  (plain-file "sudoers" "\
-root ALL=(ALL) ALL
+  (plain-file "sudoers" "root ALL=(ALL) ALL
 %wheel ALL=(ALL) ALL
 Defaults umask=0022
 Defaults umask_override
 "))
 
 (define %hardened-sysctl-settings
-  '(("kernel.core_uses_pid" . "1")
-    ("dev.tty.ldisc_autoload" . "0")
+  '(("kernel.core_uses_pid" . "1") ("dev.tty.ldisc_autoload" . "0")
     ("kernel.kptr_restrict" . "2")
     ("kernel.yama.ptrace_scope" . "1")
     ("fs.protected_fifos" . "2")
@@ -92,17 +91,14 @@ Defaults umask_override
 
 (define %sysctl-service
   (service sysctl-service-type
-           (sysctl-configuration
-            (settings (append %hardened-sysctl-settings
-                              %default-sysctl-settings)))))
+           (sysctl-configuration (settings (append %hardened-sysctl-settings
+                                                   %default-sysctl-settings)))))
 
 (define pcsc-polkit-rules
-  (file-union
-   "pcsc-polkit-rules"
-   `(("share/polkit-1/rules.d/50-pcsc.rules"
-      ,(plain-file
-        "50-pcsc.rules"
-        "polkit.addRule(function(action, subject) {
+  (file-union "pcsc-polkit-rules"
+              `(("share/polkit-1/rules.d/50-pcsc.rules" ,(plain-file
+                                                          "50-pcsc.rules"
+                                                          "polkit.addRule(function(action, subject) {
   if ((action.id == \"org.debian.pcsc-lite.access_pcsc\" ||
        action.id == \"org.debian.pcsc-lite.access_card\") &&
       subject.isInGroup(\"plugdev\")) {

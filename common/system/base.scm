@@ -32,20 +32,18 @@
          (service etc-bashrc-d-service-type)
          (service urandom-seed-service-type)
          (service zram-device-service-type
-                  (zram-device-configuration
-                    (size "8G")
-                    (compression-algorithm 'zstd)
-                    (priority 100)))
+                  (zram-device-configuration (size "8G")
+                                             (compression-algorithm 'zstd)
+                                             (priority 100)))
          (simple-service 'zram-sysctl sysctl-service-type
-                         '(("vm.swappiness" . "180")
-                           ("vm.page-cluster" . "0")))
+                         '(("vm.swappiness" . "180") ("vm.page-cluster" . "0")))
          (service guix-service-type
                   (guix-configuration (tmpdir "/var/tmp")))
          (service nscd-service-type)
          (service log-rotation-service-type
-                  (log-rotation-configuration
-                   (calendar-event
-                    #~(calendar-event #:minutes '(0) #:hours '(12)))))
+                  (log-rotation-configuration (calendar-event #~(calendar-event
+                                                                 #:minutes '(0)
+                                                                 #:hours '(12)))))
          (service shepherd-timer-service-type)
          (service shepherd-transient-service-type)
          (service log-cleanup-service-type
@@ -83,7 +81,6 @@
     (users (append %user-accounts %base-user-accounts))
     (sudoers-file %sudoers)
     (file-systems %base-file-systems)
-    (services (append %desktop-services
-                      %security-services
-                      (btrfs-maintenance-services)
-                      base-services))))
+    (services
+     (append %desktop-services %security-services
+             (btrfs-maintenance-services) base-services))))

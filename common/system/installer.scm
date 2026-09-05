@@ -30,11 +30,13 @@
   (dirname (dirname (dirname (current-filename)))))
 
 (define %channels
-  (eval (call-with-input-file (string-append %root "/channels-lock.scm") read)
+  (eval (call-with-input-file (string-append %root "/channels-lock.scm")
+          read)
         (current-module)))
 
 (define guix-config
-  (local-file %root "guix-config"
+  (local-file %root
+              "guix-config"
               #:recursive? #t
               #:select? (lambda (file stat)
                           (not (string=? (basename file) ".git")))))
@@ -53,18 +55,23 @@
                             `(("guix-config" ,guix-config)))
             (modify-services (operating-system-user-services installation-os)
               (guix-service-type config =>
-                                 (guix-configuration
-                                   (inherit config)
-                                   (guix (guix-for-channels %channels))
-                                   (channels %channels)))
+                                 (guix-configuration (inherit config)
+                                                     (guix (guix-for-channels
+                                                            %channels))
+                                                     (channels %channels)))
               (special-files-service-type files =>
-                                          (cons `("/usr/bin/env"
-                                                  ,(file-append coreutils
-                                                                "/bin/env"))
+                                          (cons `("/usr/bin/env" ,(file-append
+                                                                   coreutils
+                                                                   "/bin/env"))
                                                 files)))))
 
-    (packages (append (list git curl emacs-no-x-toolkit
-                            cryptsetup parted btrfs-progs dosfstools)
+    (packages (append (list git
+                            curl
+                            emacs-no-x-toolkit
+                            cryptsetup
+                            parted
+                            btrfs-progs
+                            dosfstools)
                       (operating-system-packages installation-os)))))
 
 installation-os-nonfree
