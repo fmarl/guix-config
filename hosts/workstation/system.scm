@@ -40,7 +40,6 @@
                                                    (challenge-response-authentication?
                                                     #f)
                                                    (x11-forwarding? #f)
-                                                   ;; StreamLocalBindUnlink is needed for gpg-agent forwarding
                                                    (extra-content (string-append
                                                                    "AllowUsers "
                                                                    (user-name

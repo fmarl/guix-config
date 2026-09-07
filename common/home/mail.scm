@@ -3,9 +3,8 @@
 
 (define-module (common home mail)
   #:use-module (guix gexp)
-  #:use-module (sagittarius locked mail)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (sagittarius locked mail)
   #:use-module (common home helpers)
   #:export (%mail-services))
 

@@ -47,7 +47,6 @@
     (kernel linux)
     (firmware (list linux-firmware))
 
-    ;; Prevent long interface names, wpa_supplicant has trouble with them
     (kernel-arguments '("net.ifnames=0"))
 
     (services

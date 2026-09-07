@@ -2,9 +2,9 @@
 ;;; Copyright © 2025, 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (hosts thinkpad home)
+  #:use-module (sagittarius packages vpn)
   #:use-module (common home base)
   #:use-module (common machines)
-  #:use-module (sagittarius packages vpn)
   #:export (%home))
 
 (define %machine

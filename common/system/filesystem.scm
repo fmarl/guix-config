@@ -16,9 +16,6 @@
     (options "mode=1777")
     (check? #f)))
 
-;; "debugfs=off" in %hardened-kernel-arguments unregisters debugfs, so
-;; mounting /sys/kernel/debug fails; that takes down file-systems, and with
-;; it user-processes and every service needing it, and the boot hangs.
 (define %hardened-base-file-systems
   (cons %tmp-file-system
         (remove (lambda (fs)

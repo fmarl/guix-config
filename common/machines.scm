@@ -5,8 +5,7 @@
   #:use-module (guix records)
   #:use-module (srfi srfi-1)
   #:use-module (common themes)
-  #:export (%lan-subnet %machines
-                        %addressed-machines
+  #:export (%lan-subnet %addressed-machines
                         lookup-machine
                         machine-name
                         machine-address

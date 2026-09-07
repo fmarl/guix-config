@@ -5,7 +5,6 @@
   #:use-module (guix gexp)
   #:use-module (gnu packages linux)
   #:use-module (gnu services)
-  #:use-module (gnu services base)
   #:use-module (gnu services shepherd)
   #:export (acpid-service-type))
 
@@ -39,8 +38,6 @@
                     (match (command-line)
                       ((_ "close")
                        (when (any-lid-closed?)
-                         ;; Without logind swayidle misses the suspend, SIGUSR1
-                         ;; makes it lock the screen right away
                          (when (zero? (status:exit-val (system* #$(file-append
                                                                    procps
                                                                    "/bin/pkill")

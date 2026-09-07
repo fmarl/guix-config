@@ -17,7 +17,6 @@
                                    niri-services))
 
 (define (niri-spawn program . arguments)
-  "Return the spawn action for PROGRAM, a string or file-like."
   `(spawn ,program
           ,@arguments))
 
@@ -28,8 +27,6 @@
 
 (define* (niri-bind key action
                     #:key title allow-when-locked?)
-  "Bind KEY to ACTION, a node such as (close-window) or one returned by
-niri-spawn."
   `(bind ,key
          ,@(if title
                `(#:hotkey-overlay-title ,title)
@@ -257,10 +254,7 @@ org.freedesktop.impl.portal.Notification=gtk;
                                                    (entries (append (home-niri-configuration-entries
                                                                      config)
                                                                     entries)))))
-                (description
-                 "Generate the niri configuration from the startup
-commands and key bindings that other services contribute through
-niri-spawn-at-startup and niri-bind.")))
+                (description "Generate the niri configuration")))
 
 (define (niri-services theme)
   (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)

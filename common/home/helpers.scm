@@ -165,13 +165,10 @@ vectors become arrays."
                                             ,indent "}\n")))))) nodes))
 
 (define (kdl-file name nodes)
-  "NODES is a list of (NAME ITEM ...), where an ITEM is an argument, a
-#:KEY VALUE property or a child node; values may be file-like."
   (apply mixed-text-file name
          (kdl-nodes nodes 0)))
 
 (define (tagged-entries entries tag)
-  "Return the payloads of the (TAG . PAYLOAD) ENTRIES tagged TAG, in order."
   (filter-map (match-lambda
                 ((entry-tag . payload) (and (eq? entry-tag tag) payload)))
               entries))
