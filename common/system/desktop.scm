@@ -3,20 +3,22 @@
 
 (define-module (common system desktop)
   #:use-module (guix gexp)
-  #:use-module (ice-9 match)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages window-management)
+  #:use-module (gnu packages zig-xyz)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
   #:use-module (gnu services firmware)
   #:use-module (gnu services xorg)
-  #:use-module (gnu packages admin)
-  #:use-module (gnu packages glib)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages window-management)
-  #:use-module (gnu packages zig-xyz)
+  #:use-module (gnu system keyboard)
   #:use-module (sagittarius packages wm)
+  #:use-module (common locale)
   #:use-module (common machines)
+  #:use-module (ice-9 match)
   #:export (desktop-session %desktop-services))
 
 (define tuigreet-cache-service
@@ -98,8 +100,10 @@
                       (list (file-append river-0.4 "/bin/river") "-c"
                             (file-append nucleotide "/bin/nucleotide"))
                       #:desktop-name "river"
-                      #:extra-env '(("XKB_DEFAULT_LAYOUT" . "us")
-                                    ("XKB_DEFAULT_VARIANT" . "altgr-intl"))))
+                      #:extra-env `(("XKB_DEFAULT_LAYOUT" unquote
+                                     (keyboard-layout-name %keyboard-layout))
+                                    ("XKB_DEFAULT_VARIANT" unquote
+                                     (keyboard-layout-variant %keyboard-layout)))))
 
 (define (desktop-session machine)
   (match (machine-wm machine)

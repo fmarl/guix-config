@@ -3,20 +3,22 @@
 
 (define-module (common home shell)
   #:use-module (guix gexp)
+  #:use-module (gnu home services)
+  #:use-module (gnu home services shells)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages shellutils)
   #:use-module (gnu packages terminals)
   #:use-module (gnu services)
-  #:use-module (gnu home services)
-  #:use-module (gnu home services shells)
   #:use-module (common home helpers)
+  #:use-module (common locale)
   #:export (%shell-services))
 
 (define locale-variables
   (simple-service 'locale-variables home-environment-variables-service-type
                   (map (lambda (var)
-                         (cons var "de_DE.UTF-8"))
+                         (cons var
+                               (string-append %regional-locale ".UTF-8")))
                        '("LC_ADDRESS" "LC_IDENTIFICATION"
                          "LC_MEASUREMENT"
                          "LC_MONETARY"
