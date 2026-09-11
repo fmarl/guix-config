@@ -331,16 +331,16 @@
 (define-public nucleotide
   (package
     (name "nucleotide")
-    (version "0.1")
+    (version "0.2")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
              (url "https://codeberg.org/fmarl/nucleotide")
-             (commit "d4512162b369e2790c5efa10863040bf99c2a8ac")))
+             (commit "cb7f9c52e8cd5bbe8fbc5797595f310867dca058")))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1b57ypsswij0sp03hq1mbvyklx26vz9cyy6d8vg37xcnzw953ai3"))))
+        (base32 "0nswx8arks72yfps5cbnpr3665l7p2z61hxh8qmlsk80dbi3fbp3"))))
     (build-system asdf-build-system/sbcl)
     (arguments
      '(#:phases (modify-phases %standard-phases

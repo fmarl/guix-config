@@ -12,17 +12,13 @@
           (list (service static-networking-service-type
                          (list %loopback-static-networking)))))
 
-(define (make-static-network-service nic ip)
+(define* (make-static-network-service nic ip gateway #:key (name-servers '("1.1.1.1")))
   (list (service static-networking-service-type
-                 (list (static-networking (addresses (list (network-address (device
-                                                                             nic)
-                                                                            (value
-                                                                             ip))))
-                                          (routes (list (network-route (destination
-                                                                        "default")
-                                                                       (gateway
-                                                                        "192.168.0.1"))))
-                                          (name-servers '("1.1.1.1")))))))
+                 (list (static-networking (addresses (list (network-address (device nic)
+                                                                            (value ip))))
+                                          (routes (list (network-route (destination "default")
+                                                                       (gateway gateway))))
+                                          (name-servers name-servers))))))
 
 (define network-manager-services
   (list (service network-manager-service-type)
