@@ -78,7 +78,7 @@
                   (bootloader grub-efi-bootloader)
                   (targets (list "/boot/efi"))
                   (keyboard-layout %keyboard-layout)))
-    (users (append %user-accounts %base-user-accounts))
+    (users (cons %user-account %base-user-accounts))
     (sudoers-file %sudoers)
     (file-systems %base-file-systems)
     (services

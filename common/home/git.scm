@@ -3,22 +3,21 @@
 
 (define-module (common home git)
   #:use-module (guix gexp)
-  #:use-module (gnu packages version-control)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
-  #:use-module (common users)
+  #:use-module (gnu packages version-control)
   #:use-module (common home emacs)
   #:use-module (common home helpers)
+  #:use-module (common users)
   #:export (%git-services))
 
 (define git-config
   (ini-file "git-config"
             `(("user" ("email" unquote
-                       (user-email %primary-user))
+                       (user-email %user))
                ("name" unquote
-                (user-full-name %primary-user))
+                (user-full-name %user))
                ("signingKey" unquote
-                (user-gpg-key %primary-user)))
+                (user-gpg-key %user)))
               ("commit" ("gpgSign" . #t))
               ("core"
                ("whitespace" . "fix,-indent-with-non-tab,trailing-space,cr-at-eol")

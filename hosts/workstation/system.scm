@@ -43,7 +43,7 @@
                                                    (extra-content (string-append
                                                                    "AllowUsers "
                                                                    (user-name
-                                                                    %primary-user)
+                                                                    %user)
                                                                    "\n"
                                                                    "StreamLocalBindUnlink yes\n")))))
              (operating-system-user-services %base-os)))

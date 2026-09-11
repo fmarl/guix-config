@@ -40,8 +40,7 @@
                 (and (not (eq? (machine-name machine) self))
                      (ssh-host (symbol->string (machine-name machine))
                                (machine-address machine)
-                               (user-name %primary-user))))
-              %addressed-machines))
+                               (user-name %user)))) %addressed-machines))
 
 (define drop-in-host
   (openssh-host (match-criteria "all")

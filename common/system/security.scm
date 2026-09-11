@@ -15,11 +15,8 @@
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
-              (string-join (map (lambda (user)
-                                  (string-append (user-name user) ":"
-                                                 (user-u2f-keys user)))
-                                (filter user-u2f-keys %users)) "\n"
-                           'suffix)))
+              (string-append (user-name %user) ":"
+                             (user-u2f-keys %user) "\n")))
 
 (define (pam-services-extension names transform)
   "Apply TRANSFORM to the PAM services called NAMES."
