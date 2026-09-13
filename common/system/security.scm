@@ -3,13 +3,14 @@
 
 (define-module (common system security)
   #:use-module (guix gexp)
+  #:use-module (gnu packages admin)
+  #:use-module (gnu packages security-token)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services dbus)
   #:use-module (gnu services security-token)
   #:use-module (gnu services sysctl)
   #:use-module (gnu system pam)
-  #:use-module (gnu packages security-token)
   #:use-module (common users)
   #:export (%sudoers %security-services))
 
@@ -104,8 +105,14 @@ Defaults umask_override
 });
 ")))))
 
+(define lock-root-service
+  (simple-service 'lock-root activation-service-type
+                  #~(system* #$(file-append shadow "/sbin/usermod") "--lock"
+                             "root")))
+
 (define %security-services
-  (list (service pcscd-service-type)
+  (list lock-root-service
+        (service pcscd-service-type)
         (simple-service 'pcsc-polkit polkit-service-type
                         (list pcsc-polkit-rules))
         (udev-rules-service 'fido2 libfido2
