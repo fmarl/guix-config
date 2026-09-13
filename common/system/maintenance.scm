@@ -3,26 +3,21 @@
 
 (define-module (common system maintenance)
   #:use-module (guix gexp)
+  #:use-module (gnu packages backup)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages package-management)
   #:use-module (gnu services)
   #:use-module (gnu services linux)
   #:use-module (gnu services networking)
   #:use-module (gnu services shepherd)
-  #:use-module (gnu packages backup)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages package-management)
   #:export (%maintenance-services btrfs-maintenance-services))
-
-(define %time-servers
-  '("0.de.pool.ntp.org" "1.de.pool.ntp.org" "2.de.pool.ntp.org"
-    "3.de.pool.ntp.org"))
 
 (define ntp-service
   (service ntp-service-type
-           (ntp-configuration (servers (map (lambda (address)
-                                              (ntp-server (type 'pool)
-                                                          (address address)
-                                                          (options '("iburst"))))
-                                            %time-servers)))))
+           (ntp-configuration (servers (list (ntp-server (type 'pool)
+                                                         (address
+                                                          "de.pool.ntp.org")
+                                                         (options '("iburst"))))))))
 
 (define (run-when-due name days command)
   "Run COMMAND unless it succeeded less than DAYS ago."
