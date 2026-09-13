@@ -101,13 +101,13 @@ and ping and OPEN-TCP-PORTS from the LAN, which is answered with a reject."
                                (symbol->string (machine-name machine))))
                        %addressed-machines)))
 
-(define* (network-services #:key static
-                           (open-tcp-ports '()))
-  "Return the network services: a static address for the machine STATIC,
-NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS from the
-LAN."
-  (append (if static
-              (static-network-services static) network-manager-services)
+(define* (network-services machine
+                           #:key (open-tcp-ports '()))
+  "Return the network services of MACHINE: a static address if it has an
+interface, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS
+from the LAN."
+  (append (if (machine-interface machine)
+              (static-network-services machine) network-manager-services)
           (list (service nftables-service-type
                          (nftables-configuration (ruleset (nftables-ruleset
                                                            open-tcp-ports))))

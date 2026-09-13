@@ -19,7 +19,7 @@
   #:use-module (common locale)
   #:use-module (common machines)
   #:use-module (ice-9 match)
-  #:export (desktop-session %desktop-services))
+  #:export (desktop-session %desktop-base-services))
 
 (define tuigreet-cache-service
   (simple-service 'tuigreet-cache activation-service-type
@@ -110,7 +110,7 @@
     ('niri %niri-session)
     ('nucleotide %nucleotide-session)))
 
-(define %desktop-services
+(define %desktop-base-services
   (list fontconfig-file-system-service
         (service screen-locker-service-type
                  (screen-locker-configuration (name "waylock")

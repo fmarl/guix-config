@@ -4,23 +4,24 @@
 (define-module (common system base)
   #:use-module (guix gexp)
   #:use-module (gnu)
-  #:use-module (gnu system locale)
+  #:use-module (gnu packages bash)
+  #:use-module (gnu packages linux)
   #:use-module (gnu services admin)
   #:use-module (gnu services linux)
   #:use-module (gnu services shepherd)
   #:use-module (gnu services sysctl)
-  #:use-module (gnu packages base)
-  #:use-module (gnu packages bash)
-  #:use-module (gnu packages linux)
+  #:use-module (gnu system locale)
+  #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (common locale)
-  #:use-module (common users)
+  #:use-module (common machines)
   #:use-module (common system desktop)
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system maintenance)
   #:use-module (common system security)
-  #:export (%base-os))
+  #:use-module (common users)
+  #:export (base-operating-system))
 
 (define base-services
   (cons* (service login-service-type)
@@ -59,12 +60,26 @@
 
          %maintenance-services))
 
-(define %base-os
+(define* (base-operating-system machine
+                                #:key kernel-config
+                                initrd-modules
+                                (firmware %base-firmware)
+                                (mapped-devices '())
+                                (file-systems '())
+                                (services '()))
+  (define kernel
+    (if kernel-config
+        (linux-with-defconfig kernel-config) linux))
+
   (operating-system
-    (host-name "guix")
+    (host-name (symbol->string (machine-name machine)))
+    (kernel kernel)
     (kernel-arguments (append %hardened-kernel-arguments
                               %default-kernel-arguments))
     (initrd microcode-initrd)
+    (initrd-modules (or initrd-modules
+                        (base-initrd-modules kernel)))
+    (firmware firmware)
     (locale "en_US.utf8")
     (locale-definitions (cons (locale-definition (name (string-append
                                                         %regional-locale
@@ -80,7 +95,8 @@
                   (keyboard-layout %keyboard-layout)))
     (users (cons %user-account %base-user-accounts))
     (sudoers-file %sudoers)
-    (file-systems %base-file-systems)
+    (mapped-devices mapped-devices)
+    (file-systems (append file-systems %hardened-base-file-systems))
     (services
-     (append %desktop-services %security-services
+     (append services %desktop-base-services %security-services
              (btrfs-maintenance-services) base-services))))
