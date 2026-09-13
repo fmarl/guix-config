@@ -17,15 +17,13 @@
   (append (btrfs-file-systems "/dev/mapper/guix-root"
                               "compress=zstd:3,discard=async"
                               '(("/" "@")
-                                ("/home" "@home")
-                                ("/gnu" "@gnu")
-                                ("/var/log" "@log")
-                                ("/.snapshots" "@snapshots"))
-                              #:flags '(no-atime)
+                                ("/home" "@home"
+                                 (no-suid no-dev))
+                                ("/gnu" "@gnu"
+                                 (no-suid no-dev))
+                                ("/var/log" "@log"
+                                 (no-suid no-dev no-exec))
+                                ("/.snapshots" "@snapshots"
+                                 (no-suid no-dev no-exec)))
                               #:dependencies %mapped-devices)
-          (list (file-system
-                  (mount-point "/boot/efi")
-                  (device (uuid "7A59-010E"
-                                'fat32))
-                  (type "vfat")
-                  (options "umask=0077")))))
+          (list (efi-file-system "7A59-010E"))))

@@ -3,9 +3,10 @@
 
 (define-module (common system filesystem)
   #:use-module (gnu system file-systems)
+  #:use-module (gnu system uuid)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:export (btrfs-file-systems %hardened-base-file-systems))
+  #:export (btrfs-file-systems efi-file-system %hardened-base-file-systems))
 
 (define %tmp-file-system
   (file-system
@@ -22,17 +23,29 @@
                   (string=? (file-system-type fs) "debugfs"))
                 %base-file-systems)))
 
-(define* (btrfs-file-systems device
-                             options
-                             subvolumes
-                             #:key (flags '())
-                             (dependencies '()))
+(define* (btrfs-file-systems device options subvolumes
+                             #:key (dependencies '()))
+  (define (btrfs-file-system mount-point subvolume flags)
+    (file-system
+      (device device)
+      (mount-point mount-point)
+      (type "btrfs")
+      (options (string-append "subvol=" subvolume "," options))
+      (flags (cons 'no-atime flags))
+      (dependencies dependencies)))
+
   (map (match-lambda
          ((mount-point subvolume)
-          (file-system
-            (device device)
-            (mount-point mount-point)
-            (type "btrfs")
-            (options (string-append "subvol=" subvolume "," options))
-            (flags flags)
-            (dependencies dependencies)))) subvolumes))
+          (btrfs-file-system mount-point subvolume
+                             '()))
+         ((mount-point subvolume flags)
+          (btrfs-file-system mount-point subvolume flags))) subvolumes))
+
+(define (efi-file-system uuid-string)
+  (file-system
+    (mount-point "/boot/efi")
+    (device (uuid uuid-string
+                  'fat32))
+    (type "vfat")
+    (flags '(no-suid no-dev no-exec))
+    (options "umask=0077")))

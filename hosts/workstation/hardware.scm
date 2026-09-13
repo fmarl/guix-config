@@ -13,14 +13,14 @@
   (append (btrfs-file-systems (file-system-label "ROOT")
                               "compress=zstd:3,discard=async"
                               '(("/" "@")
-                                ("/home" "@home")
-                                ("/boot" "@boot")
-                                ("/var/log" "@log")
-                                ("/gnu" "@gnu")
-                                ("/.snapshots" ".snapshots")))
-          (list (file-system
-                  (mount-point "/boot/efi")
-                  (device (uuid "A196-47A5"
-                                'fat32))
-                  (type "vfat")
-                  (options "umask=0077")))))
+                                ("/home" "@home"
+                                 (no-suid no-dev))
+                                ("/boot" "@boot"
+                                 (no-suid no-dev no-exec))
+                                ("/var/log" "@log"
+                                 (no-suid no-dev no-exec))
+                                ("/gnu" "@gnu"
+                                 (no-suid no-dev))
+                                ("/.snapshots" ".snapshots"
+                                 (no-suid no-dev no-exec))))
+          (list (efi-file-system "A196-47A5"))))
