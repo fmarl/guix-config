@@ -32,7 +32,8 @@ update:
 	mv channels-lock.scm.new channels-lock.scm
 
 installer:
-	$(GUIX) system image -t iso9660 common/system/installer.scm
+	@[ -n "$(MACHINE)" ] || { echo "Usage: make installer MACHINE=<host>|generic" >&2; exit 1; }
+	INSTALLER_MACHINE=$(MACHINE) $(GUIX) system image -t iso9660 common/system/installer.scm
 
 fmt:
 	guix style -f $(shell git ls-files '*.scm' | grep -v '^channels-lock.scm$$')

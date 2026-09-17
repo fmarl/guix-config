@@ -41,6 +41,22 @@
               #:select? (lambda (file stat)
                           (not (string=? (basename file) ".git")))))
 
+(define %machine
+  (or (getenv "INSTALLER_MACHINE")
+      (error "INSTALLER_MACHINE is not set")))
+
+(define machine-files
+  `(("guix-config-machine" ,(plain-file "guix-config-machine"
+                                        (string-append %machine "\n")))
+    ,@(if (string=? %machine "generic")
+          '()
+          `(("guix-config-kernel" ,(operating-system-kernel (module-ref (resolve-interface `
+                                                                         (hosts ,
+                                                                          (string->symbol
+                                                                           %machine)
+                                                                          system))
+                                                                        '%system)))))))
+
 (define installation-os-nonfree
   (operating-system
     (inherit installation-os)
@@ -51,7 +67,8 @@
 
     (services
      (cons* (simple-service 'guix-config etc-service-type
-                            `(("guix-config" ,guix-config)))
+                            `(("guix-config" ,guix-config)
+                              ,@machine-files))
             (modify-services (operating-system-user-services installation-os)
               (guix-service-type config =>
                                  (guix-configuration (inherit config)
