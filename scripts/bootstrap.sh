@@ -6,42 +6,29 @@
 
 set -Eeuo pipefail
 
-readonly LUKS_NAME="guix-root"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+readonly REPO_URL="https://codeberg.org/fmarl/guix-config.git"
 readonly ESP_SIZE="1GiB"
 readonly MNT="/mnt"
-readonly BTRFS_OPTIONS="compress=zstd:3,discard=async"
-# subvolume:mount point
-readonly SUBVOLUMES=("@:/" "@home:/home" "@gnu:/gnu" "@log:/var/log" "@snapshots:/.snapshots")
 readonly TARGET_REPO="/etc/guix-config"
-
-SOURCE_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-readonly SOURCE_REPO
 readonly REPO="${MNT}${TARGET_REPO}"
 
+SOURCE_REPO=""
 DISK_TOUCHED=""
 LUKS_OPENED=""
 COW_STORE=""
 
 function usage {
     cat <<USAGE
-Usage: $(basename "$0") DISK HOSTNAME
+Usage: $(basename "$0") [--repo URL] [DISK [HOSTNAME]]
 
-  DISK      Target disk, e.g. nvme0n1 or /dev/sda. ALL DATA ON IT IS LOST.
-  HOSTNAME  Host to install, a directory in hosts/
+  --repo URL  Repository to install from, default ${REPO_URL}
+  DISK        Target disk, e.g. nvme0n1 or /dev/sda. ALL DATA ON IT IS LOST.
+  HOSTNAME    Host to install, a directory in hosts/
+
+DISK and HOSTNAME are asked for when left out.
 USAGE
-}
-
-function err {
-    printf '\033[41m%s\033[0m\n' "$*" >&2
-}
-
-function info {
-    printf '\033[44m%s\033[0m\n' "$*"
-}
-
-function die {
-    err "$@"
-    exit 1
 }
 
 # Partition N of $DISK: nvme0n1 -> nvme0n1p1, sda -> sda1
@@ -54,44 +41,110 @@ function part {
 }
 
 function parse_args {
-    if [[ "${1-}" == "-h" || "${1-}" == "--help" ]]; then
-        usage
-        exit 0
-    fi
+    REPO_SOURCE="${REPO_URL}"
 
-    if [[ $# -ne 2 ]]; then
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h | --help)
+                usage
+                exit 0
+                ;;
+            --repo)
+                [[ $# -ge 2 ]] || die "--repo needs a URL"
+                REPO_SOURCE="$2"
+                shift 2
+                ;;
+            -*)
+                usage >&2
+                exit 1
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
+    if [[ $# -gt 2 ]]; then
         usage >&2
         exit 1
     fi
 
-    DISK="$1"
+    DISK="${1-}"
+    HOST="${2-}"
+    readonly REPO_SOURCE
+}
+
+function check_environment {
+    [[ "${EUID}" -eq 0 ]] || die "Must run as root"
+
+    local tool
+    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk blkid \
+                mountpoint herd guix getent git; do
+        command -v "${tool}" >/dev/null || die "Missing tool: ${tool}"
+    done
+
+    getent hosts codeberg.org >/dev/null || die "No network connection"
+}
+
+function fetch_repo {
+    SOURCE_REPO="$(mktemp -d)"
+    info "Cloning ${REPO_SOURCE} ..."
+    git clone --quiet "${REPO_SOURCE}" "${SOURCE_REPO}"
+}
+
+function select_disk {
+    if [[ -z "${DISK}" ]]; then
+        local -a disks
+        mapfile -t disks < <(lsblk -dnpo NAME,TYPE | awk '$2 == "disk" { print $1 }')
+        [[ ${#disks[@]} -gt 0 ]] || die "Found no disks"
+
+        lsblk -dpo NAME,SIZE,MODEL "${disks[@]}"
+        PS3="Disk to install on: "
+        select DISK in "${disks[@]}"; do
+            [[ -n "${DISK}" ]] && break
+        done
+        [[ -n "${DISK}" ]] || die "No disk selected"
+    fi
+
     [[ "${DISK}" == /dev/* ]] || DISK="/dev/${DISK}"
-    HOST="$2"
-
-    [[ "${HOST}" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]] || die "Invalid hostname: ${HOST}"
-
     PART_BOOT="$(part 1)"
     PART_ROOT="$(part 2)"
-    readonly DISK HOST PART_BOOT PART_ROOT
+    readonly DISK PART_BOOT PART_ROOT
+}
+
+function select_host {
+    local machine
+    if [[ -z "${HOST}" && -r /etc/guix-config-machine ]]; then
+        machine="$(</etc/guix-config-machine)"
+        [[ "${machine}" == generic ]] || HOST="${machine}"
+    fi
+
+    if [[ -z "${HOST}" ]]; then
+        local -a hosts
+        mapfile -t hosts < <(find "${SOURCE_REPO}/hosts" -mindepth 2 -maxdepth 2 \
+                                  -name system.scm -printf '%h\n' | xargs -rn1 basename | sort)
+        [[ ${#hosts[@]} -gt 0 ]] || die "Found no hosts in ${REPO_SOURCE}"
+
+        PS3="Host to install: "
+        select HOST in "${hosts[@]}"; do
+            [[ -n "${HOST}" ]] && break
+        done
+        [[ -n "${HOST}" ]] || die "No host selected"
+    fi
+
+    valid_hostname "${HOST}" || die "Invalid hostname: ${HOST}"
+    readonly HOST
 }
 
 function installer_guix_is_pinned {
     local described commit
     described="$(guix describe -f channels 2>/dev/null)" || return 1
-    for commit in $(sed -n 's/.*(commit "\([0-9a-f]*\)").*/\1/p' "${SOURCE_REPO}/channels-lock.scm"); do
+    while read -r commit; do
         [[ "${described}" == *"\"${commit}\""* ]] || return 1
-    done
+    done < <(sed -n 's/.*(commit "\([0-9a-f]*\)").*/\1/p' "${SOURCE_REPO}/channels-lock.scm")
 }
 
 function preflight {
-    [[ "${EUID}" -eq 0 ]] || die "Must run as root"
-
-    local tool
-    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk blkid \
-                mountpoint herd guix getent; do
-        command -v "${tool}" >/dev/null || die "Missing tool: ${tool}"
-    done
-
     [[ -b "${DISK}" ]] || die "${DISK} is not a block device"
 
     local type mounts
@@ -103,11 +156,9 @@ function preflight {
     [[ ! -e "/dev/mapper/${LUKS_NAME}" ]] || die "/dev/mapper/${LUKS_NAME} is already open"
 
     local system="${SOURCE_REPO}/hosts/${HOST}/system.scm"
-    [[ -f "${system}" ]] || die "${system} does not exist"
+    [[ -f "${system}" ]] || die "hosts/${HOST}/system.scm does not exist"
     grep -q "(hosts ${HOST} hardware)" "${system}" ||
-        die "${system} does not use (hosts ${HOST} hardware)"
-
-    getent hosts codeberg.org >/dev/null || die "No network connection"
+        die "hosts/${HOST}/system.scm does not use (hosts ${HOST} hardware)"
 
     if installer_guix_is_pinned; then
         GUIX=(guix)
@@ -165,10 +216,9 @@ function setup_btrfs {
     umount "${MNT}"
 
     for entry in "${SUBVOLUMES[@]}"; do
-        subvolume="${entry%%:*}"
-        mount_point="${MNT}${entry#*:}"
-        mkdir -p "${mount_point}"
-        mount -o "subvol=${subvolume},${BTRFS_OPTIONS}" "${dev}" "${mount_point}"
+        IFS=: read -r subvolume mount_point _ <<<"${entry}"
+        mkdir -p "${MNT}${mount_point}"
+        mount -o "subvol=${subvolume},${BTRFS_OPTIONS}" "${dev}" "${MNT}${mount_point}"
     done
 
     mkdir -p "${MNT}/boot/efi"
@@ -176,53 +226,17 @@ function setup_btrfs {
 }
 
 function copy_repo {
-    info "Copying ${SOURCE_REPO} to ${REPO} ..."
+    info "Copying the repository to ${REPO} ..."
     mkdir -p "${REPO}"
     cp -rT "${SOURCE_REPO}" "${REPO}"
-    chmod -R u+w "${REPO}"
 }
 
-function write_hardware {
-    local file="${REPO}/hosts/${HOST}/hardware.scm" luks_uuid esp_uuid entry
-    luks_uuid="$(blkid -s UUID -o value "${PART_ROOT}")"
-    esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
+function write_host_hardware {
+    local file="${REPO}/hosts/${HOST}/hardware.scm"
     info "Writing ${file} ..."
-
-    {
-        cat <<EOF
-(define-module (hosts ${HOST} hardware)
-  #:use-module (gnu)
-  #:use-module (common system filesystem)
-  #:export (%mapped-devices
-            %file-systems))
-
-(define %mapped-devices
-  (list (mapped-device
-          (source (uuid "${luks_uuid}"))
-          (target "${LUKS_NAME}")
-          (type luks-device-mapping)
-          (arguments (list #:allow-discards? #t)))))
-
-(define %file-systems
-  (append (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
-                              "${BTRFS_OPTIONS}"
-                              '(
-EOF
-        for entry in "${SUBVOLUMES[@]}"; do
-            printf '                                ("%s" "%s")\n' "${entry#*:}" "${entry%%:*}"
-        done
-        cat <<EOF
-                                )
-                              #:dependencies %mapped-devices)
-          (list (file-system
-                  (mount-point "/boot/efi")
-                  (device (uuid "${esp_uuid}" 'fat32))
-                  (type "vfat")
-                  (options "umask=0077")))))
-EOF
-    } >"${file}"
-
-    (cd "${REPO}" && guix style -f "hosts/${HOST}/hardware.scm")
+    write_hardware "${file}" "${HOST}" \
+        "$(blkid -s UUID -o value "${PART_ROOT}")" \
+        "$(blkid -s UUID -o value "${PART_BOOT}")"
 }
 
 function repo_guix {
@@ -241,7 +255,6 @@ function install_system {
 function account_names {
     repo_guix repl -- /dev/stdin <<EOF
 (use-modules (gnu system) (gnu system accounts))
-(display "root\n")
 (for-each (lambda (account)
             (unless (or (user-account-system? account)
                         (string=? (user-account-name account) "root"))
@@ -268,16 +281,24 @@ function hash_password {
 EOF
 }
 
-function set_passwords {
-    local shadow="${MNT}/etc/shadow" name password again hash days
-    local -a names
-    names=($(account_names))
-    [[ ${#names[@]} -gt 1 ]] || die "Found no user accounts in hosts/${HOST}/system.scm"
+function shadow_entry {
+    local shadow="$1" name="$2" hash="$3" days
     days=$(( $(date +%s) / 86400 ))
+    sed -i "/^${name}:/d" "${shadow}"
+    printf '%s:%s:%s::::::\n' "${name}" "${hash}" "${days}" >>"${shadow}"
+}
+
+function set_passwords {
+    local shadow="${MNT}/etc/shadow" name password again hash
+    local -a names
+    mapfile -t names < <(account_names)
+    [[ ${#names[@]} -gt 0 ]] || die "Found no user accounts in hosts/${HOST}/system.scm"
 
     mkdir -p "${MNT}/etc"
     touch "${shadow}"
     chmod 600 "${shadow}"
+
+    shadow_entry "${shadow}" root '!'
 
     for name in "${names[@]}"; do
         while true; do
@@ -287,15 +308,15 @@ function set_passwords {
             err "Passwords are empty or do not match"
         done
         hash="$(hash_password <<<"${password}")"
-        [[ "${hash}" == '$6$'* ]] || die "Could not hash the password for ${name}"
-        sed -i "/^${name}:/d" "${shadow}"
-        printf '%s:%s:%s::::::\n' "${name}" "${hash}" "${days}" >>"${shadow}"
+        [[ "${hash}" == "\$6\$"* ]] || die "Could not hash the password for ${name}"
+        shadow_entry "${shadow}" "${name}" "${hash}"
     done
 }
 
 function cleanup {
     local status=$?
-    [[ "${status}" -eq 0 ]] && return
+    [[ -z "${SOURCE_REPO}" ]] || rm -rf "${SOURCE_REPO}"
+    [[ "${status}" -ne 0 && -n "${DISK_TOUCHED}" ]] || return 0
 
     err "Failed with exit code ${status}, rolling back ..."
 
@@ -308,25 +329,27 @@ function cleanup {
     if [[ -n "${LUKS_OPENED}" && -e "/dev/mapper/${LUKS_NAME}" ]]; then
         cryptsetup close "${LUKS_NAME}" || true
     fi
-    if [[ -n "${DISK_TOUCHED}" ]]; then
-        wipefs -af "${DISK}" >/dev/null || true
-    fi
+    wipefs -af "${DISK}" >/dev/null || true
 }
 
 function main {
     parse_args "$@"
+    check_environment
+
+    trap cleanup EXIT
+    fetch_repo
+    select_disk
+    select_host
     preflight
     confirm
 
-    trap cleanup EXIT
     partition_disk
     setup_luks
     setup_btrfs
     copy_repo
-    write_hardware
+    write_host_hardware
     install_system
     set_passwords
-    trap - EXIT
     rm -rf "${MNT}/var/cache/bootstrap"
 
     info "Done. Copy ${TARGET_REPO}/hosts/${HOST}/hardware.scm into the repository."
