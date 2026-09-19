@@ -49,8 +49,8 @@
      (nucleotide-bind key
                       (apply nucleotide-spawn command)))))
 
-(define (wm-extensions wm name . entries)
-  (match wm
+(define (wm-extensions machine name . entries)
+  (match (machine-wm machine)
     ('niri (simple-service name home-niri-service-type
                            (map entry->niri entries)))
     ('nucleotide (simple-service name home-nucleotide-service-type
@@ -94,8 +94,6 @@
                     "set" "10%-")))))
 
 (define (wm-services machine)
-  (define wm
-    (machine-wm machine))
   (define theme
     (machine-theme machine))
 
@@ -106,11 +104,11 @@
                                zathura-locked
                                zathura-pdf-mupdf
                                mpv-locked)
-                (apply wm-extensions wm
+                (apply wm-extensions machine
                        'desktop
                        (append (launcher-binds theme) brightness-binds
                                (if (machine-audio? machine) audio-binds
                                    '()))))
-          (match wm
+          (match (machine-wm machine)
             ('niri (niri-services theme))
             ('nucleotide (nucleotide-services theme)))))

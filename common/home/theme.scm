@@ -10,6 +10,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
+  #:use-module (common machines)
   #:use-module (common themes)
   #:export (theme-services %cursor-theme))
 
@@ -63,7 +64,10 @@ gtk-application-prefer-dark-theme="
                                          ("warning_color" . yellow)
                                          ("error_color" . red))))))
 
-(define (theme-services theme)
+(define (theme-services machine)
+  (define theme
+    (machine-theme machine))
+
   (list (home-packages adw-gtk3-theme
                        papirus-icon-theme
                        adwaita-icon-theme

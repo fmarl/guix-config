@@ -6,6 +6,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
+  #:use-module (common machines)
   #:use-module (common themes)
   #:export (alacritty-services))
 
@@ -84,8 +85,9 @@
                  (color theme
                         'dim_0))))))
 
-(define (alacritty-services theme)
+(define (alacritty-services machine)
   (list (home-packages alacritty)
         (simple-service 'alacritty-config
                         home-xdg-configuration-files-service-type
-                        `(("alacritty/alacritty.toml" ,(alacritty-config theme))))))
+                        `(("alacritty/alacritty.toml" ,(alacritty-config (machine-theme
+                                                                          machine)))))))

@@ -306,6 +306,6 @@
                         `(("waybar/config" ,(waybar-config-file machine))
                           ("waybar/style.css" ,(waybar-style (machine-theme
                                                               machine)))))
-        (wm-extensions (machine-wm machine)
+        (wm-extensions machine
                        'waybar-autostart
                        (wm-autostart (file-append waybar "/bin/waybar")))))

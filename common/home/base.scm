@@ -32,7 +32,7 @@
   #:export (base-home-environment desktop-services)
   #:re-export (%mail-services secrets-services))
 
-(define (base-services theme)
+(define (base-services machine)
   (append (list (home-packages openssh font-aporetic)
                 (simple-service 'guile-config home-files-service-type
                                 `((".guile" ,(local-file
@@ -45,7 +45,7 @@
                                                                  "../../dotfiles/.config/guix/channels.scm"
                                                                  "trusted-channels.scm"))))
                 (service home-xdg-user-directories-service-type))
-          (gpg-services theme) %shell-services %git-services %emacs-services))
+          (gpg-services machine) %shell-services %git-services %emacs-services))
 
 (define battery-alert
   (shell-script "battery-alert"
@@ -77,9 +77,6 @@
                 "done\n"))
 
 (define (desktop-services machine)
-  (define theme
-    (machine-theme machine))
-
   (append (list (home-packages librewolf signal-desktop)
                 (service home-dbus-service-type)
                 (simple-service 'wayland-environment
@@ -89,14 +86,14 @@
           (if (machine-audio? machine)
               (list (service home-pipewire-service-type))
               '())
-          (alacritty-services theme)
-          (theme-services theme)
+          (alacritty-services machine)
+          (theme-services machine)
           (wm-services machine)
           (waybar-services machine)
           (mako-services machine)
-          (swayidle-services (machine-wm machine))
+          (swayidle-services machine)
           (if (machine-mobile? machine)
-              (list (wm-extensions (machine-wm machine)
+              (list (wm-extensions machine
                                    'battery-alert
                                    (wm-autostart battery-alert)))
               '())))
@@ -114,4 +111,4 @@ the base services."
      (append services
              (ssh-services (machine-name machine)
                            #:authorized-keys authorized-keys)
-             (base-services (machine-theme machine)) %base-home-services))))
+             (base-services machine) %base-home-services))))

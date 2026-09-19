@@ -37,6 +37,6 @@
   (list (home-packages mako libnotify)
         (simple-service 'mako-config home-xdg-configuration-files-service-type
                         `(("mako/config" ,(mako-config (machine-theme machine)))))
-        (wm-extensions (machine-wm machine)
+        (wm-extensions machine
                        'mako-autostart
                        (wm-autostart (file-append mako "/bin/mako")))))

@@ -3,14 +3,14 @@
 
 (define-module (common home swayidle)
   #:use-module (guix gexp)
-  #:use-module (ice-9 match)
-  #:use-module (gnu packages window-management)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages zig-xyz)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages window-management)
+  #:use-module (gnu packages zig-xyz)
   #:use-module (common home helpers)
   #:use-module (common home wm)
+  #:use-module (common machines)
+  #:use-module (ice-9 match)
   #:export (swayidle-services))
 
 (define lock-program
@@ -37,12 +37,13 @@
          "timeout 900 "
          (monitors-off wm)))
 
-(define (swayidle-services wm)
+(define (swayidle-services machine)
   (list (home-packages swayidle waylock)
         (simple-service 'swayidle-config
                         home-xdg-configuration-files-service-type
-                        `(("swayidle/config" ,(swayidle-config wm))))
-        (wm-extensions wm
+                        `(("swayidle/config" ,(swayidle-config (machine-wm
+                                                                machine)))))
+        (wm-extensions machine
                        'swayidle
                        (wm-autostart (file-append swayidle "/bin/swayidle")
                                      "-w")
