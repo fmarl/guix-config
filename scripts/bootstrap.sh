@@ -352,7 +352,8 @@ function main {
     set_passwords
     rm -rf "${MNT}/var/cache/bootstrap"
 
-    info "Done. Copy ${TARGET_REPO}/hosts/${HOST}/hardware.scm into the repository."
+    info "Done. After the first login run in ${TARGET_REPO}:"
+    info "  guix shell -m manifest.scm -- make post-install"
 }
 
 main "$@"
