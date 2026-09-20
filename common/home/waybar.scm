@@ -8,6 +8,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages window-management)
   #:use-module (common home helpers)
+  #:use-module (common home theme)
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
@@ -217,7 +218,8 @@
   (css-file "waybar-style.css"
             `((("*")
                ("font-size" . "15px")
-               ("font-family" . "\"Aporetic Sans Mono\"")
+               ("font-family" unquote
+                (string-append "\"" %monospace-font "\""))
                ("border" . "none")
                ("border-radius" . "0")
                ("min-height" . "0")

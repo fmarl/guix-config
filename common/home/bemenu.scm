@@ -5,6 +5,7 @@
   #:use-module (gnu packages xdisorg)
   #:use-module (sagittarius locked gnupg)
   #:use-module (common home helpers)
+  #:use-module (common home theme)
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
@@ -68,7 +69,8 @@
     ("bdr" unquote
      (color theme
             'border))
-    ("fn" . "Aporetic Sans Mono 12")
+    ("fn" unquote
+     (string-append %monospace-font " 12"))
     ("line-height" . "26")
     ("prompt" . "λ ~>")))
 

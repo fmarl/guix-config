@@ -3,35 +3,37 @@
 
 (define-module (common home theme)
   #:use-module (guix gexp)
-  #:use-module (gnu packages fonts)
+  #:use-module (gnu home services)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
   #:use-module (nongnu packages fonts)
-  #:use-module (gnu services)
-  #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common machines)
   #:use-module (common themes)
-  #:export (theme-services %cursor-theme))
+  #:export (theme-services %cursor-theme %cursor-size %monospace-font))
 
 (define %cursor-theme
-  "Adwaita")
+  "Bibata-Modern-Classic")
+
+(define %cursor-size
+  24)
+
+(define %monospace-font
+  "Aporetic Sans Mono")
 
 (define (gtk-settings theme)
-  (plain-file "settings.ini"
-              (string-append "[Settings]\ngtk-theme-name="
-                             (if (theme-dark? theme) "adw-gtk3-dark"
-                                 "adw-gtk3")
-                             "\ngtk-icon-theme-name="
-                             (if (theme-dark? theme) "Papirus-Dark" "Papirus")
-                             "\ngtk-cursor-theme-name="
-                             %cursor-theme
-                             "
-gtk-cursor-theme-size=24
-gtk-font-name=Aporetic Sans 11
-gtk-application-prefer-dark-theme="
-                             (if (theme-dark? theme) "1" "0")
-                             "\n")))
+  (define dark?
+    (theme-dark? theme))
+
+  (ini-file "settings.ini"
+            `(("Settings" ("gtk-theme-name" unquote
+                           (if dark? "adw-gtk3-dark" "adw-gtk3"))
+               ("gtk-icon-theme-name" unquote
+                (if dark? "Papirus-Dark" "Papirus"))
+               ("gtk-cursor-theme-name" unquote %cursor-theme)
+               ("gtk-cursor-theme-size" unquote %cursor-size)
+               ("gtk-font-name" . "Aporetic Sans 11")
+               ("gtk-application-prefer-dark-theme" unquote dark?)))))
 
 (define (gtk-css theme)
   (plain-file "gtk.css"
@@ -68,12 +70,8 @@ gtk-application-prefer-dark-theme="
   (define theme
     (machine-theme machine))
 
-  (list (home-packages adw-gtk3-theme
-                       papirus-icon-theme
-                       adwaita-icon-theme
-                       ;; waybar uses Font Awesome 6 and powerline glyphs
-                       font-awesome-nonfree
-                       font-nerd-symbols)
+  (list (home-packages adw-gtk3-theme papirus-icon-theme adwaita-icon-theme
+                       bibata-cursor-theme font-awesome-nonfree)
         (simple-service 'gtk-theme home-xdg-configuration-files-service-type
                         `(("gtk-3.0/settings.ini" ,(gtk-settings theme))
                           ("gtk-3.0/gtk.css" ,(gtk-css theme))
@@ -81,4 +79,5 @@ gtk-application-prefer-dark-theme="
                           ("gtk-4.0/gtk.css" ,(gtk-css theme))))
         (simple-service 'cursor-theme home-environment-variables-service-type
                         `(("XCURSOR_THEME" unquote %cursor-theme)
-                          ("XCURSOR_SIZE" . "24")))))
+                          ("XCURSOR_SIZE" unquote
+                           (number->string %cursor-size))))))

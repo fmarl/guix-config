@@ -7,6 +7,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
+  #:use-module (common home theme)
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
@@ -15,7 +16,7 @@
 (define (alacritty-config theme)
   (toml-file "alacritty.toml"
              `(("font" ("size" . 12))
-               ("font.normal" ("family" . "Aporetic Sans Mono"))
+               ("font.normal" ("family" unquote %monospace-font))
                ("window.padding" ("x" . 8)
                 ("y" . 8))
                ("mouse" ("hide_when_typing" . #t))

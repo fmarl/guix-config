@@ -61,7 +61,7 @@
                                             "/bin/xwayland-satellite")))
 
     (cursor (xcursor-theme ,%cursor-theme)
-            (xcursor-size 24))
+            (xcursor-size ,%cursor-size))
 
     (input (keyboard (xkb (layout ,(keyboard-layout-name %keyboard-layout))
                           (variant ,(keyboard-layout-variant %keyboard-layout))))
