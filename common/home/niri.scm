@@ -100,7 +100,7 @@
                     (color "#0007")))
 
     (overview (backdrop-color ,(color theme
-                                      'bg_0)))
+                                      'bg_2)))
 
     (screenshot-path
      "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")))
