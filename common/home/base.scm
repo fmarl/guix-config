@@ -78,6 +78,13 @@
 
 (define (desktop-services machine)
   (append (list (home-packages librewolf signal-desktop)
+                (wm-extensions machine
+                               'desktop-apps
+                               (wm-window-rule "librewolf$"
+                                               #:title "^Picture-in-Picture$"
+                                               #:floating? #t)
+                               (wm-window-rule "(?i)signal"
+                                               #:hide-from-screencast? #t))
                 (service home-dbus-service-type)
                 (simple-service 'wayland-environment
                                 home-environment-variables-service-type

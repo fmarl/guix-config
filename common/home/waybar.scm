@@ -307,5 +307,7 @@
                           ("waybar/style.css" ,(waybar-style (machine-theme
                                                               machine)))))
         (wm-extensions machine
-                       'waybar-autostart
-                       (wm-autostart (file-append waybar "/bin/waybar")))))
+                       'waybar-wm
+                       (wm-autostart (file-append waybar "/bin/waybar"))
+                       (wm-layer-rule "^waybar$"
+                                      #:hide-from-screencast? #t))))

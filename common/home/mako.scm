@@ -38,5 +38,7 @@
         (simple-service 'mako-config home-xdg-configuration-files-service-type
                         `(("mako/config" ,(mako-config (machine-theme machine)))))
         (wm-extensions machine
-                       'mako-autostart
-                       (wm-autostart (file-append mako "/bin/mako")))))
+                       'mako-wm
+                       (wm-autostart (file-append mako "/bin/mako"))
+                       (wm-layer-rule "^notifications$"
+                                      #:hide-from-screencast? #t))))

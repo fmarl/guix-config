@@ -134,6 +134,8 @@ nucleotide-spawn."
   (define entries
     (home-nucleotide-configuration-entries config))
 
+  (check-entry-tags entries
+                    '(autostart bind))
   (apply mixed-text-file "init.lisp"
          (append (list (nucleotide-settings (home-nucleotide-configuration-theme
                                              config)))

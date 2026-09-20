@@ -4,18 +4,22 @@
 (define-module (common home niri)
   #:use-module (guix gexp)
   #:use-module (guix records)
-  #:use-module (srfi srfi-1)
-  #:use-module (gnu services)
+  #:use-module (gnu home services)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xorg)
-  #:use-module (gnu home services)
+  #:use-module (gnu services)
   #:use-module (gnu system keyboard)
   #:use-module (common home helpers)
   #:use-module (common home theme)
   #:use-module (common locale)
   #:use-module (common themes)
-  #:export (home-niri-service-type niri-spawn-at-startup niri-bind niri-spawn
+  #:use-module (srfi srfi-1)
+  #:export (home-niri-service-type niri-spawn-at-startup
+                                   niri-bind
+                                   niri-spawn
+                                   niri-layer-rule
+                                   niri-window-rule
                                    niri-services))
 
 (define (niri-spawn program . arguments)
@@ -38,13 +42,27 @@
                '())
          ,action))
 
+(define (niri-layer-rule namespace . properties)
+  `(rule layer-rule
+         (match #:namespace
+           ,namespace)
+         ,@properties))
+
+(define (niri-window-rule matchers . properties)
+  `(rule window-rule
+         (match ,@matchers
+           )
+         ,@properties))
+
 (define (niri-settings theme)
   `((prefer-no-csd)
     (hotkey-overlay (skip-at-startup))
     (xwayland-satellite (path ,(file-append xwayland-satellite
                                             "/bin/xwayland-satellite")))
+
     (cursor (xcursor-theme ,%cursor-theme)
             (xcursor-size 24))
+
     (input (keyboard (xkb (layout ,(keyboard-layout-name %keyboard-layout))
                           (variant ,(keyboard-layout-variant %keyboard-layout))))
            (touchpad (tap)
@@ -54,42 +72,38 @@
            (touch (off))
            (mod-key "Super")
            (mod-key-nested "Alt"))
+
     (layout (gaps 10)
             (background-color ,(color theme
                                       'bg_0))
+
             (center-focused-column "never")
+
             (preset-column-widths (proportion 0.33333)
                                   (proportion 0.5)
                                   (proportion 0.66667))
+
             (default-column-width (proportion 0.5))
+
             (focus-ring (width 2)
                         (active-color ,(color theme
                                               'br_blue))
                         (inactive-color ,(color theme
                                                 'border)))
+
             (border (off))
+
             (shadow (softness 30)
                     (spread 5)
                     (offset #:x 0
                             #:y 5)
                     (color "#0007")))
+
     (overview (backdrop-color ,(color theme
                                       'bg_0)))
+
     (screenshot-path
-     "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")
-    (window-rule (match #:app-id
-                   "librewolf$"
-                   #:title "^Picture-in-Picture$")
-                 (open-floating #t))
-    (window-rule (match #:app-id
-                   "(?i)signal")
-                 (block-out-from "screencast"))
-    (layer-rule (match #:namespace
-                  "^notifications$")
-                (block-out-from "screencast"))
-    (layer-rule (match #:namespace
-                  "^waybar$")
-                (block-out-from "screencast"))))
+     "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")))
 
 (define portals-conf
   (plain-file "niri-portals.conf"
@@ -206,6 +220,7 @@ org.freedesktop.impl.portal.Notification=gtk;
 
     (Mod+Escape #:allow-inhibiting #f
                 (toggle-keyboard-shortcuts-inhibit))
+
     (Mod+Shift+E (quit))
     (Ctrl+Alt+Delete (quit))
     (Mod+Shift+P (power-off-monitors))
@@ -227,11 +242,15 @@ org.freedesktop.impl.portal.Notification=gtk;
   (define entries
     (home-niri-configuration-entries config))
 
+  (check-entry-tags entries
+                    '(startup rule bind))
   (let ((text (kdl-file "config.kdl"
                         (append (niri-settings (home-niri-configuration-theme
                                                 config))
                                 (tagged-entries entries
                                                 'startup)
+                                (tagged-entries entries
+                                                'rule)
                                 `((binds ,@(tagged-entries entries
                                                            'bind)))))))
     (computed-file "niri-config.kdl"

@@ -20,11 +20,30 @@
   #:use-module (common home niri)
   #:use-module (common home nucleotide)
   #:use-module (common machines)
-  #:export (wm-autostart wm-bind wm-extensions wm-services))
+  #:use-module (srfi srfi-1)
+  #:export (wm-autostart wm-bind wm-layer-rule wm-window-rule wm-extensions
+                         wm-services))
 
 (define (wm-autostart program . arguments)
   `(autostart ,program
               ,@arguments))
+
+(define* (wm-layer-rule namespace
+                        #:key hide-from-screencast?)
+  `(layer-rule ,namespace
+               ,hide-from-screencast?))
+
+(define* (wm-window-rule app-id
+                         #:key title floating? hide-from-screencast?)
+  `(window-rule ,app-id
+                ,title
+                ,floating?
+                ,hide-from-screencast?))
+
+(define (screencast-properties hide-from-screencast?)
+  (if hide-from-screencast?
+      '((block-out-from "screencast"))
+      '()))
 
 (define* (wm-bind key command
                   #:key title locked?)
@@ -40,21 +59,38 @@
      (niri-bind key
                 (apply niri-spawn command)
                 #:title title
-                #:allow-when-locked? locked?))))
+                #:allow-when-locked? locked?))
+    (('layer-rule namespace hide-from-screencast?)
+     (apply niri-layer-rule namespace
+            (screencast-properties hide-from-screencast?)))
+    (('window-rule app-id title floating? hide-from-screencast?)
+     (apply niri-window-rule
+            `(#:app-id ,app-id
+              ,@(if title
+                    `(#:title ,title)
+                    '()))
+            (append (if floating?
+                        '((open-floating #t))
+                        '())
+                    (screencast-properties hide-from-screencast?))))))
 
 (define (entry->nucleotide entry)
   (match entry
     (((quote autostart) . command) (apply nucleotide-autostart command))
     (('bind key command _ _)
      (nucleotide-bind key
-                      (apply nucleotide-spawn command)))))
+                      (apply nucleotide-spawn command)))
+    (('layer-rule _ _)
+     #f)
+    (('window-rule _ _ _ _)
+     #f)))
 
 (define (wm-extensions machine name . entries)
   (match (machine-wm machine)
     ('niri (simple-service name home-niri-service-type
                            (map entry->niri entries)))
     ('nucleotide (simple-service name home-nucleotide-service-type
-                                 (map entry->nucleotide entries)))))
+                                 (filter-map entry->nucleotide entries)))))
 
 (define (launcher-binds theme)
   (list (wm-bind "Mod+Shift+Return"

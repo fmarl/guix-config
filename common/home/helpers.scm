@@ -3,18 +3,18 @@
 
 (define-module (common home helpers)
   #:use-module (guix gexp)
+  #:use-module (guix packages)
+  #:use-module (gnu home services)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:use-module (guix packages)
-  #:use-module (gnu services)
-  #:use-module (gnu home services)
   #:export (ini-file toml-file
                      css-file
                      key-value-file
                      shell-script
                      home-packages
                      kdl-file
-                     tagged-entries))
+                     tagged-entries
+                     check-entry-tags))
 
 (define (value->string value)
   (match value
@@ -172,3 +172,8 @@ vectors become arrays."
   (filter-map (match-lambda
                 ((entry-tag . payload) (and (eq? entry-tag tag) payload)))
               entries))
+
+(define (check-entry-tags entries tags)
+  (for-each (match-lambda
+              ((tag . _) (unless (memq tag tags)
+                           (error "unknown entry tag:" tag)))) entries))
