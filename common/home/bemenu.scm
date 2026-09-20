@@ -2,12 +2,13 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home bemenu)
-  #:use-module (guix gexp)
-  #:use-module (sagittarius locked gnupg)
   #:use-module (gnu packages xdisorg)
+  #:use-module (sagittarius locked gnupg)
   #:use-module (common home helpers)
+  #:use-module (common home wm)
+  #:use-module (common machines)
   #:use-module (common themes)
-  #:export (bemenu-run bemenu-askpass pinentry-bemenu*))
+  #:export (bemenu-askpass pinentry-bemenu* bemenu-services))
 
 (define (bemenu-settings theme)
   `(("tb" unquote
@@ -103,3 +104,10 @@
                 (bemenu-arguments theme)
                 " --password indicator --prompt \"$1\" </dev/null
 "))
+
+(define (bemenu-services machine)
+  (list (wm-extensions machine
+                       'bemenu-wm
+                       (wm-bind "Mod+P"
+                                (list (bemenu-run (machine-theme machine)))
+                                #:title "Run bemenu"))))

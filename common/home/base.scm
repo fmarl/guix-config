@@ -4,17 +4,22 @@
 (define-module (common home base)
   #:use-module (guix gexp)
   #:use-module (gnu home)
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages librewolf)
-  #:use-module (gnu packages ssh)
-  #:use-module (nongnu packages messaging)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services sound)
   #:use-module (gnu home services xdg)
+  #:use-module (gnu packages fonts)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages librewolf)
+  #:use-module (gnu packages pdf)
+  #:use-module (gnu packages ssh)
+  #:use-module (gnu services)
+  #:use-module (nongnu packages messaging)
+  #:use-module (sagittarius locked image-viewers)
+  #:use-module (sagittarius locked pdf)
+  #:use-module (sagittarius locked video)
   #:use-module (common home alacritty)
+  #:use-module (common home bemenu)
   #:use-module (common home emacs)
   #:use-module (common home git)
   #:use-module (common home gnupg)
@@ -77,7 +82,12 @@
                 "done\n"))
 
 (define (desktop-services machine)
-  (append (list (home-packages librewolf signal-desktop)
+  (append (list (home-packages librewolf
+                               signal-desktop
+                               imv-locked
+                               zathura-locked
+                               zathura-pdf-mupdf
+                               mpv-locked)
                 (wm-extensions machine
                                'desktop-apps
                                (wm-window-rule "librewolf$"
@@ -94,6 +104,8 @@
               (list (service home-pipewire-service-type))
               '())
           (alacritty-services machine)
+          (bemenu-services machine)
+          (emacs-desktop-services machine)
           (theme-services machine)
           (wm-services machine)
           (waybar-services machine)

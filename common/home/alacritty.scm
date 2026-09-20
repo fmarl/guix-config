@@ -2,10 +2,12 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home alacritty)
+  #:use-module (guix gexp)
   #:use-module (gnu packages terminals)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
+  #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
   #:export (alacritty-services))
@@ -90,4 +92,9 @@
         (simple-service 'alacritty-config
                         home-xdg-configuration-files-service-type
                         `(("alacritty/alacritty.toml" ,(alacritty-config (machine-theme
-                                                                          machine)))))))
+                                                                          machine)))))
+        (wm-extensions machine
+                       'alacritty-wm
+                       (wm-bind "Mod+Shift+Return"
+                                (list (file-append alacritty "/bin/alacritty"))
+                                #:title "Open alacritty"))))

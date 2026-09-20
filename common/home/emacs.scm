@@ -2,17 +2,17 @@
 ;;; Copyright © 2025, 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home emacs)
+  #:use-module (guix gexp)
+  #:use-module (gnu home services)
+  #:use-module (gnu home services shepherd)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages ocaml)
   #:use-module (gnu packages tree-sitter)
-  #:use-module (gnu services)
-  #:use-module (gnu home services)
-  #:use-module (gnu home services shepherd)
-  #:use-module (guix gexp)
-  #:use-module (srfi srfi-1)
   #:use-module (common home helpers)
-  #:export (emacsclient-command emacs-tty %emacs-services))
+  #:use-module (common home wm)
+  #:use-module (srfi srfi-1)
+  #:export (emacs-tty %emacs-services emacs-desktop-services))
 
 (define %emacs-socket
   "emacs-daemon")
@@ -119,3 +119,14 @@
   (list (simple-service 'emacs-packages home-profile-service-type
                         (cons emacs-next-pgtk emacs-packages))
         emacs-daemon-service emacs-editor-service))
+
+(define (emacs-desktop-services machine)
+  (list (wm-extensions machine
+                       'emacs-wm
+                       (wm-bind "Mod+E"
+                                (emacsclient-command "-c" "-n")
+                                #:title "Open Emacs")
+                       (wm-bind "Mod+Shift+D"
+                                (emacsclient-command "-c" "-n" "-e"
+                                                     "(dirvish-dwim)")
+                                #:title "Start dirvish"))))
