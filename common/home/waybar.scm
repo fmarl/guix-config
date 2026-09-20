@@ -4,17 +4,15 @@
 (define-module (common home waybar)
   #:use-module (guix gexp)
   #:use-module (guix records)
-  #:use-module (json)
-  #:use-module (ice-9 match)
-  #:use-module (srfi srfi-1)
+  #:use-module (gnu home services)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages window-management)
-  #:use-module (gnu services)
-  #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:export (waybar-services))
 
 (define %glyphs
@@ -40,6 +38,14 @@
 (define (glyph name)
   (assq-ref %glyphs name))
 
+(define (command program . arguments)
+  #~(string-join (list #$program
+                       #$@arguments)))
+
+(define (brightness change)
+  (command (file-append brightnessctl "/bin/brightnessctl")
+           "--class=backlight" "set" change))
+
 (define-record-type* <status-module> status-module make-status-module
   status-module?
   (name status-module-name)
@@ -50,9 +56,6 @@
                 (default '()))
   (available? status-module-available?
               (default (const #t)))
-  (package
-    status-module-package
-    (default #f))
   (pinned? status-module-pinned?
            (default #f)))
 
@@ -88,20 +91,22 @@
                                   (vector (glyph 'volume-off)
                                           (glyph 'volume-low)
                                           (glyph 'volume-high)))
-                                 ("on-click" . "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")))
+                                 ("on-click" unquote
+                                  (command (file-append wireplumber
+                                                        "/bin/wpctl")
+                                           "set-mute" "@DEFAULT_AUDIO_SINK@"
+                                           "toggle"))))
                        (state-colors '(("muted" . dim_0)))
-                       (available? machine-audio?)
-                       (package
-                         wireplumber))
+                       (available? machine-audio?))
         (status-module (name "backlight")
                        (config `(("format" unquote
                                   (string-append "{percent}% "
                                                  (glyph 'sun)))
-                                 ("on-scroll-up" . "brightnessctl --class=backlight set +5%")
-                                 ("on-scroll-down" . "brightnessctl --class=backlight set 5%-")))
-                       (available? machine-mobile?)
-                       (package
-                         brightnessctl))
+                                 ("on-scroll-up" unquote
+                                  (brightness "+5%"))
+                                 ("on-scroll-down" unquote
+                                  (brightness "5%-"))))
+                       (available? machine-mobile?))
         (status-module (name "battery")
                        (config `(("states" ("warning" . 30)
                                   ("critical" . 15))
@@ -292,18 +297,13 @@
               ,(colored "#status:hover #custom-expand"
                         'fg_0))))
 
-(define (waybar-config-file machine)
-  (plain-file "waybar-config"
-              (scm->json-string (vector (waybar-config machine))
-                                #:pretty #t)))
-
 (define (waybar-services machine)
-  (list (apply home-packages waybar
-               (filter-map status-module-package
-                           (machine-status-modules machine)))
+  (list (home-packages waybar)
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
-                        `(("waybar/config" ,(waybar-config-file machine))
+                        `(("waybar/config" ,(json-file "waybar-config"
+                                                       (vector (waybar-config
+                                                                machine))))
                           ("waybar/style.css" ,(waybar-style (machine-theme
                                                               machine)))))
         (wm-extensions machine

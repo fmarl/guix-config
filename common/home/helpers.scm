@@ -5,6 +5,7 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (gnu home services)
+  #:use-module (gnu packages guile)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:export (ini-file toml-file
@@ -13,6 +14,7 @@
                      shell-script
                      home-packages
                      kdl-file
+                     json-file
                      tagged-entries
                      check-entry-tags))
 
@@ -177,3 +179,24 @@ vectors become arrays."
   (for-each (match-lambda
               ((tag . _) (unless (memq tag tags)
                            (error "unknown entry tag:" tag)))) entries))
+
+(define (json-value->gexp value)
+  (match value
+    (() #~'())
+    ((head . tail) #~(cons #$(json-value->gexp head)
+                           #$(json-value->gexp tail)))
+    ((? vector?)
+     #~(vector #$@(map json-value->gexp
+                       (vector->list value))))
+    (_ value)))
+
+(define (json-file name value)
+  (computed-file name
+                 (with-extensions (list guile-json-4)
+                                  #~(begin
+                                      (use-modules (json))
+                                      (call-with-output-file #$output
+                                        (lambda (port)
+                                          (scm->json #$(json-value->gexp value)
+                                                     port
+                                                     #:pretty #t)))))))
