@@ -1,4 +1,4 @@
-(define-module (my acpi)
+(define-module (common system acpi)
   #:use-module (guix gexp)
   #:use-module (gnu packages linux)
   #:use-module (gnu services)
@@ -24,6 +24,12 @@
                     (match (command-line)
                       ((_ "close")
                        (when (lid-closed?)
+                         ;; Without logind swayidle misses the suspend, SIGUSR1
+                         ;; makes it lock the screen right away
+                         (when (zero? (status:exit-val
+                                       (system* #$(file-append procps "/bin/pkill")
+                                                "-USR1" "-x" "swayidle")))
+                           (sleep 1))
                          (call-with-output-file "/sys/power/state"
                            (lambda (port)
                              (display "mem" port)))))
