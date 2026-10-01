@@ -1,33 +1,14 @@
-(define-module (my home emacs)
+(define-module (common home emacs)
   #:use-module (gnu packages)
   #:use-module (gnu packages emacs)
-  #:use-module (gnu packages emacs-build)
-  #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu services)
-  #:use-module (gnu home services)
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
   #:use-module (guix gexp)
-  #:use-module (guix packages)
-  #:export (%emacs-packages %emacs-services))
+  #:use-module (common home helpers)
+  #:export (%emacs-services))
 
-(define (emacs-file fname)
-  (string-append ".emacs.d/" fname))
-
-(define emacs-client-tty
-  (program-file "emacs-client-tty"
-                #~(apply system*
-                         #$(file-append emacs-next-pgtk "/bin/emacsclient")
-                         "--tty"
-                         (cdr (command-line)))))
-
-(define emacs-client-new-frame
-  (program-file "emacs-client-new-frame"
-                #~(apply system*
-                         #$(file-append emacs-next-pgtk "/bin/emacsclient")
-                         "--create-frame"
-			 (string-append "--alternate-editor=\"\"")
-                         (cdr (command-line)))))
+(define emacsclient (file-append emacs-next-pgtk "/bin/emacsclient"))
 
 (define emacs-daemon-service
   (simple-service 'emacs-daemon home-shepherd-service-type
@@ -36,19 +17,22 @@
 			 (start #~(make-forkexec-constructor
 				   (list #$(file-append emacs-next-pgtk "/bin/emacs")
 					 "--fg-daemon=emacs-daemon")))
-			 
 			 (stop #~(make-system-destructor
 				  #$(file-append emacs-next-pgtk
-						 "/bin/emacsclient" " "
-						 "--socket-name=emacs-daemon"
-						 " " "--eval '(kill-emacs)'")))
-			 (documentation (string-append "Emacs background daemon"))))))
+						 "/bin/emacsclient"
+						 " --socket-name=emacs-daemon"
+						 " --eval '(kill-emacs)'")))
+			 (documentation "Emacs background daemon")))))
 
-(define emacs-client-as-editor-service
-  (simple-service 'emacs-set-default-editor
-                  home-environment-variables-service-type
-		  `(("ALTERNATE_EDITOR" . ,emacs-client-tty)
-                    ("VISUAL" . ,emacs-client-new-frame))))
+(define emacs-editor-service
+  (simple-service 'emacs-editor
+		  home-environment-variables-service-type
+		  `(("EDITOR" . ,(shell-script "emacs-tty"
+					       "exec " emacsclient
+					       " -s emacs-daemon -t \"$@\"\n"))
+		    ("VISUAL" . ,(shell-script "emacs-frame"
+					       "exec " emacsclient
+					       " -s emacs-daemon -c \"$@\"\n")))))
 
 (define emacs-packages
    (specifications->packages
@@ -90,6 +74,12 @@
      ;; Zig
      "emacs-zig-mode"
 
+     ;; Misc modes
+     "emacs-terraform-mode"
+     "emacs-yaml-mode"
+     "emacs-haskell-mode"
+     "emacs-nasm-mode"
+
      ;; OCaml
      "emacs-tuareg"
 
@@ -98,21 +88,20 @@
      "emacs-geiser"
      "emacs-circe"
      "emacs-elfeed"
+     "mu" ;mu4e
      "emacs-app-launcher"
      
      ;; Treesitter
+     "tree-sitter-bash"
+     "tree-sitter-ocaml"
      "tree-sitter-rust"
      "tree-sitter-zig"
      "tree-sitter-clojure"
      )))
 
-(define-public %emacs-packages
-  (append
-   (specifications->packages
-    (list "emacs-next-pgtk"))
-   emacs-packages))
-
-(define-public %emacs-services
-  (list
-   emacs-daemon-service
-   emacs-client-as-editor-service))
+(define %emacs-services
+  (list (simple-service 'emacs-packages
+			home-profile-service-type
+			(cons emacs-next-pgtk emacs-packages))
+	emacs-daemon-service
+	emacs-editor-service))
