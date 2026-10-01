@@ -1,28 +1,35 @@
-(define-module (my home niri)
-  #:use-module (ice-9 format)
+(define-module (common home niri)
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu packages)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages emacs)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages terminals)
+  #:use-module (gnu packages window-management)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages zig-xyz)
-  #:use-module (gnu packages xdisorg)
   #:use-module (gnu home services)
-  #:export (%niri-services
-	    %niri-packages))
+  #:use-module (common home helpers)
+  #:use-module (common home bemenu)
+  #:use-module (common home colors)
+  #:use-module (common home swayidle)
+  #:use-module (common home theme)
+  #:export (%niri-services))
 
-(define %niri-config
-  (computed-file "config.kdl"
-		 #~(begin
-		     (call-with-output-file #$output
-		       (lambda (port)
-			 (display
-			  (format #f "
+(define wpctl (file-append wireplumber "/bin/wpctl"))
+(define brightnessctl* (file-append brightnessctl "/bin/brightnessctl"))
+
+(define niri-config-text
+  (mixed-text-file "config.kdl" "
 prefer-no-csd
 
+xwayland-satellite {
+    path \"" xwayland-satellite "/bin/xwayland-satellite\"
+}
+
+
 cursor {
-    xcursor-theme \"Adwaita\"
+    xcursor-theme \"" %cursor-theme "\"
     xcursor-size 24
 }
 
@@ -35,11 +42,9 @@ input {
   }
 
   touchpad {
-      tap; 
+      tap;
       click-method \"button-areas\";
   }
-
-  mouse { }
 
   trackpoint {
       off
@@ -63,6 +68,7 @@ input {
 
 layout {
     gaps 10
+    background-color \"" (color 'bg_0) "\"
     center-focused-column \"never\"
 
     preset-column-widths {
@@ -73,68 +79,55 @@ layout {
 
     default-column-width { proportion 0.5; }
 
-    focus-ring {        
+    focus-ring {
         width 2
-        
-        active-color \"#7fc8ff\"
 
-        inactive-color \"#505050\"   
+        active-color \"" (color 'br_blue) "\"
+
+        inactive-color \"" (color 'border) "\"
     }
-    
+
     border { off; }
-    
+
     shadow {
         softness 30
-        
+
         spread 5
 
         offset x=0 y=5
-        
+
         color \"#0007\"
     }
-    
-    struts { }
 }
 
-hotkey-overlay { }
-
-screenshot-path \"$HOME/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png\"
-
-animations { }
+screenshot-path \"~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png\"
 
 window-rule {
     match app-id=r#\"librewolf$\"# title=\"^Picture-in-Picture$\"
     open-floating true
 }
 
-/-window-rule {
-    match app-id=r#\"^org\\.keepassxc\\.KeePassXC$\"#
-    match app-id=r#\"^org\\.gnome\\.World\\.Secrets$\"#
+spawn-at-startup \"" waybar "/bin/waybar\"
+spawn-at-startup \"" mako "/bin/mako\"
+spawn-at-startup \"" swayidle "/bin/swayidle\" \"-w\"
+spawn-sh-at-startup \"" swaybg "/bin/swaybg -i $HOME/Pictures/wallpaper.svg\"
 
-    block-out-from \"screen-capture\"
-}
-
-/-window-rule {
-    geometry-corner-radius 12
-    clip-to-geometry true
-}
-
-binds {    
+binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
-    
-    Mod+Shift+Return hotkey-overlay-title=\"Open alacritty\" { spawn \"~a\"; }
-    Mod+P hotkey-overlay-title=\"Run bemenu\" { spawn \"~a\" \"--tb\" \"#000000\" \"--tf\" \"#ffffff\" \"--line-height\" \"26\" \"--prompt\" \"λ ~~>\"; }
-    Super+Alt+L hotkey-overlay-title=\"Lock the Screen\" { spawn \"~a\"; }
-    
-    XF86AudioRaiseVolume allow-when-locked=true { spawn \"~a\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1+\"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn \"~a\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1-\"; }
-    XF86AudioMute        allow-when-locked=true { spawn \"~a\" \"set-mute\" \"@DEFAULT_AUDIO_SINK@\" \"toggle\"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn \"~a\" \"set-mute\" \"@DEFAULT_AUDIO_SOURCE@\" \"toggle\"; }
 
-    
-    XF86MonBrightnessUp allow-when-locked=true { spawn \"~a\" \"--class=backlight\" \"set\" \"+10%\"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn \"~a\" \"--class=backlight\" \"set\" \"10%-\"; }
-    
+    Mod+Shift+Return hotkey-overlay-title=\"Open alacritty\" { spawn \"" alacritty "/bin/alacritty\"; }
+    Mod+P hotkey-overlay-title=\"Run bemenu\" { spawn \"" bemenu-run "\"; }
+    Super+Alt+L hotkey-overlay-title=\"Lock the Screen\" { spawn \"" lock-program "\"; }
+    Mod+Shift+D hotkey-overlay-title=\"Start dirvish\" { spawn \"" emacs-next-pgtk "/bin/emacsclient\" \"-s\" \"emacs-daemon\" \"-c\" \"-n\" \"-e\" \"(dirvish-dwim)\"; }
+
+    XF86AudioRaiseVolume allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1+\"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1-\"; }
+    XF86AudioMute        allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\" \"@DEFAULT_AUDIO_SINK@\" \"toggle\"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\" \"@DEFAULT_AUDIO_SOURCE@\" \"toggle\"; }
+
+    XF86MonBrightnessUp allow-when-locked=true { spawn \"" brightnessctl* "\" \"--class=backlight\" \"set\" \"+10%\"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn \"" brightnessctl* "\" \"--class=backlight\" \"set\" \"10%-\"; }
+
     Mod+O repeat=false { toggle-overview; }
 
     Mod+Shift+C repeat=false { close-window; }
@@ -187,13 +180,13 @@ binds {
     Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
     Mod+Ctrl+U         { move-column-to-workspace-down; }
-    Mod+Ctrl+I         { move-column-to-workspace-up; }    
+    Mod+Ctrl+I         { move-column-to-workspace-up; }
 
     Mod+Shift+Page_Down { move-workspace-down; }
     Mod+Shift+Page_Up   { move-workspace-up; }
     Mod+Shift+U         { move-workspace-down; }
     Mod+Shift+I         { move-workspace-up; }
-    
+
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
     Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
@@ -203,12 +196,12 @@ binds {
     Mod+WheelScrollLeft       { focus-column-left; }
     Mod+Ctrl+WheelScrollRight { move-column-right; }
     Mod+Ctrl+WheelScrollLeft  { move-column-left; }
-    
+
     Mod+Shift+WheelScrollDown      { focus-column-right; }
     Mod+Shift+WheelScrollUp        { focus-column-left; }
     Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
     Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
-    
+
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -227,12 +220,12 @@ binds {
     Mod+Ctrl+7 { move-column-to-workspace 7; }
     Mod+Ctrl+8 { move-column-to-workspace 8; }
     Mod+Ctrl+9 { move-column-to-workspace 9; }
-    
+
     Mod+BracketLeft  { consume-or-expel-window-left; }
     Mod+BracketRight { consume-or-expel-window-right; }
-    
+
     Mod+Comma  { consume-window-into-column; }
-    
+
     Mod+Period { expel-window-from-column; }
 
     Mod+R { switch-preset-column-width; }
@@ -244,24 +237,24 @@ binds {
     Mod+Ctrl+F { expand-column-to-available-width; }
 
     Mod+C { center-column; }
-    
-    Mod+Ctrl+C { center-visible-columns; }    
-    
+
+    Mod+Ctrl+C { center-visible-columns; }
+
     Mod+Minus { set-column-width \"-10%\"; }
     Mod+Equal { set-column-width \"+10%\"; }
-    
+
     Mod+Shift+Minus { set-window-height \"-10%\"; }
     Mod+Shift+Equal { set-window-height \"+10%\"; }
-    
+
     Mod+V       { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
-    
+
     Mod+W { toggle-column-tabbed-display; }
 
     Print { screenshot; }
     Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }    
-        
+    Alt+Print { screenshot-window; }
+
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     Mod+Shift+E { quit; }
@@ -269,31 +262,26 @@ binds {
 
     Mod+Shift+P { power-off-monitors; }
 }
+"))
 
-spawn-at-startup \"~a\"
-spawn-sh-at-startup \"~a -i $HOME/Pictures/wallpaper.svg\"
-"
-				  #$(file-append alacritty "/bin/alacritty")
-				  #$(file-append bemenu "/bin/bemenu-run")
-				  #$(file-append waylock "/bin/waylock")
-				  #$(file-append wireplumber "/bin/wpctl")
-				  #$(file-append wireplumber "/bin/wpctl")
-				  #$(file-append wireplumber "/bin/wpctl")
-				  #$(file-append wireplumber "/bin/wpctl")
-				  #$(file-append brightnessctl "/bin/brightnessctl")
-				  #$(file-append brightnessctl "/bin/brightnessctl")
-				  #$(file-append (@ (gnu packages window-management) waybar) "/bin/waybar")
-				  #$(file-append (@ (gnu packages window-management) swaybg) "/bin/swaybg"))
-			  port))))))
+(define niri-config
+  (computed-file "niri-config.kdl"
+		 #~(begin
+		     (unless (zero? (system* #$(file-append niri "/bin/niri")
+					     "validate" "-c" #$niri-config-text))
+		       (error "invalid niri configuration"))
+		     (copy-file #$niri-config-text #$output))))
+
 (define %niri-services
-  (list (simple-service 'niri-config
-			home-files-service-type
-			`((".config/niri/config.kdl"
-			   ,%niri-config)))))
-(define %niri-packages
-   (specifications->packages
-   (list
-    "xwayland-satellite"
-    "imv"
-    "zathura"
-    "mpv")))
+  (list (home-packages "xwayland-satellite"
+		       "wl-clipboard"
+		       "xdg-desktop-portal"
+		       "xdg-desktop-portal-gnome"
+		       "xdg-desktop-portal-gtk"
+		       "imv"
+		       "zathura"
+		       "zathura-pdf-mupdf"
+		       "mpv")
+	(simple-service 'niri-config
+			home-xdg-configuration-files-service-type
+			`(("niri/config.kdl" ,niri-config)))))
