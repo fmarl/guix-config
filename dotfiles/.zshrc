@@ -12,6 +12,8 @@ setopt HIST_SAVE_NO_DUPS
 setopt HIST_FIND_NO_DUPS
 setopt SHARE_HISTORY
 
+setopt AUTO_CD
+
 PROMPT="%~ ${${SHLVL:#1}:+[$((SHLVL-1))] }λ "
 
 autoload -U compinit
@@ -35,3 +37,8 @@ if [[ -n "$EAT_SHELL_INTEGRATION_DIR" &&
       -r "$EAT_SHELL_INTEGRATION_DIR/zsh" ]]; then
     source "$EAT_SHELL_INTEGRATION_DIR/zsh"
 fi
+
+# Has to be sourced last
+zsh_hl="$HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+[[ -r "$zsh_hl" ]] && source "$zsh_hl"
+unset zsh_hl
