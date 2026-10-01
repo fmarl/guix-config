@@ -1,0 +1,9 @@
+#!/bin/sh
+case "$(file -Lb --mime-type -- "$1")" in
+    text/* | application/json | application/x-*script* | inode/x-empty)
+        bat --color=always --style=plain --paging=never --line-range=:200 -- "$1"
+        ;;
+    *)
+        file -Lb -- "$1"
+        ;;
+esac
