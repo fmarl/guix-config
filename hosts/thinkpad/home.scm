@@ -1,60 +1,11 @@
-(use-modules
- (guix gexp)
- (gnu home)
- (gnu packages)
- (gnu services)
- (gnu home services)
- (gnu home services shells)
- (gnu home services ssh)
- (my utils)
- (my home base)
- (my home niri)
- (my home waybar)
- (sagittarius packages vpn))
+(define-module (hosts thinkpad home)
+  #:use-module (common home base)
+  #:use-module (sagittarius packages vpn)
+  #:export (%home))
 
-(home-environment
- (packages
-  (append
-   (list mullvad-vpn-desktop)
-   %my-home-desktop-packages))
- 
- (services
-  (append
-   (list
-    (simple-service 'env-vars-service
-		    home-environment-variables-service-type
-		    `(("SSH_AUTH_SOCK" . "$XDG_RUNTIME_DIR/ssh-agent/socket")
-                      ("GPG_TTY" . "$(tty)")
-                      ("_JAVA_AWT_WM_NONREPARENTING" . #t)))
-    
-    (service home-openssh-service-type
-	     (home-openssh-configuration
-	      (hosts
-	       (list
-		(openssh-host (name "codeberg.org")
-			      (host-name "codeberg.org")
-			      (user "git")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "github.com")
-			      (host-name "github.com")
-			      (user "git")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "workstation")
-			      (host-name "192.168.0.200")
-			      (user "marrero")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))
-		(openssh-host (name "boson")
-			      (host-name "192.168.0.201")
-			      (user "marrero")
-			      (port 22)
-			      (identity-file "~/.ssh/id_ed25519"))))
-	      (add-keys-to-agent "yes")))
-    
-    (service home-ssh-agent-service-type
-             (home-ssh-agent-configuration
-              (extra-options '("-t" "1h30m")))))
-   %my-home-desktop-services
-   %base-home-services)))
+(define %home
+  (base-home-environment 'thinkpad
+                         #:mobile? #t
+                         #:packages (list mullvad-vpn-desktop)))
+
+%home
