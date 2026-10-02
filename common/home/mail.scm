@@ -20,6 +20,6 @@
 
 
 (define %mail-services
-  (list (home-packages "isync" "msmtp" "age")
+  (list (home-packages "isync" "msmtp")
 	isync-service
 	msmtp-service))
