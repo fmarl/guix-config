@@ -3,6 +3,6 @@
   #:export (%home))
 
 (define %home
-  (base-home-environment 'default #:desktop? #f))
+  (base-home-environment 'default))
 
 %home
