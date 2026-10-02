@@ -21,7 +21,7 @@
 
     (services
      (append (niri-session)
-             (network-services #:static 'workstation #:allow-ssh? #t)
+             (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
              (kvm-services "kvm_amd")
              (list (service openssh-service-type
                      (openssh-configuration
