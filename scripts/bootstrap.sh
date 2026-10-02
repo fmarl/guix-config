@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Partition, encrypt, format and mount a disk for a Guix installation into /mnt.
+# Partition, encrypt and format a disk and install a host from hosts/ onto it.
 
 set -Eeuo pipefail
 
@@ -9,19 +9,22 @@ readonly MNT="/mnt"
 readonly BTRFS_OPTIONS="compress=zstd:3,discard=async"
 # subvolume:mount point
 readonly SUBVOLUMES=("@:/" "@home:/home" "@gnu:/gnu" "@log:/var/log" "@snapshots:/.snapshots")
+readonly TARGET_REPO="/etc/guix-config"
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-readonly REPO
+SOURCE_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+readonly SOURCE_REPO
+readonly REPO="${MNT}${TARGET_REPO}"
 
 DISK_TOUCHED=""
 LUKS_OPENED=""
+COW_STORE=""
 
 function usage {
     cat <<USAGE
 Usage: $(basename "$0") DISK HOSTNAME
 
   DISK      Target disk, e.g. nvme0n1 or /dev/sda. ALL DATA ON IT IS LOST.
-  HOSTNAME  Host to install, should match a directory in hosts/
+  HOSTNAME  Host to install, a directory in hosts/
 USAGE
 }
 
@@ -69,11 +72,20 @@ function parse_args {
     readonly DISK HOST PART_BOOT PART_ROOT
 }
 
+function installer_guix_is_pinned {
+    local described commit
+    described="$(guix describe -f channels 2>/dev/null)" || return 1
+    for commit in $(sed -n 's/.*(commit "\([0-9a-f]*\)").*/\1/p' "${SOURCE_REPO}/channels-lock.scm"); do
+        [[ "${described}" == *"\"${commit}\""* ]] || return 1
+    done
+}
+
 function preflight {
     [[ "${EUID}" -eq 0 ]] || die "Must run as root"
 
     local tool
-    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk blkid mountpoint; do
+    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk blkid \
+                mountpoint herd guix getent; do
         command -v "${tool}" >/dev/null || die "Missing tool: ${tool}"
     done
 
@@ -87,8 +99,18 @@ function preflight {
     ! mountpoint -q "${MNT}" || die "${MNT} is already a mountpoint"
     [[ ! -e "/dev/mapper/${LUKS_NAME}" ]] || die "/dev/mapper/${LUKS_NAME} is already open"
 
-    if [[ ! -d "${REPO}/hosts/${HOST}" ]]; then
-        err "Warning: ${REPO}/hosts/${HOST} does not exist yet"
+    local system="${SOURCE_REPO}/hosts/${HOST}/system.scm"
+    [[ -f "${system}" ]] || die "${system} does not exist"
+    grep -q "(hosts ${HOST} hardware)" "${system}" ||
+        die "${system} does not use (hosts ${HOST} hardware)"
+
+    getent hosts codeberg.org >/dev/null || die "No network connection"
+
+    if installer_guix_is_pinned; then
+        GUIX=(guix)
+    else
+        err "Warning: guix differs from channels-lock.scm, using time-machine"
+        GUIX=(guix time-machine -C "${REPO}/channels-lock.scm" --)
     fi
 }
 
@@ -150,12 +172,135 @@ function setup_btrfs {
     mount -t vfat -o umask=0077 "${PART_BOOT}" "${MNT}/boot/efi"
 }
 
+function copy_repo {
+    info "Copying ${SOURCE_REPO} to ${REPO} ..."
+    mkdir -p "${REPO}"
+    cp -rT "${SOURCE_REPO}" "${REPO}"
+    chmod -R u+w "${REPO}"
+}
+
+function write_hardware {
+    local file="${REPO}/hosts/${HOST}/hardware.scm" luks_uuid esp_uuid entry
+    luks_uuid="$(blkid -s UUID -o value "${PART_ROOT}")"
+    esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
+    info "Writing ${file} ..."
+
+    {
+        cat <<EOF
+(define-module (hosts ${HOST} hardware)
+  #:use-module (gnu)
+  #:use-module (common system filesystem)
+  #:export (%mapped-devices
+            %file-systems
+            %swap-devices))
+
+(define %mapped-devices
+  (list (mapped-device
+          (source (uuid "${luks_uuid}"))
+          (target "${LUKS_NAME}")
+          (type luks-device-mapping)
+          (arguments (list #:allow-discards? #t)))))
+
+(define %file-systems
+  (append (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
+                              "${BTRFS_OPTIONS}"
+                              '(
+EOF
+        for entry in "${SUBVOLUMES[@]}"; do
+            printf '                                ("%s" "%s")\n' "${entry#*:}" "${entry%%:*}"
+        done
+        cat <<EOF
+                                )
+                              #:dependencies %mapped-devices)
+          (list (file-system
+                  (mount-point "/boot/efi")
+                  (device (uuid "${esp_uuid}" 'fat32))
+                  (type "vfat")))))
+
+(define %swap-devices '())
+EOF
+    } >"${file}"
+
+    (cd "${REPO}" && guix style -f "hosts/${HOST}/hardware.scm")
+}
+
+function repo_guix {
+    (cd "${REPO}" &&
+         GUILE_LOAD_PATH="${REPO}" XDG_CACHE_HOME="${MNT}/var/cache/bootstrap" \
+         "${GUIX[@]}" "$@")
+}
+
+function install_system {
+    info "Installing hosts/${HOST}/system.scm ..."
+    herd start cow-store "${MNT}"
+    COW_STORE=1
+    repo_guix system init "hosts/${HOST}/system.scm" "${MNT}"
+}
+
+function account_names {
+    repo_guix repl -- /dev/stdin <<EOF
+(use-modules (gnu system) (gnu system accounts))
+(display "root\n")
+(for-each (lambda (account)
+            (unless (or (user-account-system? account)
+                        (string=? (user-account-name account) "root"))
+              (display (user-account-name account))
+              (newline)))
+          (operating-system-users
+           (module-ref (resolve-interface '(hosts ${HOST} system)) '%system)))
+EOF
+}
+
+function hash_password {
+    guix repl -- /dev/fd/3 3<<'EOF'
+(use-modules (ice-9 rdelim) (rnrs io ports))
+(define alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./")
+(define salt
+  (call-with-input-file "/dev/urandom"
+    (lambda (port)
+      (list->string
+       (map (lambda (_)
+              (string-ref alphabet (modulo (get-u8 port) 64)))
+            (iota 16))))
+    #:binary #t))
+(display (crypt (read-line) (string-append "$6$" salt "$")))
+EOF
+}
+
+function set_passwords {
+    local shadow="${MNT}/etc/shadow" name password again hash days
+    local -a names
+    names=($(account_names))
+    [[ ${#names[@]} -gt 1 ]] || die "Found no user accounts in hosts/${HOST}/system.scm"
+    days=$(( $(date +%s) / 86400 ))
+
+    mkdir -p "${MNT}/etc"
+    touch "${shadow}"
+    chmod 600 "${shadow}"
+
+    for name in "${names[@]}"; do
+        while true; do
+            read -rsp "Password for ${name}: " password && echo
+            read -rsp "Repeat password for ${name}: " again && echo
+            [[ -n "${password}" && "${password}" == "${again}" ]] && break
+            err "Passwords are empty or do not match"
+        done
+        hash="$(hash_password <<<"${password}")"
+        [[ "${hash}" == '$6$'* ]] || die "Could not hash the password for ${name}"
+        sed -i "/^${name}:/d" "${shadow}"
+        printf '%s:%s:%s::::::\n' "${name}" "${hash}" "${days}" >>"${shadow}"
+    done
+}
+
 function cleanup {
     local status=$?
     [[ "${status}" -eq 0 ]] && return
 
     err "Failed with exit code ${status}, rolling back ..."
 
+    if [[ -n "${COW_STORE}" ]]; then
+        herd stop cow-store || true
+    fi
     if mountpoint -q "${MNT}"; then
         umount -R "${MNT}" || true
     fi
@@ -167,27 +312,6 @@ function cleanup {
     fi
 }
 
-function next_steps {
-    local luks_uuid esp_uuid
-    luks_uuid="$(blkid -s UUID -o value "${PART_ROOT}")"
-    esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
-
-    info "Done. ${DISK} is mounted at ${MNT}. Next steps:"
-    cat <<STEPS
-  1. hosts/${HOST}/system.scm, e.g. copied from hosts/thinkpad, with
-       mapped-device source: (uuid "${luks_uuid}")
-       ESP:                  (uuid "${esp_uuid}" 'fat32)
-       subvolumes:           ${SUBVOLUMES[*]}
-  2. Let the store use the target disk:
-       herd start cow-store ${MNT}
-  3. Install:
-       cd ${REPO} && GUILE_LOAD_PATH=\$PWD guix time-machine -C channels-lock.scm -- \\
-           system init hosts/${HOST}/system.scm ${MNT}
-  4. Set the user password:
-       chroot ${MNT} passwd <user>
-STEPS
-}
-
 function main {
     parse_args "$@"
     preflight
@@ -197,9 +321,14 @@ function main {
     partition_disk
     setup_luks
     setup_btrfs
+    copy_repo
+    write_hardware
+    install_system
+    set_passwords
     trap - EXIT
+    rm -rf "${MNT}/var/cache/bootstrap"
 
-    next_steps
+    info "Done. Copy ${TARGET_REPO}/hosts/${HOST}/hardware.scm into the repository."
 }
 
 main "$@"
