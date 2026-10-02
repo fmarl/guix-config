@@ -2,11 +2,13 @@
   #:use-module (gnu)
   #:use-module (gnu services desktop)
   #:use-module (nongnu packages linux)
+  #:use-module (common users)
   #:use-module (common system base)
   #:use-module (common system desktop)
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
+  #:use-module (common system virtualization)
   #:export (%system))
 
 (define %system
@@ -17,9 +19,13 @@
     (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
     (firmware (cons* ibt-hw-firmware iwlwifi-firmware %base-firmware))
 
+    (users (append (make-user-accounts #:extra-groups '("kvm"))
+                   %base-user-accounts))
+
     (services
      (append (niri-session)
              (network-services)
+             (kvm-services "kvm_intel")
              (list (service bluetooth-service-type))
              (operating-system-user-services %base-os)))
 
