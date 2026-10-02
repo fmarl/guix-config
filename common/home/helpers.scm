@@ -6,6 +6,7 @@
   #:use-module (gnu home services)
   #:export (ini-file
             toml-file
+            css-file
             key-value-file
             shell-script
             home-packages))
@@ -64,6 +65,21 @@ VALUE serialized by FORMAT-VALUE."
   "TABLES is a list of (TABLE (KEY . VALUE) ...); strings are quoted and
 vectors become arrays."
   (sections-file name tables toml-value))
+
+(define (css-file name rules)
+  "RULES is a list of ((SELECTOR ...) (PROPERTY . VALUE) ...)."
+  (define (rule->string rule)
+    (match rule
+      ((selectors . declarations)
+       (string-append (string-join selectors ",\n") " {\n"
+                      (string-concatenate
+                       (map (match-lambda
+                              ((property . value)
+                               (string-append "  " property ": " value ";\n")))
+                            declarations))
+                      "}\n"))))
+
+  (plain-file name (string-join (map rule->string rules) "\n")))
 
 (define (key-value-file name entries)
   "ENTRIES is a list of (KEY . VALUE); #t writes just KEY, as gpg.conf expects."
