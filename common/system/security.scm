@@ -18,24 +18,28 @@
                                 (filter user-u2f-keys %users))
                            "\n" 'suffix)))
 
-(define u2f-pam-services
-  '("login" "greetd" "sudo"))
-
-(define u2f-pam-extension
+(define (pam-services-extension names transform)
+  "Apply TRANSFORM to the PAM services called NAMES."
   (pam-extension
    (transformer
     (lambda (pam)
-      (if (member (pam-service-name pam) u2f-pam-services)
-          (pam-service
-           (inherit pam)
-           (auth (cons (pam-entry
-                        (control "sufficient")
-                        (module (file-append pam-u2f "/lib/security/pam_u2f.so"))
-                        (arguments
-                         (list "cue" "origin=pam://yubi"
-                               #~(string-append "authfile=" #$u2f-mappings))))
-                       (pam-service-auth pam))))
+      (if (member (pam-service-name pam) names)
+          (transform pam)
           pam)))))
+
+(define u2f-pam-extension
+  (pam-services-extension
+   '("login" "greetd" "sudo")
+   (lambda (pam)
+     (pam-service
+      (inherit pam)
+      (auth (cons (pam-entry
+                   (control "sufficient")
+                   (module (file-append pam-u2f "/lib/security/pam_u2f.so"))
+                   (arguments
+                    (list "cue" "origin=pam://yubi"
+                          #~(string-append "authfile=" #$u2f-mappings))))
+                  (pam-service-auth pam)))))))
 
 (define %hardened-sysctl-settings
   '(("kernel.core_uses_pid" . "1")
@@ -97,5 +101,5 @@
 
         %sysctl-service
 
-        (simple-service 'u2f-pam pam-root-service-type
+        (simple-service 'pam-extensions pam-root-service-type
                         (list u2f-pam-extension))))
