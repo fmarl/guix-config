@@ -15,6 +15,7 @@
   #:use-module (common home mail)
   #:use-module (common home mako)
   #:use-module (common home niri)
+  #:use-module (common home secrets)
   #:use-module (common home shell)
   #:use-module (common home ssh)
   #:use-module (common home swayidle)
@@ -22,7 +23,8 @@
   #:use-module (common home waybar)
   #:export (base-home-environment
 	    desktop-services)
-  #:re-export (%mail-services))
+  #:re-export (%mail-services
+	       secrets-services))
 
 (define base-services
   (append
@@ -63,8 +65,8 @@
 				(packages '())
 				(services '()))
   "Return the home environment of HOST-NAME (a symbol, left out of the SSH
-hosts) with SERVICES, e.g. desktop-services or %mail-services, added to the
-base services."
+hosts) with SERVICES, e.g. desktop-services, %mail-services or
+secrets-services, added to the base services."
   (home-environment
    (packages packages)
    (services (append services

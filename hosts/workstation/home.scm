@@ -5,8 +5,9 @@
 
 (define %home
   (base-home-environment 'workstation
-                         #:authorized-keys (list (local-file "pubkeys/0.pub"))
+                         #:authorized-keys (list (local-file "../thinkpad/ssh.pub"))
                          #:services (append (desktop-services)
-                                            %mail-services)))
+                                            %mail-services
+                                            (secrets-services 'workstation))))
 
 %home

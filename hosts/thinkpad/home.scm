@@ -6,6 +6,7 @@
 (define %home
   (base-home-environment 'thinkpad
                          #:packages (list mullvad-vpn-desktop)
-                         #:services (desktop-services #:mobile? #t)))
+                         #:services (append (desktop-services #:mobile? #t)
+                                            (secrets-services 'thinkpad))))
 
 %home
