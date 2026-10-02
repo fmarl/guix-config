@@ -2,6 +2,7 @@
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services base)
+  #:use-module (gnu services dbus)
   #:use-module (gnu services security-token)
   #:use-module (gnu services sysctl)
   #:use-module (gnu system pam)
@@ -67,8 +68,26 @@
             (settings (append %hardened-sysctl-settings
                               %default-sysctl-settings)))))
 
+(define pcsc-polkit-rules
+  (file-union
+   "pcsc-polkit-rules"
+   `(("share/polkit-1/rules.d/50-pcsc.rules"
+      ,(plain-file
+        "50-pcsc.rules"
+        "polkit.addRule(function(action, subject) {
+  if ((action.id == \"org.debian.pcsc-lite.access_pcsc\" ||
+       action.id == \"org.debian.pcsc-lite.access_card\") &&
+      subject.isInGroup(\"plugdev\")) {
+    return polkit.Result.YES;
+  }
+});
+")))))
+
 (define %security-services
   (list (service pcscd-service-type)
+        ;; Without logind no session is active, which pcsc-lite requires
+        (simple-service 'pcsc-polkit polkit-service-type
+                        (list pcsc-polkit-rules))
 
         ;; fido2 (Yubikey etc)
         (udev-rules-service 'fido2 libfido2
