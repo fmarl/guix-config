@@ -10,6 +10,7 @@
   #:use-module (nongnu system linux-initrd)
   #:use-module (common users)
   #:use-module (common system desktop)
+  #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system maintenance)
   #:use-module (common system security)

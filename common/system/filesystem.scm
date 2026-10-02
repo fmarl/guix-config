@@ -1,7 +1,17 @@
 (define-module (common system filesystem)
   #:use-module (gnu system file-systems)
   #:use-module (ice-9 match)
-  #:export (btrfs-file-systems))
+  #:use-module (srfi srfi-1)
+  #:export (btrfs-file-systems
+            %hardened-base-file-systems))
+
+;; "debugfs=off" in %hardened-kernel-arguments unregisters debugfs, so
+;; mounting /sys/kernel/debug fails; that takes down file-systems, and with
+;; it user-processes and every service needing it, and the boot hangs.
+(define %hardened-base-file-systems
+  (remove (lambda (fs)
+            (string=? (file-system-type fs) "debugfs"))
+          %base-file-systems))
 
 (define* (btrfs-file-systems device options subvolumes
                              #:key (dependencies '()))

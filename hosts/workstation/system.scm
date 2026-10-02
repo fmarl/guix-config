@@ -52,6 +52,6 @@
                      (mount-point "/boot/efi")
                      (device (uuid "A196-47A5" 'fat32))
                      (type "vfat")))
-             %base-file-systems))))
+             %hardened-base-file-systems))))
 
 %system
