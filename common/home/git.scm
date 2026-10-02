@@ -4,6 +4,7 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common users)
+  #:use-module (common home emacs)
   #:use-module (common home helpers)
   #:export (%git-services))
 
@@ -17,7 +18,7 @@
      ("commit"
       ("gpgSign" . #f))
      ("core"
-      ("editor" . "emacsclient -s emacs-daemon -t -a ''")
+      ("editor" . ,(string-append "emacsclient -s " %emacs-socket " -t -a ''"))
       ("whitespace" . "fix,-indent-with-non-tab,trailing-space,cr-at-eol")
       ("autocrlf" . #f)
       ("safecrlf" . #t))
