@@ -3,7 +3,7 @@
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services networking)
-  #:use-module (srfi srfi-1)
+  #:use-module (ice-9 match)
   #:use-module (common machines)
   #:export (network-services))
 
@@ -72,11 +72,10 @@ table inet filter {
 
 (define lan-hosts-service
   (simple-service 'lan-hosts hosts-service-type
-                  (filter-map (lambda (machine)
-                                (let ((address (assq-ref (cdr machine) 'address)))
-                                  (and address
-                                       (host address (symbol->string (car machine))))))
-                              %machines)))
+                  (map (match-lambda
+                         ((name . address)
+                          (host address (symbol->string name))))
+                       (machine-addresses))))
 
 (define* (network-services #:key static allow-ssh?)
   "Return the network services: a static address for the machine STATIC from

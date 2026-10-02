@@ -28,13 +28,11 @@
 (define (lan-hosts self)
   "SSH hosts for all machines with a fixed address, except SELF."
   (filter-map (match-lambda
-		((name . properties)
-		 (let ((address (assq-ref properties 'address)))
-		   (and address
-			(not (eq? name self))
-			(ssh-host (symbol->string name) address
-				  (user-name %primary-user))))))
-	      %machines))
+		((name . address)
+		 (and (not (eq? name self))
+		      (ssh-host (symbol->string name) address
+				(user-name %primary-user)))))
+	      (machine-addresses)))
 
 (define* (ssh-services host-name #:key (authorized-keys #f))
   (list (service home-openssh-service-type
