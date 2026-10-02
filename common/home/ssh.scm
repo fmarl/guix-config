@@ -6,9 +6,17 @@
   #:use-module (ice-9 match)
   #:use-module (common machines)
   #:use-module (common users)
-  #:export (ssh-services))
+  #:export (ssh-host-names
+	    ssh-services))
 
 (define %identity-file "~/.ssh/id_ed25519")
+
+(define %git-hosts '("codeberg.org" "github.com"))
+
+(define (ssh-host-names)
+  "Return the names of all hosts in the SSH configuration."
+  (append %git-hosts
+	  (map (compose symbol->string car) (machine-addresses))))
 
 (define* (ssh-host name host-name user #:key (server-alive-count-max 2))
   (openssh-host (name name)
@@ -34,12 +42,17 @@
 				(user-name %primary-user)))))
 	      (machine-addresses)))
 
+(define drop-in-host
+  (openssh-host (match-criteria "all")
+		(extra-content "  Include config.d/*\n")))
+
 (define* (ssh-services host-name #:key (authorized-keys #f))
+  "Other services can add configuration as files in ~/.ssh/config.d/."
   (list (service home-openssh-service-type
 		 (home-openssh-configuration
-		  (hosts (append (list (git-host "codeberg.org")
-				       (git-host "github.com"))
-				 (lan-hosts host-name)))
+		  (hosts (cons drop-in-host
+			       (append (map git-host %git-hosts)
+				       (lan-hosts host-name))))
 		  (authorized-keys authorized-keys)
 		  (add-keys-to-agent "yes")))
 	(service home-ssh-agent-service-type
