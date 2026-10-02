@@ -40,17 +40,15 @@
                    " close\n"))
 
 (define acpid-shepherd-service
-  (shepherd-service (provision '(acpid))
-                    (documentation "ACPI event daemon")
-                    (start #~(make-forkexec-constructor (list #$(file-append
-                                                                 acpid
-                                                                 "/sbin/acpid")
-                                                              "--foreground"
-                                                              "--netlink")
-                                                        #:environment-variables
-                                                        (list
-                                                         "PATH=/run/current-system/profile/bin")))
-                    (stop #~(make-kill-destructor))))
+  (shepherd-service
+   (provision '(acpid))
+   (documentation "ACPI event daemon")
+   (start #~(make-forkexec-constructor
+             (list #$(file-append acpid "/sbin/acpid")
+                   "--foreground" "--netlink")
+             #:environment-variables
+             (list "PATH=/run/current-system/profile/bin")))
+   (stop #~(make-kill-destructor))))
 
 (define acpid-service-type
   (service-type (name 'acpid)
