@@ -7,7 +7,8 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:export (%swayidle-services lock-program))
+  #:use-module (common home niri)
+  #:export (%swayidle-services))
 
 (define lock-program
   (shell-script "lock-screen"
@@ -23,4 +24,10 @@
   (list (home-packages "swayidle" "waylock")
 	(simple-service 'swayidle-config
 			home-xdg-configuration-files-service-type
-			`(("swayidle/config" ,swayidle-config)))))
+			`(("swayidle/config" ,swayidle-config)))
+	(simple-service 'swayidle-niri
+			home-niri-service-type
+			(list (niri-spawn-at-startup
+			       (file-append swayidle "/bin/swayidle") "-w")
+			      (niri-bind "Super+Alt+L" (niri-spawn lock-program)
+					 #:title "Lock the Screen")))))

@@ -1,32 +1,61 @@
 (define-module (common home niri)
   #:use-module (guix gexp)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:use-module (gnu services)
   #:use-module (gnu packages)
-  #:use-module (gnu packages emacs)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xorg)
-  #:use-module (gnu packages zig-xyz)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home bemenu)
   #:use-module (common home colors)
-  #:use-module (common home swayidle)
+  #:use-module (common home emacs)
   #:use-module (common home theme)
-  #:export (%niri-services))
+  #:export (home-niri-service-type
+            niri-spawn-at-startup
+            niri-spawn-sh-at-startup
+            niri-bind
+            niri-spawn
+            %niri-services))
 
-(define wpctl (file-append wireplumber "/bin/wpctl"))
-(define brightnessctl* (file-append brightnessctl "/bin/brightnessctl"))
+(define (kdl-arguments arguments)
+  (append-map (lambda (argument)
+                (list " \"" argument "\""))
+              arguments))
 
-(define niri-config-text
-  (mixed-text-file "config.kdl" "
-prefer-no-csd
+(define (niri-spawn program . arguments)
+  "Return the spawn action for PROGRAM, a string or file-like."
+  (cons "spawn" (kdl-arguments (cons program arguments))))
+
+(define (niri-spawn-at-startup program . arguments)
+  `(startup "spawn-at-startup" ,@(kdl-arguments (cons program arguments)) "\n"))
+
+(define (niri-spawn-sh-at-startup . command)
+  `(startup "spawn-sh-at-startup \"" ,@command "\"\n"))
+
+(define* (niri-bind key action #:key title)
+  "Bind KEY (with its properties) to ACTION, a string or a list as returned by
+niri-spawn."
+  `(bind "    " ,key
+         ,@(if title
+               (list " hotkey-overlay-title=\"" title "\"")
+               '())
+         " { " ,@(if (string? action) (list action) action) "; }\n"))
+
+(define (bind-keys modifiers keys action)
+  (map (lambda (key)
+         (niri-bind (string-append modifiers "+" key) action))
+       keys))
+
+(define niri-settings
+  (list "prefer-no-csd
 
 xwayland-satellite {
     path \"" xwayland-satellite "/bin/xwayland-satellite\"
 }
-
 
 cursor {
     xcursor-theme \"" %cursor-theme "\"
@@ -34,36 +63,25 @@ cursor {
 }
 
 input {
-  keyboard {
-      xkb {
-          layout \"us\"
-          variant \"altgr-intl\"
-      }
-  }
+    keyboard {
+        xkb {
+            layout \"us\"
+            variant \"altgr-intl\"
+        }
+    }
 
-  touchpad {
-      tap;
-      click-method \"button-areas\";
-  }
+    touchpad {
+        tap
+        click-method \"button-areas\"
+    }
 
-  trackpoint {
-      off
-  }
+    trackpoint { off; }
+    trackball { off; }
+    tablet { off; }
+    touch { off; }
 
-  trackball {
-      off
-  }
-
-  tablet {
-      off
-  }
-
-  touch {
-      off
-  }
-
-  mod-key \"Super\"
-  mod-key-nested \"Alt\"
+    mod-key \"Super\"
+    mod-key-nested \"Alt\"
 }
 
 layout {
@@ -81,9 +99,7 @@ layout {
 
     focus-ring {
         width 2
-
         active-color \"" (color 'br_blue) "\"
-
         inactive-color \"" (color 'border) "\"
     }
 
@@ -91,11 +107,8 @@ layout {
 
     shadow {
         softness 30
-
         spread 5
-
         offset x=0 y=5
-
         color \"#0007\"
     }
 }
@@ -106,182 +119,171 @@ window-rule {
     match app-id=r#\"librewolf$\"# title=\"^Picture-in-Picture$\"
     open-floating true
 }
-
-spawn-at-startup \"" waybar "/bin/waybar\"
-spawn-at-startup \"" mako "/bin/mako\"
-spawn-at-startup \"" swayidle "/bin/swayidle\" \"-w\"
-spawn-sh-at-startup \"" swaybg "/bin/swaybg -i $HOME/Pictures/wallpaper.svg\"
-
-binds {
-    Mod+Shift+Slash { show-hotkey-overlay; }
-
-    Mod+Shift+Return hotkey-overlay-title=\"Open alacritty\" { spawn \"" alacritty "/bin/alacritty\"; }
-    Mod+P hotkey-overlay-title=\"Run bemenu\" { spawn \"" bemenu-run "\"; }
-    Super+Alt+L hotkey-overlay-title=\"Lock the Screen\" { spawn \"" lock-program "\"; }
-    Mod+Shift+D hotkey-overlay-title=\"Start dirvish\" { spawn \"" emacs-next-pgtk "/bin/emacsclient\" \"-s\" \"emacs-daemon\" \"-c\" \"-n\" \"-e\" \"(dirvish-dwim)\"; }
-
-    XF86AudioRaiseVolume allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1+\"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn \"" wpctl "\" \"set-volume\" \"@DEFAULT_AUDIO_SINK@\" \"0.1-\"; }
-    XF86AudioMute        allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\" \"@DEFAULT_AUDIO_SINK@\" \"toggle\"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn \"" wpctl "\" \"set-mute\" \"@DEFAULT_AUDIO_SOURCE@\" \"toggle\"; }
-
-    XF86MonBrightnessUp allow-when-locked=true { spawn \"" brightnessctl* "\" \"--class=backlight\" \"set\" \"+10%\"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn \"" brightnessctl* "\" \"--class=backlight\" \"set\" \"10%-\"; }
-
-    Mod+O repeat=false { toggle-overview; }
-
-    Mod+Shift+C repeat=false { close-window; }
-
-    Mod+Left  { focus-column-left; }
-    Mod+Down  { focus-window-down; }
-    Mod+Up    { focus-window-up; }
-    Mod+Right { focus-column-right; }
-    Mod+H     { focus-column-left; }
-    Mod+J     { focus-window-down; }
-    Mod+K     { focus-window-up; }
-    Mod+L     { focus-column-right; }
-
-    Mod+Ctrl+Left  { move-column-left; }
-    Mod+Ctrl+Down  { move-window-down; }
-    Mod+Ctrl+Up    { move-window-up; }
-    Mod+Ctrl+Right { move-column-right; }
-    Mod+Ctrl+H     { move-column-left; }
-    Mod+Ctrl+J     { move-window-down; }
-    Mod+Ctrl+K     { move-window-up; }
-    Mod+Ctrl+L     { move-column-right; }
-
-    Mod+Home { focus-column-first; }
-    Mod+End  { focus-column-last; }
-    Mod+Ctrl+Home { move-column-to-first; }
-    Mod+Ctrl+End  { move-column-to-last; }
-
-    Mod+Shift+Left  { focus-monitor-left; }
-    Mod+Shift+Down  { focus-monitor-down; }
-    Mod+Shift+Up    { focus-monitor-up; }
-    Mod+Shift+Right { focus-monitor-right; }
-    Mod+Shift+H     { focus-monitor-left; }
-    Mod+Shift+J     { focus-monitor-down; }
-    Mod+Shift+K     { focus-monitor-up; }
-    Mod+Shift+L     { focus-monitor-right; }
-
-    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
-    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
-    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
-    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
-    Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
-    Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
-    Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
-    Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
-
-    Mod+Page_Down      { focus-workspace-down; }
-    Mod+Page_Up        { focus-workspace-up; }
-    Mod+U              { focus-workspace-down; }
-    Mod+I              { focus-workspace-up; }
-    Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
-    Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    Mod+Ctrl+U         { move-column-to-workspace-down; }
-    Mod+Ctrl+I         { move-column-to-workspace-up; }
-
-    Mod+Shift+Page_Down { move-workspace-down; }
-    Mod+Shift+Page_Up   { move-workspace-up; }
-    Mod+Shift+U         { move-workspace-down; }
-    Mod+Shift+I         { move-workspace-up; }
-
-    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
-    Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
-    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
-    Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
-
-    Mod+WheelScrollRight      { focus-column-right; }
-    Mod+WheelScrollLeft       { focus-column-left; }
-    Mod+Ctrl+WheelScrollRight { move-column-right; }
-    Mod+Ctrl+WheelScrollLeft  { move-column-left; }
-
-    Mod+Shift+WheelScrollDown      { focus-column-right; }
-    Mod+Shift+WheelScrollUp        { focus-column-left; }
-    Mod+Ctrl+Shift+WheelScrollDown { move-column-right; }
-    Mod+Ctrl+Shift+WheelScrollUp   { move-column-left; }
-
-    Mod+1 { focus-workspace 1; }
-    Mod+2 { focus-workspace 2; }
-    Mod+3 { focus-workspace 3; }
-    Mod+4 { focus-workspace 4; }
-    Mod+5 { focus-workspace 5; }
-    Mod+6 { focus-workspace 6; }
-    Mod+7 { focus-workspace 7; }
-    Mod+8 { focus-workspace 8; }
-    Mod+9 { focus-workspace 9; }
-    Mod+Ctrl+1 { move-column-to-workspace 1; }
-    Mod+Ctrl+2 { move-column-to-workspace 2; }
-    Mod+Ctrl+3 { move-column-to-workspace 3; }
-    Mod+Ctrl+4 { move-column-to-workspace 4; }
-    Mod+Ctrl+5 { move-column-to-workspace 5; }
-    Mod+Ctrl+6 { move-column-to-workspace 6; }
-    Mod+Ctrl+7 { move-column-to-workspace 7; }
-    Mod+Ctrl+8 { move-column-to-workspace 8; }
-    Mod+Ctrl+9 { move-column-to-workspace 9; }
-
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
-
-    Mod+Comma  { consume-window-into-column; }
-
-    Mod+Period { expel-window-from-column; }
-
-    Mod+R { switch-preset-column-width; }
-    Mod+Shift+R { switch-preset-window-height; }
-    Mod+Ctrl+R { reset-window-height; }
-    Mod+F { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
-
-    Mod+Ctrl+F { expand-column-to-available-width; }
-
-    Mod+C { center-column; }
-
-    Mod+Ctrl+C { center-visible-columns; }
-
-    Mod+Minus { set-column-width \"-10%\"; }
-    Mod+Equal { set-column-width \"+10%\"; }
-
-    Mod+Shift+Minus { set-window-height \"-10%\"; }
-    Mod+Shift+Equal { set-window-height \"+10%\"; }
-
-    Mod+V       { toggle-window-floating; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
-
-    Mod+W { toggle-column-tabbed-display; }
-
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
-
-    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-
-    Mod+Shift+E { quit; }
-    Ctrl+Alt+Delete { quit; }
-
-    Mod+Shift+P { power-off-monitors; }
-}
 "))
 
-(define niri-config
-  (computed-file "niri-config.kdl"
-		 #~(begin
-		     (unless (zero? (system* #$(file-append niri "/bin/niri")
-					     "validate" "-c" #$niri-config-text))
-		       (error "invalid niri configuration"))
-		     (copy-file #$niri-config-text #$output))))
+(define directional-binds
+  (append-map
+   (match-lambda
+     ((direction target . keys)
+      (append
+       (bind-keys "Mod" keys (string-append "focus-" target "-" direction))
+       (bind-keys "Mod+Ctrl" keys (string-append "move-" target "-" direction))
+       (bind-keys "Mod+Shift" keys (string-append "focus-monitor-" direction))
+       (bind-keys "Mod+Shift+Ctrl" keys
+                  (string-append "move-column-to-monitor-" direction)))))
+   '(("left" "column" "Left" "H")
+     ("down" "window" "Down" "J")
+     ("up" "window" "Up" "K")
+     ("right" "column" "Right" "L"))))
+
+(define workspace-binds
+  (append
+   (append-map
+    (match-lambda
+      ((direction . keys)
+       (append
+        (bind-keys "Mod" keys (string-append "focus-workspace-" direction))
+        (bind-keys "Mod+Ctrl" keys
+                   (string-append "move-column-to-workspace-" direction))
+        (bind-keys "Mod+Shift" keys (string-append "move-workspace-" direction)))))
+    '(("down" "Page_Down" "U")
+      ("up" "Page_Up" "I")))
+   (append-map (lambda (index)
+                 (let ((n (number->string index)))
+                   (list (niri-bind (string-append "Mod+" n)
+                                    (string-append "focus-workspace " n))
+                         (niri-bind (string-append "Mod+Ctrl+" n)
+                                    (string-append "move-column-to-workspace " n)))))
+               (iota 9 1))))
+
+(define media-binds
+  (let ((wpctl (file-append wireplumber "/bin/wpctl"))
+        (brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
+    (map (match-lambda
+           ((key program . arguments)
+            (niri-bind (string-append key " allow-when-locked=true")
+                       (apply niri-spawn program arguments))))
+         `(("XF86AudioRaiseVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+")
+           ("XF86AudioLowerVolume" ,wpctl "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-")
+           ("XF86AudioMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle")
+           ("XF86AudioMicMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle")
+           ("XF86MonBrightnessUp" ,brightnessctl "--class=backlight" "set" "+10%")
+           ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight" "set" "10%-")))))
+
+(define action-binds
+  (map (match-lambda
+         ((key action) (niri-bind key action)))
+       '(("Mod+Shift+Slash" "show-hotkey-overlay")
+         ("Mod+O repeat=false" "toggle-overview")
+         ("Mod+Shift+C repeat=false" "close-window")
+
+         ("Mod+Home" "focus-column-first")
+         ("Mod+End" "focus-column-last")
+         ("Mod+Ctrl+Home" "move-column-to-first")
+         ("Mod+Ctrl+End" "move-column-to-last")
+
+         ("Mod+WheelScrollDown cooldown-ms=150" "focus-workspace-down")
+         ("Mod+WheelScrollUp cooldown-ms=150" "focus-workspace-up")
+         ("Mod+Ctrl+WheelScrollDown cooldown-ms=150" "move-column-to-workspace-down")
+         ("Mod+Ctrl+WheelScrollUp cooldown-ms=150" "move-column-to-workspace-up")
+         ("Mod+WheelScrollRight" "focus-column-right")
+         ("Mod+WheelScrollLeft" "focus-column-left")
+         ("Mod+Ctrl+WheelScrollRight" "move-column-right")
+         ("Mod+Ctrl+WheelScrollLeft" "move-column-left")
+         ("Mod+Shift+WheelScrollDown" "focus-column-right")
+         ("Mod+Shift+WheelScrollUp" "focus-column-left")
+         ("Mod+Ctrl+Shift+WheelScrollDown" "move-column-right")
+         ("Mod+Ctrl+Shift+WheelScrollUp" "move-column-left")
+
+         ("Mod+BracketLeft" "consume-or-expel-window-left")
+         ("Mod+BracketRight" "consume-or-expel-window-right")
+         ("Mod+Comma" "consume-window-into-column")
+         ("Mod+Period" "expel-window-from-column")
+
+         ("Mod+R" "switch-preset-column-width")
+         ("Mod+Shift+R" "switch-preset-window-height")
+         ("Mod+Ctrl+R" "reset-window-height")
+         ("Mod+F" "maximize-column")
+         ("Mod+Shift+F" "fullscreen-window")
+         ("Mod+Ctrl+F" "expand-column-to-available-width")
+         ("Mod+C" "center-column")
+         ("Mod+Ctrl+C" "center-visible-columns")
+         ("Mod+Minus" "set-column-width \"-10%\"")
+         ("Mod+Equal" "set-column-width \"+10%\"")
+         ("Mod+Shift+Minus" "set-window-height \"-10%\"")
+         ("Mod+Shift+Equal" "set-window-height \"+10%\"")
+
+         ("Mod+V" "toggle-window-floating")
+         ("Mod+Shift+V" "switch-focus-between-floating-and-tiling")
+         ("Mod+W" "toggle-column-tabbed-display")
+
+         ("Print" "screenshot")
+         ("Ctrl+Print" "screenshot-screen")
+         ("Alt+Print" "screenshot-window")
+
+         ("Mod+Escape allow-inhibiting=false" "toggle-keyboard-shortcuts-inhibit")
+         ("Mod+Shift+E" "quit")
+         ("Ctrl+Alt+Delete" "quit")
+         ("Mod+Shift+P" "power-off-monitors"))))
+
+(define launcher-binds
+  (list (niri-bind "Mod+Shift+Return"
+                   (niri-spawn (file-append alacritty "/bin/alacritty"))
+                   #:title "Open alacritty")
+        (niri-bind "Mod+P" (niri-spawn bemenu-run)
+                   #:title "Run bemenu")
+        (niri-bind "Mod+Shift+D"
+                   (apply niri-spawn (emacsclient-command "-c" "-n" "-e"
+                                                          "(dirvish-dwim)"))
+                   #:title "Start dirvish")))
+
+(define (niri-config-file entries)
+  (define (section name)
+    (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
+
+  (let ((text (apply mixed-text-file "config.kdl"
+                     (append niri-settings
+                             '("\n")
+                             (section 'startup)
+                             '("\nbinds {\n")
+                             (section 'bind)
+                             '("}\n")))))
+    (computed-file "niri-config.kdl"
+                   #~(begin
+                       (unless (zero? (system* #$(file-append niri "/bin/niri")
+                                               "validate" "-c" #$text))
+                         (error "invalid niri configuration"))
+                       (copy-file #$text #$output)))))
+
+(define home-niri-service-type
+  (service-type (name 'home-niri)
+                (extensions
+                 (list (service-extension
+                        home-xdg-configuration-files-service-type
+                        (lambda (entries)
+                          `(("niri/config.kdl" ,(niri-config-file entries)))))))
+                (compose concatenate)
+                (extend append)
+                (default-value '())
+                (description "Generate the niri configuration from the startup
+commands and key bindings that other services contribute through
+niri-spawn-at-startup and niri-bind.")))
 
 (define %niri-services
   (list (home-packages "xwayland-satellite"
-		       "wl-clipboard"
-		       "xdg-desktop-portal"
-		       "xdg-desktop-portal-gnome"
-		       "xdg-desktop-portal-gtk"
-		       "imv"
-		       "zathura"
-		       "zathura-pdf-mupdf"
-		       "mpv")
-	(simple-service 'niri-config
-			home-xdg-configuration-files-service-type
-			`(("niri/config.kdl" ,niri-config)))))
+                       "wl-clipboard"
+                       "xdg-desktop-portal"
+                       "xdg-desktop-portal-gnome"
+                       "xdg-desktop-portal-gtk"
+                       "imv"
+                       "zathura"
+                       "zathura-pdf-mupdf"
+                       "mpv")
+        (service home-niri-service-type
+                 (append (list (niri-spawn-sh-at-startup
+                                swaybg "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
+                         launcher-binds
+                         media-binds
+                         action-binds
+                         directional-binds
+                         workspace-binds))))
