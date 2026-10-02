@@ -9,21 +9,30 @@
 (define lid-handler
   (program-file "lid-handler"
                 #~(begin
-                    (use-modules (ice-9 match)
-                                 (ice-9 popen)
-                                 (ice-9 rdelim))
+                    (use-modules (ice-9 ftw)
+                                 (ice-9 match)
+                                 (ice-9 rdelim)
+                                 (srfi srfi-1)
+                                 (srfi srfi-26))
 
-                    (define (lid-closed?)
-                      (let* ((port (open-input-pipe
-                                    "cat /proc/acpi/button/lid/*/state"))
-                             (state (read-line port)))
-                        (close-pipe port)
-                        (and state
+                    (define %lid-directory "/proc/acpi/button/lid")
+
+                    (define (lid-closed? lid)
+                      (let ((state (call-with-input-file
+                                       (string-append %lid-directory "/" lid "/state")
+                                     read-line)))
+                        (and (string? state)
                              (string-contains state "closed"))))
+
+                    (define (any-lid-closed?)
+                      (any lid-closed?
+                           (or (scandir %lid-directory
+                                        (negate (cut member <> '("." ".."))))
+                               '())))
 
                     (match (command-line)
                       ((_ "close")
-                       (when (lid-closed?)
+                       (when (any-lid-closed?)
                          ;; Without logind swayidle misses the suspend, SIGUSR1
                          ;; makes it lock the screen right away
                          (when (zero? (status:exit-val
