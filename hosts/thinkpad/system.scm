@@ -2,7 +2,6 @@
   #:use-module (gnu)
   #:use-module (gnu services desktop)
   #:use-module (nongnu packages linux)
-  #:use-module (common users)
   #:use-module (common system base)
   #:use-module (common system desktop)
   #:use-module (common system filesystem)
@@ -19,9 +18,6 @@
     (kernel (linux-with-defconfig (local-file "defconfig")))
     (initrd-modules (list "nvme" "usbhid" "hid-generic" "dm-crypt"))
     (firmware (cons* ibt-hw-firmware iwlwifi-firmware %base-firmware))
-
-    (users (append (make-user-accounts #:extra-groups '("kvm"))
-                   %base-user-accounts))
 
     (services
      (append (niri-session)

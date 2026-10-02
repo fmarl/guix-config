@@ -28,9 +28,9 @@
 (define (user-u2f-keys user) (user-attr user 'u2f-keys))
 
 (define %user-groups
-  '("wheel" "netdev" "audio" "video" "seat" "plugdev"))
+  '("wheel" "netdev" "audio" "video" "seat" "plugdev" "kvm"))
 
-(define* (make-user-accounts #:key (extra-groups '()))
+(define (make-user-accounts)
   (map (lambda (user)
          (user-account
           (name (user-name user))
@@ -38,5 +38,5 @@
           (group "users")
           (shell (file-append (specification->package "zsh") "/bin/zsh"))
           (home-directory (string-append "/home/" (user-name user)))
-          (supplementary-groups (append %user-groups extra-groups))))
+          (supplementary-groups %user-groups)))
        %users))
