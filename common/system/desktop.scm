@@ -10,9 +10,7 @@
   #:use-module (gnu packages glib)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages zig-xyz)
-  #:use-module (sagittarius services vpn)
   #:use-module (sagittarius packages wm)
-  #:use-module (common system acpi)
   #:export (compositor-session
             niri-session
             nucleotide-session
@@ -79,8 +77,6 @@
 
 (define %desktop-services
   (list fontconfig-file-system-service
-        (service acpid-service-type)
-        (service mullvad-service-type)
         (service screen-locker-service-type
                  (screen-locker-configuration
                    (name "waylock")
