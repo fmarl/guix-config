@@ -93,7 +93,8 @@
         ;; Common Lisp
         emacs-sly
 
-        ;; Misc modes
+        ;; Lang modes
+        emacs-gleam-mode
         emacs-haskell-mode
         emacs-nasm-mode
 
@@ -110,7 +111,9 @@
 
         ;; Treesitter
         tree-sitter-bash
+        tree-sitter-gleam
         tree-sitter-json
+        tree-sitter-python
         tree-sitter-rust
         tree-sitter-toml
         tree-sitter-yaml))
