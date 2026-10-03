@@ -13,6 +13,5 @@
 
 (define %hardened-kernel-arguments
   '("slab_nomerge"
-    "init_on_free=1"
     "page_alloc.shuffle=1"
     "debugfs=off"))
