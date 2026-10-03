@@ -18,7 +18,7 @@
     (host-name "workstation")
     (kernel (linux-with-defconfig (local-file "defconfig")))
     (initrd-modules (list "nvme" "usbhid" "hid-generic"))
-    (firmware (list amdgpu-firmware))
+    (firmware (list amdgpu-firmware realtek-firmware))
 
     (services
      (append (niri-session)
