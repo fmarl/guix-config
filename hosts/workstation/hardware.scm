@@ -8,7 +8,7 @@
 
 (define %file-systems
   (append (btrfs-file-systems (file-system-label "ROOT")
-                              "compress-force=zstd,space_cache=v2,ssd,discard=async"
+                              "compress=zstd:3,discard=async"
                               '(("/"           "@")
                                 ("/home"       "@home")
                                 ("/boot"       "@boot")
