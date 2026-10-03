@@ -70,7 +70,7 @@ Defaults umask_override
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
     ("fs.suid_dumpable" . "0")
-    ("net.core.bpf_jit_enable" . "0")
+    ("net.core.bpf_jit_harden" . "2")
     ("net.ipv4.tcp_rfc1337" . "1")
     ("net.ipv4.conf.default.accept_source_route" . "0")
     ("net.ipv4.conf.all.log_martians" . "1")
