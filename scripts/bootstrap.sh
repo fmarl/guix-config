@@ -214,7 +214,8 @@ EOF
           (list (file-system
                   (mount-point "/boot/efi")
                   (device (uuid "${esp_uuid}" 'fat32))
-                  (type "vfat")))))
+                  (type "vfat")
+                  (options "umask=0077")))))
 EOF
     } >"${file}"
 
