@@ -14,6 +14,8 @@ setopt SHARE_HISTORY
 
 setopt AUTO_CD
 
+export GPG_TTY="$(tty)"
+
 PROMPT="%~ ${${SHLVL:#1}:+[$((SHLVL-1))] }λ "
 
 autoload -U compinit
