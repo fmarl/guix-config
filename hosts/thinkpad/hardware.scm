@@ -2,8 +2,7 @@
   #:use-module (gnu)
   #:use-module (common system filesystem)
   #:export (%mapped-devices
-            %file-systems
-            %swap-devices))
+            %file-systems))
 
 (define %mapped-devices
   (list (mapped-device
@@ -27,7 +26,3 @@
                   (mount-point "/boot/efi")
                   (device (uuid "8368-1369" 'fat32))
                   (type "vfat")))))
-
-(define %swap-devices
-  (list (swap-space
-          (target (uuid "30698a64-604a-4cb9-9e24-d51a64c22c4e")))))

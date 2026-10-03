@@ -26,7 +26,6 @@
              (list (service bluetooth-service-type))
              (operating-system-user-services %base-os)))
 
-    (swap-devices %swap-devices)
     (mapped-devices %mapped-devices)
     (file-systems (append %file-systems %hardened-base-file-systems))))
 
