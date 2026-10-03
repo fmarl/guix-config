@@ -1,10 +1,13 @@
 (define-module (common machines)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
-  #:export (%machines
+  #:export (%lan-subnet
+            %machines
             machine-ref
             machine-address
             machine-addresses))
+
+(define %lan-subnet "192.168.0.0/24")
 
 (define %machines
   '((workstation (address . "192.168.0.200")
