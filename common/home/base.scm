@@ -45,7 +45,7 @@
    %emacs-services
    %lf-services))
 
-(define* (desktop-services #:key mobile?)
+(define* (desktop-services #:key mobile? (audio? #t))
   (append
    (list (home-packages "librewolf" "signal-desktop")
 	 (service home-dbus-service-type)
@@ -55,8 +55,8 @@
 			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1"))))
    %alacritty-services
    %theme-services
-   %niri-services
-   (waybar-services #:mobile? mobile?)
+   (niri-services #:audio? audio?)
+   (waybar-services #:mobile? mobile? #:audio? audio?)
    %mako-services
    %swayidle-services))
 
