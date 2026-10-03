@@ -7,7 +7,7 @@
   #:export (%mail-services))
 
 (define %mail-services
-  (list (home-packages "isync" "msmtp")
+  (list (home-packages "mbsync-locked" "msmtp-locked")
 	(simple-service 'mail-config
 			home-files-service-type
 			`((".mbsyncrc"
