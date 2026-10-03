@@ -9,6 +9,7 @@
   #:use-module (common system kernel)
   #:use-module (common system networking)
   #:use-module (common system virtualization)
+  #:use-module (hosts workstation hardware)
   #:export (%system))
 
 (define %system
@@ -38,19 +39,7 @@
     (swap-devices (list (swap-space
                           (target (uuid "2ed570db-c148-4e3f-a3b5-d0c71b4cc5e9")))))
 
-    (file-systems
-     (append (btrfs-file-systems (file-system-label "ROOT")
-                                 "compress-force=zstd,space_cache=v2,ssd,discard=async"
-                                 '(("/"           "@")
-                                   ("/home"       "@home")
-                                   ("/boot"       "@boot")
-                                   ("/var/log"    "@log")
-                                   ("/gnu"        "@gnu")
-                                   ("/.snapshots" ".snapshots")))
-             (list (file-system
-                     (mount-point "/boot/efi")
-                     (device (uuid "A196-47A5" 'fat32))
-                     (type "vfat")))
-             %hardened-base-file-systems))))
+    (mapped-devices %mapped-devices)
+    (file-systems (append %file-systems %hardened-base-file-systems))))
 
 %system
