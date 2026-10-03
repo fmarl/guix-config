@@ -8,6 +8,7 @@
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xorg)
+  #:use-module (sagittarius locked wm)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
   #:use-module (common home bemenu)
@@ -283,12 +284,12 @@ niri-spawn-at-startup and niri-bind.")))
                        "xdg-desktop-portal-gnome"
                        "xdg-desktop-portal-gtk"
                        "imv-locked"
-                       "zathura"
+                       "zathura-locked"
                        "zathura-pdf-mupdf"
-                       "mpv")
+                       "mpv-locked")
         (service home-niri-service-type
                  (append (list (niri-spawn-sh-at-startup
-                                swaybg "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
+                                swaybg-locked "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
                          launcher-binds
                          brightness-binds
                          (if audio? audio-binds '())
