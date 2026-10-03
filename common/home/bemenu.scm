@@ -1,6 +1,6 @@
 (define-module (common home bemenu)
   #:use-module (guix gexp)
-  #:use-module (gnu packages gnupg)
+  #:use-module (sagittarius locked gnupg)
   #:use-module (gnu packages xdisorg)
   #:use-module (common home colors)
   #:use-module (common home helpers)
@@ -46,7 +46,7 @@
 (define pinentry-bemenu*
   (shell-script "pinentry-bemenu"
                 "export BEMENU_OPTS=\"" bemenu-arguments "\"\nexec "
-                pinentry-bemenu "/bin/pinentry-bemenu \"$@\"\n"))
+                pinentry-bemenu-locked "/bin/pinentry-bemenu \"$@\"\n"))
 
 (define bemenu-askpass
   (shell-script "bemenu-askpass"
