@@ -24,9 +24,11 @@
                 %base-file-systems)))
 
 (define* (btrfs-file-systems device options subvolumes
-                             #:key (dependencies '()))
+                             #:key (flags '()) (dependencies '()))
   "Return one btrfs file system per (MOUNT-POINT SUBVOLUME) in SUBVOLUMES,
-all on DEVICE and mounted with OPTIONS."
+all on DEVICE and mounted with OPTIONS and FLAGS."
+  ;; Generic mount options such as noatime must be FLAGS ('no-atime):
+  ;; OPTIONS goes to btrfs, which rejects them, and the root mount fails.
   (map (match-lambda
          ((mount-point subvolume)
           (file-system
@@ -34,5 +36,6 @@ all on DEVICE and mounted with OPTIONS."
             (mount-point mount-point)
             (type "btrfs")
             (options (string-append "subvol=" subvolume "," options))
+            (flags flags)
             (dependencies dependencies))))
        subvolumes))

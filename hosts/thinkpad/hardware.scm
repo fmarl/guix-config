@@ -19,6 +19,7 @@
                                 ("/gnu"        "@gnu")
                                 ("/var/log"    "@log")
                                 ("/.snapshots" "@snapshots"))
+                              #:flags '(no-atime)
                               #:dependencies %mapped-devices)
           (list (file-system
                   (mount-point "/boot/efi")
