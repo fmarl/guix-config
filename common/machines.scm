@@ -1,33 +1,38 @@
 (define-module (common machines)
+  #:use-module (guix records)
   #:use-module (srfi srfi-1)
-  #:use-module (ice-9 match)
   #:export (%lan-subnet
             %machines
-            machine-ref
+            %addressed-machines
+            lookup-machine
+            machine-name
             machine-address
-            machine-addresses))
+            machine-interface
+            machine-gateway))
 
 (define %lan-subnet "192.168.0.0/24")
 
+(define-record-type* <machine> machine make-machine
+  machine?
+  (name      machine-name)
+  (address   machine-address (default #f))
+  (interface machine-interface (default #f))
+  (gateway   machine-gateway (default #f)))
+
 (define %machines
-  '((workstation (address . "192.168.0.200")
-                 (interface . "enp5s0")
-                 (gateway . "192.168.0.1"))
-    (boson (address . "192.168.0.201"))
-    (thinkpad)))
+  (list (machine (name 'workstation)
+                 (address "192.168.0.200")
+                 (interface "enp5s0")
+                 (gateway "192.168.0.1"))
+        (machine (name 'boson)
+                 (address "192.168.0.201"))
+        (machine (name 'thinkpad))))
 
-(define (machine-ref name key)
-  (assq-ref (or (assq-ref %machines name)
-                (error "unknown machine" name))
-            key))
+(define %addressed-machines
+  (filter machine-address %machines))
 
-(define (machine-address name)
-  (machine-ref name 'address))
-
-(define (machine-addresses)
-  "Return (NAME . ADDRESS) for every machine with a fixed address."
-  (filter-map (match-lambda
-                ((name . properties)
-                 (let ((address (assq-ref properties 'address)))
-                   (and address (cons name address)))))
-              %machines))
+(define (lookup-machine name)
+  (or (find (lambda (machine)
+              (eq? (machine-name machine) name))
+            %machines)
+      (error "unknown machine" name)))

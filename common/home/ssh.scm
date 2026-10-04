@@ -3,20 +3,18 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services ssh)
   #:use-module (srfi srfi-1)
-  #:use-module (ice-9 match)
   #:use-module (common machines)
   #:use-module (common users)
-  #:export (ssh-host-names
+  #:export (%ssh-host-names
 	    ssh-services))
 
 (define %identity-file "~/.ssh/id_ed25519")
 
 (define %git-hosts '("codeberg.org" "github.com"))
 
-(define (ssh-host-names)
-  "Return the names of all hosts in the SSH configuration."
+(define %ssh-host-names
   (append %git-hosts
-	  (map (compose symbol->string car) (machine-addresses))))
+	  (map (compose symbol->string machine-name) %addressed-machines)))
 
 (define* (ssh-host name host-name user #:key (server-alive-count-max 2))
   (openssh-host (name name)
@@ -35,12 +33,12 @@
 
 (define (lan-hosts self)
   "SSH hosts for all machines with a fixed address, except SELF."
-  (filter-map (match-lambda
-		((name . address)
-		 (and (not (eq? name self))
-		      (ssh-host (symbol->string name) address
-				(user-name %primary-user)))))
-	      (machine-addresses)))
+  (filter-map (lambda (machine)
+		(and (not (eq? (machine-name machine) self))
+		     (ssh-host (symbol->string (machine-name machine))
+			       (machine-address machine)
+			       (user-name %primary-user))))
+	      %addressed-machines))
 
 (define drop-in-host
   (openssh-host (match-criteria "all")

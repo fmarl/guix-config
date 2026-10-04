@@ -3,21 +3,21 @@
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services networking)
-  #:use-module (ice-9 match)
   #:use-module (common machines)
   #:export (network-services))
 
-(define (static-network-services machine)
-  (list (service static-networking-service-type
-                 (list (static-networking
-                        (addresses (list (network-address
-                                          (device (machine-ref machine 'interface))
-                                          (value (string-append
-                                                  (machine-address machine) "/24")))))
-                        (routes (list (network-route
-                                       (destination "default")
-                                       (gateway (machine-ref machine 'gateway)))))
-                        (name-servers '("1.1.1.1" "8.8.8.8")))))))
+(define (static-network-services name)
+  (let ((machine (lookup-machine name)))
+    (list (service static-networking-service-type
+                   (list (static-networking
+                          (addresses (list (network-address
+                                            (device (machine-interface machine))
+                                            (value (string-append
+                                                    (machine-address machine) "/24")))))
+                          (routes (list (network-route
+                                         (destination "default")
+                                         (gateway (machine-gateway machine)))))
+                          (name-servers '("1.1.1.1" "8.8.8.8"))))))))
 
 (define nm-mac-randomization-conf
   (plain-file "mac-randomization.conf"
@@ -90,10 +90,10 @@ table inet filter {
 
 (define lan-hosts-service
   (simple-service 'lan-hosts hosts-service-type
-                  (map (match-lambda
-                         ((name . address)
-                          (host address (symbol->string name))))
-                       (machine-addresses))))
+                  (map (lambda (machine)
+                         (host (machine-address machine)
+                               (symbol->string (machine-name machine))))
+                       %addressed-machines)))
 
 (define* (network-services #:key static (open-tcp-ports '()))
   "Return the network services: a static address for the machine STATIC from
