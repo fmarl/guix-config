@@ -1,6 +1,9 @@
 (define-module (common home emacs)
-  #:use-module (gnu packages)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-xyz)
+  #:use-module (gnu packages ocaml)
+  #:use-module (gnu packages tree-sitter)
+  #:use-module (sagittarius locked mail)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
@@ -46,68 +49,67 @@
                     ("VISUAL" . ,(emacsclient-script "emacs-frame" "-c")))))
 
 (define emacs-packages
-  (specifications->packages
-   (list
-    "emacs-ef-themes"
-    "emacs-ace-window"
-    "emacs-avy"
-    "emacs-envrc"
-    "emacs-posframe"
-    "emacs-magit"
-    "emacs-dirvish"
-    "emacs-yasnippet"
-    "emacs-yasnippet-snippets"
-    "emacs-markdown-mode"
-    "emacs-paredit"
-    "emacs-rainbow-delimiters"
-    "emacs-marginalia"
-    "emacs-orderless"
-    "emacs-embark"
-    "emacs-wgrep"
-    "emacs-apheleia"
-    "emacs-consult"
-    "emacs-vertico"
-    "emacs-consult-eglot"
-    "emacs-cape"
-    "emacs-corfu"
-    "emacs-diff-hl"
-    "emacs-meow"
-    "emacs-org-modern"
-    "emacs-denote"
-    "emacs-eat"
+  (list
+   emacs-ef-themes
+   emacs-ace-window
+   emacs-avy
+   emacs-envrc
+   emacs-posframe
+   emacs-magit
+   emacs-dirvish
+   emacs-yasnippet
+   emacs-yasnippet-snippets
+   emacs-markdown-mode
+   emacs-paredit
+   emacs-rainbow-delimiters
+   emacs-marginalia
+   emacs-orderless
+   emacs-embark
+   emacs-wgrep
+   emacs-apheleia
+   emacs-consult
+   emacs-vertico
+   emacs-consult-eglot
+   emacs-cape
+   emacs-corfu
+   emacs-diff-hl
+   emacs-meow
+   emacs-org-modern
+   emacs-denote
+   emacs-eat
 
-    ;; Clojure
-    "emacs-cider"
+   ;; Clojure
+   emacs-cider
 
-    ;; Common Lisp
-    "emacs-sly"
+   ;; Common Lisp
+   emacs-sly
 
-    ;; Zig
-    "emacs-zig-mode"
+   ;; Zig
+   emacs-zig-mode
 
-    ;; Misc modes
-    "emacs-terraform-mode"
-    "emacs-yaml-mode"
-    "emacs-haskell-mode"
-    "emacs-nasm-mode"
+   ;; Misc modes
+   emacs-terraform-mode
+   emacs-yaml-mode
+   emacs-haskell-mode
+   emacs-nasm-mode
 
-    ;; OCaml
-    "emacs-tuareg"
+   ;; OCaml
+   emacs-tuareg
 
-    ;; Utils
-    "emacs-guix"
-    "emacs-geiser"
-    "emacs-circe"
-    "emacs-elfeed"
-    "mu-locked" ;mu4e
-    "emacs-app-launcher"
+   ;; Utils
+   emacs-guix
+   emacs-geiser
+   emacs-circe
+   emacs-elfeed
+   mu-locked ;mu4e
+   emacs-app-launcher
 
-    ;; Treesitter
-    "tree-sitter-bash"
-    "tree-sitter-ocaml"
-    "tree-sitter-rust"
-    "tree-sitter-zig"
-    "tree-sitter-clojure")))
+   ;; Treesitter
+   tree-sitter-bash
+   tree-sitter-ocaml
+   tree-sitter-rust
+   tree-sitter-zig
+   tree-sitter-clojure))
 
 (define %emacs-services
   (list (simple-service 'emacs-packages

@@ -1,7 +1,7 @@
 (define-module (common home helpers)
   #:use-module (guix gexp)
   #:use-module (ice-9 match)
-  #:use-module (gnu packages)
+  #:use-module (guix packages)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:export (ini-file
@@ -99,8 +99,9 @@ vectors become arrays."
                                 #$output)
                      (chmod #$output #o555))))
 
-(define (home-packages . specifications)
-  "Return a service adding SPECIFICATIONS to the home profile."
-  (simple-service (string->symbol (string-append (car specifications) "-packages"))
+(define (home-packages . packages)
+  "Return a service adding PACKAGES to the home profile."
+  (simple-service (string->symbol
+                   (string-append (package-name (car packages)) "-packages"))
                   home-profile-service-type
-                  (specifications->packages specifications)))
+                  packages))

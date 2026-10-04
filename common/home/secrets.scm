@@ -1,15 +1,13 @@
 (define-module (common home secrets)
   #:use-module (guix gexp)
-  #:use-module (gnu packages)
+  #:use-module (gnu packages password-utils)
+  #:use-module (gnu packages ssh)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home bemenu)
   #:use-module (common home helpers)
   #:use-module (common home ssh)
   #:export (secrets-services))
-
-(define sops (specification->package "sops"))
-(define openssh (specification->package "openssh"))
 
 (define secret-script
   (shell-script "secret"
@@ -39,7 +37,7 @@
 decrypted on demand with the YubiKey by ~/.local/bin/secret NAME, the SSH key
 on the first connection to one of the configured hosts."
   (let ((host (string-append "../../hosts/" (symbol->string host-name))))
-    (list (home-packages "sops")
+    (list (home-packages sops)
           (simple-service 'secret-files
                           home-files-service-type
                           `((".local/bin/secret" ,secret-script)

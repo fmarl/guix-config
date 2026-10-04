@@ -1,6 +1,6 @@
 (define-module (common home git)
   #:use-module (guix gexp)
-  #:use-module (gnu packages)
+  #:use-module (gnu packages version-control)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common users)
@@ -58,7 +58,7 @@
   (plain-file "git-ignore" ".direnv/\n.cache/\n"))
 
 (define %git-services
-  (list (home-packages "git")
+  (list (home-packages git)
 	(simple-service 'git-config
 			home-xdg-configuration-files-service-type
 			`(("git/config" ,git-config)

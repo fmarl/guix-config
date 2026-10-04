@@ -3,11 +3,17 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (gnu services)
-  #:use-module (gnu packages)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages pdf)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages window-management)
+  #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
+  #:use-module (sagittarius locked image-viewers)
+  #:use-module (sagittarius locked pdf)
+  #:use-module (sagittarius locked video)
   #:use-module (sagittarius locked wm)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
@@ -278,15 +284,15 @@ commands and key bindings that other services contribute through
 niri-spawn-at-startup and niri-bind.")))
 
 (define* (niri-services #:key (audio? #t))
-  (list (home-packages "xwayland-satellite"
-                       "wl-clipboard"
-                       "xdg-desktop-portal"
-                       "xdg-desktop-portal-gnome"
-                       "xdg-desktop-portal-gtk"
-                       "imv-locked"
-                       "zathura-locked"
-                       "zathura-pdf-mupdf"
-                       "mpv-locked")
+  (list (home-packages xwayland-satellite
+                       wl-clipboard
+                       xdg-desktop-portal
+                       xdg-desktop-portal-gnome
+                       xdg-desktop-portal-gtk
+                       imv-locked
+                       zathura-locked
+                       zathura-pdf-mupdf
+                       mpv-locked)
         (service home-niri-service-type
                  (append (list (niri-spawn-sh-at-startup
                                 swaybg-locked "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
