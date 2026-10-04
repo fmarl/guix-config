@@ -29,6 +29,7 @@
              (kvm-services "kvm_intel")
              (list (service bluetooth-service-type)
                    (service acpid-service-type)
+                   (service upower-service-type)
                    (service mullvad-service-type))
              (operating-system-user-services %base-os)))
 
