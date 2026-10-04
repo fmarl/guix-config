@@ -22,7 +22,7 @@
     (firmware (list amdgpu-firmware realtek-firmware))
 
     (services
-     (append (niri-session)
+     (append %niri-session
              (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
              (kvm-services "kvm_amd")
              (list (simple-service 'sensors kernel-module-loader-service-type
