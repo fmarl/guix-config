@@ -82,7 +82,7 @@
                       ("format-icons" . #("" "" ""))
                       ("on-click" . "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")))
 
-    ("disk" . (("interval" . 5)
+    ("disk" . (("interval" . 30)
                ("format" . "Disk {percentage_used:2}%")
                ("path" . "/")))
 
