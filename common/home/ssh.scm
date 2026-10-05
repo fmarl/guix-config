@@ -8,7 +8,7 @@
   #:export (%ssh-host-names
 	    ssh-services))
 
-(define %identity-file "~/.ssh/id_ed25519")
+(define %identity-file "~/.ssh/id_ed25519.pub")
 
 (define %git-hosts '("codeberg.org" "github.com"))
 
@@ -20,12 +20,9 @@
   (openssh-host (name name)
 		(host-name host-name)
 		(user user)
-		(port 22)
 		(identity-file %identity-file)
 		(extra-content
-		 (string-append "  HashKnownHosts yes\n"
-				"  ServerAliveInterval 30\n"
-				"  ServerAliveCountMax "
+		 (string-append "  ServerAliveCountMax "
 				(number->string server-alive-count-max) "\n"))))
 
 (define (git-host host-name)
@@ -44,15 +41,21 @@
   (openssh-host (match-criteria "all")
 		(extra-content "  Include config.d/*\n")))
 
+(define default-host
+  (openssh-host (name "*")
+		(extra-content (string-append "  IdentitiesOnly yes\n"
+					      "  HashKnownHosts yes\n"
+					      "  ServerAliveInterval 30\n"))))
+
 (define* (ssh-services host-name #:key (authorized-keys #f))
   "Other services can add configuration as files in ~/.ssh/config.d/."
   (list (service home-openssh-service-type
 		 (home-openssh-configuration
 		  (hosts (cons drop-in-host
 			       (append (map git-host %git-hosts)
-				       (lan-hosts host-name))))
-		  (authorized-keys authorized-keys)
-		  (add-keys-to-agent "yes")))
+				       (lan-hosts host-name)
+				       (list default-host))))
+		  (authorized-keys authorized-keys)))
 	(service home-ssh-agent-service-type
 		 (home-ssh-agent-configuration
 		  (extra-options '("-t" "1h30m"))))))
