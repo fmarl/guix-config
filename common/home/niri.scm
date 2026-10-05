@@ -129,6 +129,21 @@ window-rule {
     match app-id=r#\"librewolf$\"# title=\"^Picture-in-Picture$\"
     open-floating true
 }
+
+window-rule {
+    match app-id=r#\"(?i)signal\"#
+    block-out-from \"screencast\"
+}
+
+layer-rule {
+    match namespace=\"^notifications$\"
+    block-out-from \"screencast\"
+}
+
+layer-rule {
+    match namespace=\"^waybar$\"
+    block-out-from \"screencast\"
+}
 "))
 
 (define directional-binds
