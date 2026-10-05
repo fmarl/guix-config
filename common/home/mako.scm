@@ -3,10 +3,9 @@
 
 (define-module (common home mako)
   #:use-module (guix gexp)
-  #:use-module (gnu packages window-management)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (gnu packages gnome)
+  #:use-module (sagittarius locked wm)
   #:use-module (common home helpers)
   #:use-module (common home wm)
   #:use-module (common machines)
@@ -34,11 +33,11 @@
                              "\n")))
 
 (define (mako-services machine)
-  (list (home-packages mako libnotify)
+  (list (home-packages mako-locked libnotify)
         (simple-service 'mako-config home-xdg-configuration-files-service-type
                         `(("mako/config" ,(mako-config (machine-theme machine)))))
         (wm-extensions machine
                        'mako-wm
-                       (wm-autostart (file-append mako "/bin/mako"))
+                       (wm-autostart (file-append mako-locked "/bin/mako"))
                        (wm-layer-rule "^notifications$"
                                       #:hide-from-screencast? #t))))
