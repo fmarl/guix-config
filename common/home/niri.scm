@@ -146,6 +146,15 @@ layer-rule {
 }
 "))
 
+(define portals-conf
+  (plain-file "niri-portals.conf"
+              "[preferred]
+default=gnome;gtk;
+org.freedesktop.impl.portal.Access=gtk;
+org.freedesktop.impl.portal.FileChooser=gtk;
+org.freedesktop.impl.portal.Notification=gtk;
+"))
+
 (define directional-binds
   (append-map
    (match-lambda
@@ -264,6 +273,9 @@ layer-rule {
                    #:title "Open alacritty")
         (niri-bind "Mod+P" (niri-spawn bemenu-run)
                    #:title "Run bemenu")
+        (niri-bind "Mod+E"
+                   (apply niri-spawn (emacsclient-command "-c" "-n"))
+                   #:title "Open Emacs")
         (niri-bind "Mod+Shift+D"
                    (apply niri-spawn (emacsclient-command "-c" "-n" "-e"
                                                           "(dirvish-dwim)"))
@@ -273,9 +285,6 @@ layer-rule {
   (define (section name)
     (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
 
-        (niri-bind "Mod+E"
-                   (apply niri-spawn (emacsclient-command "-c" "-n"))
-                   #:title "Open Emacs")
   (let ((text (apply mixed-text-file "config.kdl"
                      (append niri-settings
                              '("\n")
@@ -314,6 +323,9 @@ niri-spawn-at-startup and niri-bind.")))
                        zathura-locked
                        zathura-pdf-mupdf
                        mpv-locked)
+        (simple-service 'niri-portals
+                        home-xdg-configuration-files-service-type
+                        `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
         (service home-niri-service-type
                  (append (list (niri-spawn-sh-at-startup
                                 swaybg-locked "/bin/swaybg -i $HOME/Pictures/wallpaper.svg"))
