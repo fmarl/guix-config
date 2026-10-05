@@ -18,7 +18,6 @@
      ("commit"
       ("gpgSign" . #t))
      ("core"
-      ("editor" . ,(string-append "emacsclient -s " %emacs-socket " -t -a ''"))
       ("whitespace" . "fix,-indent-with-non-tab,trailing-space,cr-at-eol")
       ("autocrlf" . #f)
       ("safecrlf" . #t))
@@ -51,6 +50,9 @@
 
 (define %git-services
   (list (home-packages git)
+	(simple-service 'git-editor
+			home-environment-variables-service-type
+			`(("GIT_EDITOR" . ,emacs-tty)))
 	(simple-service 'git-config
 			home-xdg-configuration-files-service-type
 			`(("git/config" ,git-config)

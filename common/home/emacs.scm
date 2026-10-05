@@ -10,8 +10,8 @@
   #:use-module (guix gexp)
   #:use-module (srfi srfi-1)
   #:use-module (common home helpers)
-  #:export (%emacs-socket
-            emacsclient-command
+  #:export (emacsclient-command
+            emacs-tty
             %emacs-services))
 
 (define %emacs-socket "emacs-daemon")
@@ -42,10 +42,12 @@
                              (apply emacsclient-command arguments))
                  '("\"$@\"\n"))))
 
+(define emacs-tty (emacsclient-script "emacs-tty" "-t"))
+
 (define emacs-editor-service
   (simple-service 'emacs-editor
                   home-environment-variables-service-type
-                  `(("EDITOR" . ,(emacsclient-script "emacs-tty" "-t"))
+                  `(("EDITOR" . ,emacs-tty)
                     ("VISUAL" . ,(emacsclient-script "emacs-frame" "-c")))))
 
 (define emacs-packages
