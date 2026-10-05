@@ -15,7 +15,6 @@
   #:use-module (common home git)
   #:use-module (common home gnupg)
   #:use-module (common home helpers)
-  #:use-module (common home lf)
   #:use-module (common home mail)
   #:use-module (common home mako)
   #:use-module (common home niri)
@@ -49,8 +48,7 @@
    %gpg-services
    %shell-services
    %git-services
-   %emacs-services
-   %lf-services))
+   %emacs-services))
 
 (define* (desktop-services #:key mobile? (audio? #t))
   (append
