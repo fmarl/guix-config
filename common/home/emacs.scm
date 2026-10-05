@@ -100,10 +100,10 @@
 
    ;; Treesitter
    tree-sitter-bash
-   tree-sitter-ocaml
+   tree-sitter-json
    tree-sitter-rust
-   tree-sitter-zig
-   tree-sitter-clojure))
+   tree-sitter-toml
+   tree-sitter-yaml))
 
 (define %emacs-services
   (list (simple-service 'emacs-packages
