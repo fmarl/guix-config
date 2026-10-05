@@ -39,10 +39,10 @@
          (service guix-service-type
                   (guix-configuration (tmpdir "/var/tmp")))
          (service nscd-service-type)
-
-         (service log-rotation-service-type)
-
-         ;; Convenient services brought by the Shepherd.
+         (service log-rotation-service-type
+                  (log-rotation-configuration
+                   (calendar-event
+                    #~(calendar-event #:minutes '(0) #:hours '(12)))))
          (service shepherd-timer-service-type)
          (service shepherd-transient-service-type)
          (service log-cleanup-service-type

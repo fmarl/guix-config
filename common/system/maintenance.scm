@@ -6,7 +6,6 @@
   #:use-module (gnu services shepherd)
   #:use-module (gnu packages backup)
   #:use-module (gnu packages linux)
-  #:use-module (gnu packages admin)
   #:use-module (gnu packages package-management)
   #:export (%time-servers
             %maintenance-services
@@ -64,13 +63,7 @@ ago, so that runs missed while the machine was off are caught up."
                                         (list (file-append guix "/bin/guix")
                                               "gc" "--delete-generations=2w")
                                         #:days 7 #:minute 20
-                                        #:requirement '(guix-daemon))
-                        ;; log-rotation itself only runs Sundays at 22:00
-                        (catch-up-timer 'rotate-logs
-                                        (list (file-append shepherd-1.0 "/bin/herd")
-                                              "trigger" "log-rotation")
-                                        #:days 7 #:minute 40
-                                        #:requirement '(log-rotation)))))
+                                        #:requirement '(guix-daemon)))))
 
 (define* (btrbk-config subvolumes #:key (preserve "14d"))
   (plain-file "btrbk.conf"
