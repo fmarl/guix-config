@@ -41,7 +41,7 @@
               ("color" ("ui" . "auto")))))
 
 (define git-ignore
-  (plain-file "git-ignore" ".direnv/\n.cache/\n"))
+  (plain-file "git-ignore" ".direnv/\n.cache/\n.env*"))
 
 (define %git-services
   (list (home-packages git)
