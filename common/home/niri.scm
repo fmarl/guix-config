@@ -273,6 +273,9 @@ layer-rule {
   (define (section name)
     (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
 
+        (niri-bind "Mod+E"
+                   (apply niri-spawn (emacsclient-command "-c" "-n"))
+                   #:title "Open Emacs")
   (let ((text (apply mixed-text-file "config.kdl"
                      (append niri-settings
                              '("\n")
