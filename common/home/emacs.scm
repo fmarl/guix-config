@@ -3,7 +3,6 @@
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages ocaml)
   #:use-module (gnu packages tree-sitter)
-  #:use-module (sagittarius locked mail)
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
