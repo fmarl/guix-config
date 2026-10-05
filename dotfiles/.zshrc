@@ -1,29 +1,42 @@
 typeset -U path cdpath fpath manpath
 
-autoload -U compinit && compinit
 HISTSIZE="10000"
 SAVEHIST="10000"
-PROMPT="%~ $ "
-HISTFILE="/home/marrero/.zsh_history"
+HISTFILE="$HOME/.zsh_history"
 
-enabled_opts=(
-  HIST_FCNTL_LOCK HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY autocd
-)
-for opt in "${enabled_opts[@]}"; do
-  setopt "$opt"
-done
-unset opt enabled_opts
+setopt HIST_FCNTL_LOCK
+setopt HIST_IGNORE_SPACE
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt SHARE_HISTORY
 
-disabled_opts=(
-  APPEND_HISTORY EXTENDED_HISTORY HIST_EXPIRE_DUPS_FIRST HIST_FIND_NO_DUPS
-  HIST_IGNORE_ALL_DUPS HIST_SAVE_NO_DUPS
-)
-for opt in "${disabled_opts[@]}"; do
-  unsetopt "$opt"
-done
-unset opt disabled_opts
+setopt AUTO_CD
 
-. $HOME/.profile
+export GPG_TTY="$(tty)"
 
-eval "$(direnv hook zsh)"
-source <(fzf --zsh)
+PROMPT="%~ ${${SHLVL:#1}:+[$((SHLVL-1))] }λ "
+
+autoload -U compinit
+
+() {
+    setopt LOCAL_OPTIONS EXTENDED_GLOB
+    if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
+        compinit
+    else
+        compinit -C
+    fi
+}
+
+if (( $+commands[direnv] )); then
+    eval "$(direnv hook zsh)"
+fi
+
+if (( $+commands[fzf] )); then
+    source <(fzf --zsh)
+fi
+
+# Has to be sourced last
+zsh_hl="$HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+[[ -r "$zsh_hl" ]] && source "$zsh_hl"
+unset zsh_hl
