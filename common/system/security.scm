@@ -110,11 +110,8 @@ Defaults umask_override
 
 (define %security-services
   (list (service pcscd-service-type)
-        ;; Without logind no session is active, which pcsc-lite requires
         (simple-service 'pcsc-polkit polkit-service-type
                         (list pcsc-polkit-rules))
-
-        ;; fido2 (Yubikey etc)
         (udev-rules-service 'fido2 libfido2
                             #:groups '("plugdev"))
         (udev-rules-service 'yubikey-personalization yubikey-personalization)
