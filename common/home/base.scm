@@ -31,7 +31,7 @@
 
 (define base-services
   (append
-   (list (home-packages openssh font-hack font-aporetic)
+   (list (home-packages openssh font-aporetic)
 	 (simple-service 'guile-config
 			 home-files-service-type
 			 `((".guile" ,(local-file "../../dotfiles/.guile" "guile"))))
