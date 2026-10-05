@@ -163,7 +163,7 @@
       ("padding" . "0 10px")))))
 
 (define* (waybar-services #:key mobile? (audio? #t))
-  (list (home-packages waybar wireplumber)
+  (list (apply home-packages waybar (if audio? (list wireplumber) '()))
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config"
