@@ -34,11 +34,6 @@ if (( $+commands[fzf] )); then
     source <(fzf --zsh)
 fi
 
-if [[ -n "$EAT_SHELL_INTEGRATION_DIR" &&
-      -r "$EAT_SHELL_INTEGRATION_DIR/zsh" ]]; then
-    source "$EAT_SHELL_INTEGRATION_DIR/zsh"
-fi
-
 # Has to be sourced last
 zsh_hl="$HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 [[ -r "$zsh_hl" ]] && source "$zsh_hl"
