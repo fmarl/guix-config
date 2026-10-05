@@ -37,14 +37,6 @@
       ("signoff" . #t)
       ("numbered" . "auto")
       ("headers" . "Content-Type: text/plain; charset=UTF-8"))
-     ("sendemail"
-      ("sendmailCmd" . "msmtp -a default")
-      ("from" . ,(user-email %primary-user))
-      ("chainreplyto" . #f)
-      ("confirm" . "always")
-      ("annotate" . "yes")
-      ("suppresscc" . "self")
-      ("to" . "linux-kernel@vger.kernel.org"))
      ("alias"
       ("co" . "checkout")
       ("st" . "status")
