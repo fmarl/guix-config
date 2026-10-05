@@ -42,9 +42,7 @@
 			   ("guix/trusted-channels.scm"
 			    ,(local-file "../../dotfiles/.config/guix/channels.scm"
 					 "trusted-channels.scm"))))
-	 (service home-xdg-user-directories-service-type
-		  (home-xdg-user-directories-configuration
-		   (download "$HOME/downloads"))))
+	 (service home-xdg-user-directories-service-type))
    %gpg-services
    %shell-services
    %git-services
