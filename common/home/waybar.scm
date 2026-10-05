@@ -80,7 +80,7 @@
     ("wireplumber" . (("format" . "{volume}% {icon}")
                       ("format-muted" . "")
                       ("format-icons" . #("" "" ""))
-                      ("on-click" . "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")))
+                      ("on-click" . "@wpctl@ set-mute @DEFAULT_AUDIO_SINK@ toggle")))
 
     ("disk" . (("interval" . 30)
                ("format" . "Disk {percentage_used:2}%")
@@ -162,16 +162,22 @@
      (("#clock" ,@%styled-status-modules)
       ("padding" . "0 10px")))))
 
+(define (waybar-config-file mobile? audio?)
+  (let* ((json (scm->json-string
+                (vector (waybar-config #:mobile? mobile? #:audio? audio?))
+                #:pretty #t))
+         (index (string-contains json "@wpctl@")))
+    (mixed-text-file "waybar-config"
+                     (substring json 0 index)
+                     (file-append wireplumber "/bin/wpctl")
+                     (substring json (+ index (string-length "@wpctl@"))))))
+
 (define* (waybar-services #:key mobile? (audio? #t))
   (list (apply home-packages waybar (if audio? (list wireplumber) '()))
         (simple-service 'waybar-config
                         home-xdg-configuration-files-service-type
                         `(("waybar/config"
-                           ,(plain-file "waybar-config"
-                                        (scm->json-string
-                                         (vector (waybar-config #:mobile? mobile?
-                                                                #:audio? audio?))
-                                         #:pretty #t)))
+                           ,(waybar-config-file mobile? audio?))
                           ("waybar/style.css" ,waybar-style)))
         (simple-service 'waybar-autostart
                         home-niri-service-type
