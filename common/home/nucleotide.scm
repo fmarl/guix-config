@@ -4,16 +4,15 @@
 (define-module (common home nucleotide)
   #:use-module (guix gexp)
   #:use-module (guix records)
-  #:use-module (ice-9 match)
-  #:use-module (srfi srfi-1)
-  #:use-module (gnu services)
+  #:use-module (gnu home services)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages glib)
-  #:use-module (gnu packages image)
   #:use-module (gnu packages xorg)
-  #:use-module (gnu home services)
+  #:use-module (gnu services)
   #:use-module (common home helpers)
   #:use-module (common themes)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:export (home-nucleotide-service-type nucleotide-autostart nucleotide-bind
                                          nucleotide-spawn nucleotide-services))
 
@@ -174,23 +173,6 @@ org.freedesktop.impl.portal.ScreenCast=wlr;
 org.freedesktop.impl.portal.Screenshot=wlr;
 "))
 
-(define screenshot
-  (shell-script "screenshot"
-   "dir=\"$HOME/Pictures/Screenshots\"\n"
-   "mkdir -p \"$dir\"\n"
-   "file=\"$dir/Screenshot from $(date '+%Y-%m-%d %H-%M-%S').png\"
-"
-   "case \"$1\" in\n"
-   "    screen) "
-   grim
-   "/bin/grim \"$file\" ;;\n"
-   "    *) "
-   grim
-   "/bin/grim -g \"$("
-   slurp
-   "/bin/slurp)\" \"$file\" ;;\n"
-   "esac\n"))
-
 (define action-binds
   (map (match-lambda
          ((key action)
@@ -203,12 +185,6 @@ org.freedesktop.impl.portal.Screenshot=wlr;
          ("Mod+Shift+F" "(toggle-fullscreen wm)")
          ("Mod+Shift+E" "(exit wm)")
          ("Ctrl+Alt+Delete" "(exit wm)"))))
-
-(define screenshot-binds
-  (list (nucleotide-bind "Print"
-                         (nucleotide-spawn screenshot))
-        (nucleotide-bind "Ctrl+Print"
-                         (nucleotide-spawn screenshot "screen"))))
 
 (define dbus-update-activation-environment
   (file-append dbus "/bin/dbus-update-activation-environment"))
@@ -224,6 +200,4 @@ org.freedesktop.impl.portal.Screenshot=wlr;
                                                                 dbus-update-activation-environment
                                                                 "WAYLAND_DISPLAY"
                                                                 "XDG_CURRENT_DESKTOP")
-                                                               (append
-                                                                action-binds
-                                                                screenshot-binds)))))))
+                                                               action-binds))))))
