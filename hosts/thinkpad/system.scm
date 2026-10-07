@@ -23,7 +23,7 @@
                      %base-firmware))
 
     (services
-     (append %niri-session
+     (append (desktop-session 'thinkpad)
              (network-services)
              (list (service bluetooth-service-type)
                    (service acpid-service-type)

@@ -1,5 +1,6 @@
 (define-module (common system desktop)
   #:use-module (guix gexp)
+  #:use-module (ice-9 match)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services dbus)
@@ -11,7 +12,9 @@
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages zig-xyz)
   #:use-module (sagittarius packages wm)
+  #:use-module (common machines)
   #:export (compositor-session
+            desktop-session
             %niri-session
             %nucleotide-session
             %desktop-services))
@@ -80,6 +83,11 @@
                       #:desktop-name "river"
                       #:extra-env '(("XKB_DEFAULT_LAYOUT" . "us")
                                     ("XKB_DEFAULT_VARIANT" . "altgr-intl"))))
+
+(define (desktop-session host-name)
+  (match (machine-wm (lookup-machine host-name))
+    ('niri %niri-session)
+    ('nucleotide %nucleotide-session)))
 
 (define %desktop-services
   (list fontconfig-file-system-service
