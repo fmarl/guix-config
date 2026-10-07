@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
+
 # Partition, encrypt and format a disk and install a host from hosts/ onto it.
 
 set -Eeuo pipefail
