@@ -50,7 +50,8 @@
         (service mingetty-service-type
                  (mingetty-configuration (tty "tty8")))))
 
-(define* (compositor-session package session-command #:key desktop-name)
+(define* (compositor-session package session-command
+                             #:key desktop-name (extra-env '()))
   "Install PACKAGE and start SESSION-COMMAND (a list) as the graphical session."
   (cons* (simple-service 'compositor profile-service-type (list package))
          (service seatd-service-type)
@@ -62,7 +63,8 @@
                                  session-command))
             (xdg-session-type "wayland")
             (extra-env `(("XDG_CURRENT_DESKTOP" . ,desktop-name)
-                         ("XDG_SESSION_DESKTOP" . ,desktop-name)))))))
+                         ("XDG_SESSION_DESKTOP" . ,desktop-name)
+                         ,@extra-env))))))
 
 (define %niri-session
   ;; niri --session exports XDG_CURRENT_DESKTOP to the D-Bus activation
@@ -75,7 +77,9 @@
   (compositor-session river-0.4
                       (list (file-append river-0.4 "/bin/river")
                             "-c" (file-append nucleotide "/bin/nucleotide"))
-                      #:desktop-name "river"))
+                      #:desktop-name "river"
+                      #:extra-env '(("XKB_DEFAULT_LAYOUT" . "us")
+                                    ("XKB_DEFAULT_VARIANT" . "altgr-intl"))))
 
 (define %desktop-services
   (list fontconfig-file-system-service
