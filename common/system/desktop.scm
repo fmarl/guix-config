@@ -16,10 +16,7 @@
   #:use-module (gnu packages zig-xyz)
   #:use-module (sagittarius packages wm)
   #:use-module (common machines)
-  #:export (compositor-session
-            desktop-session
-            %niri-session
-            %nucleotide-session
+  #:export (desktop-session
             %desktop-services))
 
 (define tuigreet-cache-service
