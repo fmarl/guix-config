@@ -12,8 +12,11 @@
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
+  #:use-module (common machines)
   #:use-module (hosts thinkpad hardware)
   #:export (%system))
+
+(define %machine (lookup-machine 'thinkpad))
 
 (define %system
   (operating-system
@@ -26,7 +29,7 @@
                      %base-firmware))
 
     (services
-     (append (desktop-session 'thinkpad)
+     (append (desktop-session %machine)
              (network-services)
              (list (service bluetooth-service-type)
                    (service acpid-service-type)

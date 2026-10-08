@@ -12,8 +12,11 @@
   #:use-module (common system filesystem)
   #:use-module (common system kernel)
   #:use-module (common system networking)
+  #:use-module (common machines)
   #:use-module (hosts workstation hardware)
   #:export (%system))
+
+(define %machine (lookup-machine 'workstation))
 
 (define %system
   (operating-system
@@ -24,8 +27,8 @@
     (firmware (list amdgpu-firmware realtek-firmware))
 
     (services
-     (append (desktop-session 'workstation)
-             (network-services #:static 'workstation #:open-tcp-ports '("ssh"))
+     (append (desktop-session %machine)
+             (network-services #:static %machine #:open-tcp-ports '("ssh"))
              (list (simple-service 'sensors kernel-module-loader-service-type
                                    (list "it87"))
                    (service openssh-service-type

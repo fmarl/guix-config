@@ -9,18 +9,17 @@
   #:use-module (common machines)
   #:export (network-services))
 
-(define (static-network-services name)
-  (let ((machine (lookup-machine name)))
-    (list (service static-networking-service-type
-                   (list (static-networking
-                          (addresses (list (network-address
-                                            (device (machine-interface machine))
-                                            (value (string-append
-                                                    (machine-address machine) "/24")))))
-                          (routes (list (network-route
-                                         (destination "default")
-                                         (gateway (machine-gateway machine)))))
-                          (name-servers '("1.1.1.1" "8.8.8.8"))))))))
+(define (static-network-services machine)
+  (list (service static-networking-service-type
+                 (list (static-networking
+                        (addresses (list (network-address
+                                          (device (machine-interface machine))
+                                          (value (string-append
+                                                  (machine-address machine) "/24")))))
+                        (routes (list (network-route
+                                       (destination "default")
+                                       (gateway (machine-gateway machine)))))
+                        (name-servers '("1.1.1.1" "8.8.8.8")))))))
 
 (define nm-mac-randomization-conf
   (plain-file "mac-randomization.conf"
@@ -99,9 +98,9 @@ table inet filter {
                        %addressed-machines)))
 
 (define* (network-services #:key static (open-tcp-ports '()))
-  "Return the network services: a static address for the machine STATIC from
-%machines, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS
-from the LAN."
+  "Return the network services: a static address for the machine STATIC,
+NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS from the
+LAN."
   (append (if static
               (static-network-services static)
               network-manager-services)

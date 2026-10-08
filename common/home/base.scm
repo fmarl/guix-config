@@ -52,9 +52,7 @@
    %git-services
    %emacs-services))
 
-(define* (desktop-services host-name #:key mobile? (audio? #t))
-  (define wm (machine-wm (lookup-machine host-name)))
-
+(define (desktop-services machine)
   (append
    (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
@@ -62,27 +60,27 @@
 			 home-environment-variables-service-type
 			 '(("_JAVA_AWT_WM_NONREPARENTING" . "1")
 			   ("ELECTRON_OZONE_PLATFORM_HINT" . "auto"))))
-   (if audio?
+   (if (machine-audio? machine)
        (list (service home-pipewire-service-type))
        '())
    %alacritty-services
    %theme-services
-   (wm-services wm #:audio? audio?)
-   (waybar-services wm #:mobile? mobile? #:audio? audio?)
-   (mako-services wm)
-   (swayidle-services wm)))
+   (wm-services machine)
+   (waybar-services machine)
+   (mako-services machine)
+   (swayidle-services (machine-wm machine))))
 
-(define* (base-home-environment host-name #:key
+(define* (base-home-environment machine #:key
 				(authorized-keys #f)
 				(packages '())
 				(services '()))
-  "Return the home environment of HOST-NAME (a symbol, left out of the SSH
-hosts) with SERVICES, e.g. desktop-services, %mail-services or
-secrets-services, added to the base services."
+  "Return the home environment of MACHINE (left out of the SSH hosts) with
+SERVICES, e.g. desktop-services, %mail-services or secrets-services, added to
+the base services."
   (home-environment
    (packages packages)
    (services (append services
-		     (ssh-services host-name
+		     (ssh-services (machine-name machine)
 				   #:authorized-keys authorized-keys)
 		     base-services
 		     %base-home-services))))

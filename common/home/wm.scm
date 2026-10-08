@@ -19,6 +19,7 @@
   #:use-module (common home emacs)
   #:use-module (common home niri)
   #:use-module (common home nucleotide)
+  #:use-module (common machines)
   #:export (wm-autostart
             wm-bind
             wm-extensions
@@ -89,7 +90,9 @@
      `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight" "set" "+10%")
        ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight" "set" "10%-")))))
 
-(define* (wm-services wm #:key (audio? #t))
+(define (wm-services machine)
+  (define wm (machine-wm machine))
+
   (append
    (list (home-packages wl-clipboard
                         xdg-desktop-portal
@@ -101,7 +104,7 @@
          (apply wm-extensions wm 'desktop
                 (append launcher-binds
                         brightness-binds
-                        (if audio? audio-binds '()))))
+                        (if (machine-audio? machine) audio-binds '()))))
    (match wm
      ('niri niri-services)
      ('nucleotide nucleotide-services))))

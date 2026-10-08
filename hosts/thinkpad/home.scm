@@ -3,13 +3,16 @@
 
 (define-module (hosts thinkpad home)
   #:use-module (common home base)
+  #:use-module (common machines)
   #:use-module (sagittarius packages vpn)
   #:export (%home))
 
+(define %machine (lookup-machine 'thinkpad))
+
 (define %home
-  (base-home-environment 'thinkpad
+  (base-home-environment %machine
                          #:packages (list mullvad-vpn-desktop)
-                         #:services (append (desktop-services 'thinkpad #:mobile? #t)
-                                            (secrets-services 'thinkpad))))
+                         #:services (append (desktop-services %machine)
+                                            (secrets-services %machine))))
 
 %home
