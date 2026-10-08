@@ -90,7 +90,7 @@
     ("wireplumber" . (("format" . "{volume}% {icon}")
                       ("format-muted" . "")
                       ("format-icons" . #("" "" ""))
-                      ("on-click" . "@wpctl@ set-mute @DEFAULT_AUDIO_SINK@ toggle")))
+                      ("on-click" . "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")))
 
     ("disk" . (("interval" . 30)
                ("format" . "Disk {percentage_used:2}%")
@@ -175,12 +175,8 @@
       ("padding" . "0 10px")))))
 
 (define (waybar-config-file machine)
-  (let* ((json (scm->json-string (vector (waybar-config machine)) #:pretty #t))
-         (index (string-contains json "@wpctl@")))
-    (mixed-text-file "waybar-config"
-                     (substring json 0 index)
-                     (file-append wireplumber "/bin/wpctl")
-                     (substring json (+ index (string-length "@wpctl@"))))))
+  (plain-file "waybar-config"
+              (scm->json-string (vector (waybar-config machine)) #:pretty #t)))
 
 (define battery-alert
   (shell-script "battery-alert"
