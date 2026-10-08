@@ -5,11 +5,11 @@
   #:use-module (gnu packages terminals)
   #:use-module (gnu services)
   #:use-module (gnu home services)
-  #:use-module (common home colors)
   #:use-module (common home helpers)
-  #:export (%alacritty-services))
+  #:use-module (common themes)
+  #:export (alacritty-services))
 
-(define alacritty-config
+(define (alacritty-config theme)
   (toml-file
    "alacritty.toml"
    `(("font"
@@ -24,35 +24,35 @@
      ("selection"
       ("save_to_clipboard" . #t))
      ("colors.primary"
-      ("background" . ,(color 'bg_0))
-      ("foreground" . ,(color 'fg_0)))
+      ("background" . ,(color theme 'bg_0))
+      ("foreground" . ,(color theme 'fg_0)))
      ("colors.cursor"
-      ("cursor" . ,(color 'cursor))
-      ("text" . ,(color 'bg_0)))
+      ("cursor" . ,(color theme 'cursor))
+      ("text" . ,(color theme 'bg_0)))
      ("colors.selection"
-      ("background" . ,(color 'bg_region))
-      ("text" . ,(color 'fg_0)))
+      ("background" . ,(color theme 'bg_region))
+      ("text" . ,(color theme 'fg_0)))
      ("colors.normal"
-      ("black" . ,(color 'bg_1))
-      ("red" . ,(color 'red))
-      ("green" . ,(color 'green))
-      ("yellow" . ,(color 'yellow))
-      ("blue" . ,(color 'blue))
-      ("magenta" . ,(color 'magenta))
-      ("cyan" . ,(color 'cyan))
-      ("white" . ,(color 'fg_0)))
+      ("black" . ,(color theme 'bg_1))
+      ("red" . ,(color theme 'red))
+      ("green" . ,(color theme 'green))
+      ("yellow" . ,(color theme 'yellow))
+      ("blue" . ,(color theme 'blue))
+      ("magenta" . ,(color theme 'magenta))
+      ("cyan" . ,(color theme 'cyan))
+      ("white" . ,(color theme 'fg_0)))
      ("colors.bright"
-      ("black" . ,(color 'bg_active))
-      ("red" . ,(color 'br_red))
-      ("green" . ,(color 'br_green))
-      ("yellow" . ,(color 'br_yellow))
-      ("blue" . ,(color 'br_blue))
-      ("magenta" . ,(color 'br_magenta))
-      ("cyan" . ,(color 'br_cyan))
-      ("white" . ,(color 'dim_0))))))
+      ("black" . ,(color theme 'bg_active))
+      ("red" . ,(color theme 'br_red))
+      ("green" . ,(color theme 'br_green))
+      ("yellow" . ,(color theme 'br_yellow))
+      ("blue" . ,(color theme 'br_blue))
+      ("magenta" . ,(color theme 'br_magenta))
+      ("cyan" . ,(color theme 'br_cyan))
+      ("white" . ,(color theme 'dim_0))))))
 
-(define %alacritty-services
+(define (alacritty-services theme)
   (list (home-packages alacritty)
 	(simple-service 'alacritty-config
 			home-xdg-configuration-files-service-type
-			`(("alacritty/alacritty.toml" ,alacritty-config)))))
+			`(("alacritty/alacritty.toml" ,(alacritty-config theme))))))

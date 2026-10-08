@@ -8,22 +8,22 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home colors)
   #:use-module (common home wm)
   #:use-module (common machines)
+  #:use-module (common themes)
   #:export (mako-services))
 
-(define mako-config
+(define (mako-config theme)
   (plain-file "mako-config"
-	      (string-append "background-color=" (color 'bg_2) "\n"
-			     "border-color=" (color 'bg_1) "\n"
+	      (string-append "background-color=" (color theme 'bg_2) "\n"
+			     "border-color=" (color theme 'bg_1) "\n"
 			     "border-radius=12\n"
-			     "progress-color=" (color 'cyan) "\n")))
+			     "progress-color=" (color theme 'cyan) "\n")))
 
 (define (mako-services machine)
   (list (home-packages mako libnotify)
 	(simple-service 'mako-config
 			home-xdg-configuration-files-service-type
-			`(("mako/config" ,mako-config)))
+			`(("mako/config" ,(mako-config (machine-theme machine)))))
 	(wm-extensions (machine-wm machine) 'mako-autostart
 		       (wm-autostart (file-append mako "/bin/mako")))))

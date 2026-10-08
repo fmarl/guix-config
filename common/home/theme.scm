@@ -10,29 +10,29 @@
   #:use-module (gnu services)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home colors)
-  #:export (%theme-services %cursor-theme))
+  #:use-module (common themes)
+  #:export (theme-services %cursor-theme))
 
 (define %cursor-theme "Adwaita")
 
-(define gtk-settings
+(define (gtk-settings theme)
   (plain-file "settings.ini"
 	      (string-append "[Settings]
-gtk-theme-name=adw-gtk3-dark
-gtk-icon-theme-name=Papirus-Dark
+gtk-theme-name=" (if (theme-dark? theme) "adw-gtk3-dark" "adw-gtk3") "
+gtk-icon-theme-name=" (if (theme-dark? theme) "Papirus-Dark" "Papirus") "
 gtk-cursor-theme-name=" %cursor-theme "
 gtk-cursor-theme-size=24
 gtk-font-name=Aporetic Sans 11
-gtk-application-prefer-dark-theme=1
+gtk-application-prefer-dark-theme=" (if (theme-dark? theme) "1" "0") "
 ")))
 
-(define gtk-css
+(define (gtk-css theme)
   (plain-file
    "gtk.css"
    (string-concatenate
     (map (lambda (entry)
 	   (string-append "@define-color " (car entry) " "
-			  (color (cdr entry)) ";\n"))
+			  (color theme (cdr entry)) ";\n"))
 	 '(("accent_color" . br_blue)
 	   ("accent_bg_color" . bg_accent)
 	   ("accent_fg_color" . fg_0)
@@ -56,7 +56,7 @@ gtk-application-prefer-dark-theme=1
 	   ("warning_color" . yellow)
 	   ("error_color" . red))))))
 
-(define %theme-services
+(define (theme-services theme)
   (list (home-packages adw-gtk3-theme
 		       papirus-icon-theme
 		       adwaita-icon-theme
@@ -65,10 +65,10 @@ gtk-application-prefer-dark-theme=1
 		       font-nerd-symbols)
 	(simple-service 'gtk-theme
 			home-xdg-configuration-files-service-type
-			`(("gtk-3.0/settings.ini" ,gtk-settings)
-			  ("gtk-3.0/gtk.css" ,gtk-css)
-			  ("gtk-4.0/settings.ini" ,gtk-settings)
-			  ("gtk-4.0/gtk.css" ,gtk-css)))
+			`(("gtk-3.0/settings.ini" ,(gtk-settings theme))
+			  ("gtk-3.0/gtk.css" ,(gtk-css theme))
+			  ("gtk-4.0/settings.ini" ,(gtk-settings theme))
+			  ("gtk-4.0/gtk.css" ,(gtk-css theme))))
 	(simple-service 'cursor-theme
 			home-environment-variables-service-type
 			`(("XCURSOR_THEME" . ,%cursor-theme)

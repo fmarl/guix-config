@@ -3,6 +3,7 @@
 
 (define-module (common home niri)
   #:use-module (guix gexp)
+  #:use-module (guix records)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (gnu services)
@@ -13,8 +14,8 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu home services)
   #:use-module (common home helpers)
-  #:use-module (common home colors)
   #:use-module (common home theme)
+  #:use-module (common themes)
   #:export (home-niri-service-type
             niri-spawn-at-startup
             niri-bind
@@ -47,7 +48,7 @@ niri-spawn."
          (niri-bind (string-append modifiers "+" key) action))
        keys))
 
-(define niri-settings
+(define (niri-settings theme)
   (list "prefer-no-csd
 
 hotkey-overlay {
@@ -86,7 +87,7 @@ input {
 
 layout {
     gaps 10
-    background-color \"" (color 'bg_0) "\"
+    background-color \"" (color theme 'bg_0) "\"
     center-focused-column \"never\"
 
     preset-column-widths {
@@ -99,8 +100,8 @@ layout {
 
     focus-ring {
         width 2
-        active-color \"" (color 'br_blue) "\"
-        inactive-color \"" (color 'border) "\"
+        active-color \"" (color theme 'br_blue) "\"
+        inactive-color \"" (color theme 'border) "\"
     }
 
     border { off; }
@@ -236,16 +237,22 @@ org.freedesktop.impl.portal.Notification=gtk;
          ("Ctrl+Alt+Delete" "quit")
          ("Mod+Shift+P" "power-off-monitors"))))
 
-(define (niri-config-file entries)
-  (define (section name)
-    (append-map cdr (filter (lambda (entry) (eq? (car entry) name)) entries)))
+(define-record-type* <home-niri-configuration>
+  home-niri-configuration make-home-niri-configuration
+  home-niri-configuration?
+  (theme   home-niri-configuration-theme)
+  (entries home-niri-configuration-entries (default '())))
+
+(define (niri-config-file config)
+  (define entries (home-niri-configuration-entries config))
 
   (let ((text (apply mixed-text-file "config.kdl"
-                     (append niri-settings
+                     (append (niri-settings
+                              (home-niri-configuration-theme config))
                              '("\n")
-                             (section 'startup)
+                             (tagged-entries entries 'startup)
                              '("\nbinds {\n")
-                             (section 'bind)
+                             (tagged-entries entries 'bind)
                              '("}\n")))))
     (computed-file "niri-config.kdl"
                    #~(begin
@@ -259,21 +266,27 @@ org.freedesktop.impl.portal.Notification=gtk;
                 (extensions
                  (list (service-extension
                         home-xdg-configuration-files-service-type
-                        (lambda (entries)
-                          `(("niri/config.kdl" ,(niri-config-file entries)))))))
+                        (lambda (config)
+                          `(("niri/config.kdl" ,(niri-config-file config)))))))
                 (compose concatenate)
-                (extend append)
-                (default-value '())
+                (extend (lambda (config entries)
+                          (home-niri-configuration
+                           (inherit config)
+                           (entries (append (home-niri-configuration-entries
+                                             config)
+                                            entries)))))
                 (description "Generate the niri configuration from the startup
 commands and key bindings that other services contribute through
 niri-spawn-at-startup and niri-bind.")))
 
-(define niri-services
+(define (niri-services theme)
   (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)
         (simple-service 'niri-portals
                         home-xdg-configuration-files-service-type
                         `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
         (service home-niri-service-type
-                 (append action-binds
-                         directional-binds
-                         workspace-binds))))
+                 (home-niri-configuration
+                  (theme theme)
+                  (entries (append action-binds
+                                   directional-binds
+                                   workspace-binds))))))

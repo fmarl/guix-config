@@ -58,11 +58,11 @@
      (simple-service name home-nucleotide-service-type
                      (map entry->nucleotide entries)))))
 
-(define launcher-binds
+(define (launcher-binds theme)
   (list (wm-bind "Mod+Shift+Return"
                  (list (file-append alacritty "/bin/alacritty"))
                  #:title "Open alacritty")
-        (wm-bind "Mod+P" (list bemenu-run)
+        (wm-bind "Mod+P" (list (bemenu-run theme))
                  #:title "Run bemenu")
         (wm-bind "Mod+E" (emacsclient-command "-c" "-n")
                  #:title "Open Emacs")
@@ -92,6 +92,7 @@
 
 (define (wm-services machine)
   (define wm (machine-wm machine))
+  (define theme (machine-theme machine))
 
   (append
    (list (home-packages wl-clipboard
@@ -102,9 +103,9 @@
                         zathura-pdf-mupdf
                         mpv-locked)
          (apply wm-extensions wm 'desktop
-                (append launcher-binds
+                (append (launcher-binds theme)
                         brightness-binds
                         (if (machine-audio? machine) audio-binds '()))))
    (match wm
-     ('niri niri-services)
-     ('nucleotide nucleotide-services))))
+     ('niri (niri-services theme))
+     ('nucleotide (nucleotide-services theme)))))

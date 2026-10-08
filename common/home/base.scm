@@ -33,7 +33,7 @@
   #:re-export (%mail-services
 	       secrets-services))
 
-(define base-services
+(define (base-services theme)
   (append
    (list (home-packages openssh font-aporetic)
 	 (simple-service 'guile-config
@@ -47,12 +47,14 @@
 			    ,(local-file "../../dotfiles/.config/guix/channels.scm"
 					 "trusted-channels.scm"))))
 	 (service home-xdg-user-directories-service-type))
-   %gpg-services
+   (gpg-services theme)
    %shell-services
    %git-services
    %emacs-services))
 
 (define (desktop-services machine)
+  (define theme (machine-theme machine))
+
   (append
    (list (home-packages librewolf signal-desktop)
 	 (service home-dbus-service-type)
@@ -63,8 +65,8 @@
    (if (machine-audio? machine)
        (list (service home-pipewire-service-type))
        '())
-   %alacritty-services
-   %theme-services
+   (alacritty-services theme)
+   (theme-services theme)
    (wm-services machine)
    (waybar-services machine)
    (mako-services machine)
@@ -82,5 +84,5 @@ the base services."
    (services (append services
 		     (ssh-services (machine-name machine)
 				   #:authorized-keys authorized-keys)
-		     base-services
+		     (base-services (machine-theme machine))
 		     %base-home-services))))
