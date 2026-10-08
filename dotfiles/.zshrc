@@ -18,7 +18,16 @@ setopt AUTO_CD
 
 export GPG_TTY="$(tty)"
 
-PROMPT="%~ ${${SHLVL:#1}:+[$((SHLVL-1))] }λ "
+autoload -Uz vcs_info add-zsh-hook
+
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git:*' formats ' %F{blue}%b%f'
+zstyle ':vcs_info:git:*' actionformats ' %F{blue}%b%f|%F{yellow}%a%f'
+
+add-zsh-hook precmd vcs_info
+
+setopt PROMPT_SUBST
+PROMPT='${SSH_CONNECTION:+%m:}%~${vcs_info_msg_0_} '"${${SHLVL:#1}:+[$((SHLVL-1))] }"'%(?..%F{red}%? %f)%(!.%F{red}#%f.λ) '
 
 autoload -U compinit
 
