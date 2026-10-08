@@ -5,6 +5,7 @@
   #:use-module (guix gexp)
   #:use-module (gnu home)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages gnome)
   #:use-module (gnu packages librewolf)
   #:use-module (gnu packages ssh)
   #:use-module (nongnu packages messaging)
@@ -52,6 +53,27 @@
    %git-services
    %emacs-services))
 
+(define battery-alert
+  (shell-script "battery-alert"
+		"notified=\"$XDG_RUNTIME_DIR/battery-alert\"\n"
+		"mkdir -p \"$notified\"\n"
+		"while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do\n"
+		"    for battery in /sys/class/power_supply/BAT*; do\n"
+		"        marker=\"$notified/${battery##*/}\"\n"
+		"        capacity=$(cat \"$battery/capacity\")\n"
+		"        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&\n"
+		"           [ \"$capacity\" -le 15 ]; then\n"
+		"            [ -e \"$marker\" ] ||\n"
+		"                " libnotify "/bin/notify-send -u critical"
+		" \"Akku fast leer\" \"Noch $capacity %\"\n"
+		"            touch \"$marker\"\n"
+		"        else\n"
+		"            rm -f \"$marker\"\n"
+		"        fi\n"
+		"    done\n"
+		"    sleep 60\n"
+		"done\n"))
+
 (define (desktop-services machine)
   (define theme (machine-theme machine))
 
@@ -70,7 +92,11 @@
    (wm-services machine)
    (waybar-services machine)
    (mako-services machine)
-   (swayidle-services (machine-wm machine))))
+   (swayidle-services (machine-wm machine))
+   (if (machine-mobile? machine)
+       (list (wm-extensions (machine-wm machine) 'battery-alert
+			    (wm-autostart battery-alert)))
+       '())))
 
 (define* (base-home-environment machine #:key
 				(authorized-keys #f)
