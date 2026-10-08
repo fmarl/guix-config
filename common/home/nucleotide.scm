@@ -20,7 +20,17 @@
             nucleotide-spawn
             nucleotide-services))
 
+(define (nucleotide-spawn program . arguments)
+  "Return the spawn action for PROGRAM, a string or file-like."
+  `(spawn ,program ,@arguments))
 
+(define (nucleotide-autostart program . arguments)
+  `(autostart ,program ,@arguments))
+
+(define (nucleotide-bind key action)
+  "Bind KEY to ACTION, Lisp code as a string or an action returned by
+nucleotide-spawn."
+  `(bind ,key ,action))
 
 (define (lisp-string value)
   (match value
@@ -31,12 +41,6 @@
   (append-map (lambda (value)
                 (cons " " (lisp-string value)))
               values))
-
-(define (nucleotide-spawn program . arguments)
-  `("(spawn (list" ,@(lisp-strings (cons program arguments)) "))"))
-
-(define (nucleotide-autostart program . arguments)
-  `(autostart "\n    (" ,@(cdr (lisp-strings (cons program arguments))) ")"))
 
 (define %modifiers
   '(("Shift" . ":shift") ("Ctrl" . ":ctrl") ("Alt" . ":alt")
@@ -59,18 +63,25 @@
         ((assoc-ref %keysyms key))
         (else (error "unknown nucleotide key" key))))
 
-(define (nucleotide-bind key action)
-  (match (reverse (string-split key #\+))
-    ((key . modifiers)
-     `(bind "\n  ((" ,(string-join
-                       (map (lambda (modifier)
-                              (or (assoc-ref %modifiers modifier)
-                                  (error "unknown nucleotide modifier"
-                                         modifier)))
-                            (reverse modifiers))
-                       " ")
-            ") " ,(keysym key)
-            " " ,@(if (string? action) (list action) action) ")"))))
+(define (modifier name)
+  (or (assoc-ref %modifiers name)
+      (error "unknown nucleotide modifier" name)))
+
+(define (action->lisp action)
+  (match action
+    ((? string?) (list action))
+    (('spawn . command) `("(spawn (list" ,@(lisp-strings command) "))"))))
+
+(define (bind->lisp bind)
+  (match bind
+    ((key action)
+     (match (reverse (string-split key #\+))
+       ((key . modifiers)
+        `("\n  ((" ,(string-join (map modifier (reverse modifiers)) " ")
+          ") " ,(keysym key) " " ,@(action->lisp action) ")"))))))
+
+(define (autostart->lisp command)
+  `("\n    (" ,@(cdr (lisp-strings command)) ")"))
 
 (define (rgba theme name)
   (let ((hex (color theme name)))
@@ -110,9 +121,10 @@
          (append (list (nucleotide-settings
                         (home-nucleotide-configuration-theme config)))
                  '("\n(defparameter *autostart-programs*\n  '(")
-                 (tagged-entries entries 'autostart)
+                 (append-map autostart->lisp
+                             (tagged-entries entries 'autostart))
                  '("))\n\n(define-keybinds (wm)")
-                 (tagged-entries entries 'bind)
+                 (append-map bind->lisp (tagged-entries entries 'bind))
                  '(")\n"))))
 
 (define home-nucleotide-service-type
