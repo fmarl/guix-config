@@ -54,7 +54,7 @@
 
 (define emacs-packages
   (list
-   emacs-ef-themes
+   emacs-modus-themes
    emacs-ace-window
    emacs-avy
    emacs-envrc
