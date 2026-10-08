@@ -14,6 +14,7 @@
             key-value-file
             shell-script
             home-packages
+            kdl-file
             tagged-entries))
 
 (define (value->string value)
@@ -24,17 +25,20 @@
     ((? string?) value)
     ((? symbol?) (symbol->string value))))
 
+(define (quoted str)
+  (string-append "\""
+                 (string-concatenate
+                  (map (lambda (c)
+                         (if (memv c '(#\" #\\))
+                             (string #\\ c)
+                             (string c)))
+                       (string->list str)))
+                 "\""))
+
 (define (ini-value value)
   (let ((str (value->string value)))
     (if (string-any (lambda (c) (memv c '(#\; #\# #\" #\\))) str)
-        (string-append "\""
-                       (string-concatenate
-                        (map (lambda (c)
-                               (if (memv c '(#\" #\\))
-                                   (string #\\ c)
-                                   (string c)))
-                             (string->list str)))
-                       "\"")
+        (quoted str)
         str)))
 
 (define (sections-file name sections format-value)
@@ -110,6 +114,44 @@ vectors become arrays."
                    (string-append (package-name (car packages)) "-packages"))
                   home-profile-service-type
                   packages))
+
+(define (kdl-value value)
+  (match value
+    ((? string?) (list (quoted value)))
+    ((or #t #f (? number?)) (list (value->string value)))
+    (_ (list "\"" value "\""))))
+
+(define (kdl-name name)
+  (if (symbol? name) (symbol->string name) name))
+
+(define (kdl-arguments items)
+  (match items
+    (() '())
+    (((? keyword? key) value . rest)
+     `(" " ,(symbol->string (keyword->symbol key)) "=" ,@(kdl-value value)
+       ,@(kdl-arguments rest)))
+    (((? pair?) . rest)
+     (kdl-arguments rest))
+    ((value . rest)
+     `(" " ,@(kdl-value value) ,@(kdl-arguments rest)))))
+
+(define (kdl-nodes nodes depth)
+  (define indent (make-string (* 4 depth) #\space))
+
+  (append-map (match-lambda
+                ((name . items)
+                 (let ((children (filter pair? items)))
+                   `(,indent ,(kdl-name name) ,@(kdl-arguments items)
+                     ,@(if (null? children)
+                           '("\n")
+                           `(" {\n" ,@(kdl-nodes children (+ depth 1))
+                             ,indent "}\n"))))))
+              nodes))
+
+(define (kdl-file name nodes)
+  "NODES is a list of (NAME ITEM ...), where an ITEM is an argument, a
+#:KEY VALUE property or a child node; values may be file-like."
+  (apply mixed-text-file name (kdl-nodes nodes 0)))
 
 (define (tagged-entries entries tag)
   "Return the contents of the ENTRIES tagged TAG, in order."
