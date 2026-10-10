@@ -2,16 +2,15 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home ssh)
-  #:use-module (gnu services)
-  #:use-module (gnu home services)
   #:use-module (gnu home services ssh)
-  #:use-module (srfi srfi-1)
+  #:use-module (gnu services)
   #:use-module (common machines)
   #:use-module (common users)
-  #:export (%ssh-host-names ssh-services))
+  #:use-module (srfi srfi-1)
+  #:export (%ssh-public-key %ssh-host-names ssh-services))
 
-(define %identity-file
-  "~/.ssh/id_ed25519.pub")
+(define %ssh-public-key
+  ".ssh/id_ed25519.pub")
 
 (define %git-hosts
   '("codeberg.org" "github.com"))
@@ -25,7 +24,7 @@
   (openssh-host (name name)
                 (host-name host-name)
                 (user user)
-                (identity-file %identity-file)
+                (identity-file (string-append "~/" %ssh-public-key))
                 (extra-content (string-append "  ServerAliveCountMax "
                                               (number->string
                                                server-alive-count-max) "\n"))))
