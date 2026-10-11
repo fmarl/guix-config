@@ -12,26 +12,26 @@
   #:export (persisted-file-systems impermanence-services))
 
 (define %persisted-directories
-  '(("/var/guix" shared)
-    ("/var/tmp" sticky)
-    ("/var/lib/catch-up" shared)
-    ("/var/lib/bluetooth" private)
-    ("/var/lib/NetworkManager" private)
-    ("/etc/NetworkManager/system-connections" private)))
+  '(("/var/guix" #o755)
+    ("/var/tmp" #o1777)
+    ("/var/lib/catch-up" #o755)
+    ("/var/lib/bluetooth" #o700)
+    ("/var/lib/NetworkManager" #o700)
+    ("/etc/NetworkManager/system-connections" #o700)))
 
 (define %build-modules
   '((guix build utils)
     (common build impermanence)))
 
-(define (persisted-directories file-systems extra)
+(define (persisted-directories file-systems host-directories)
   (cond
     ((impermanent-file-systems? file-systems)
-     (append %persisted-directories extra))
-    ((null? extra)
+     (append %persisted-directories host-directories))
+    ((null? host-directories)
      '())
-    (else (error "persisted directories need impermanent-file-systems" extra))))
+    (else (error "persisted directories need impermanent-file-systems" host-directories))))
 
-(define (persisted-file-systems file-systems extra)
+(define (persisted-file-systems file-systems host-directories)
   (map (match-lambda
          ((directory _)
           (file-system
@@ -40,7 +40,7 @@
             (type "none")
             (flags '(bind-mount))
             (check? #f))))
-       (persisted-directories file-systems extra)))
+       (persisted-directories file-systems host-directories)))
 
 (define (persisted-directories-activation directories)
   (with-imported-modules %build-modules
@@ -76,12 +76,12 @@
                       (documentation
                        "Persistent password hashes and signing key"))))
 
-(define (impermanence-services file-systems extra users)
+(define (impermanence-services file-systems host-directories users)
   (if (impermanent-file-systems? file-systems)
       (list (simple-service 'persisted-directories activation-service-type
                             (persisted-directories-activation (persisted-directories
                                                                file-systems
-                                                               extra)))
+                                                               host-directories)))
             (simple-service 'persistent-secrets shepherd-root-service-type
                             (list (persistent-secrets-shepherd-service users)))
             (simple-service 'persistent-secrets-before-login

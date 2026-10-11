@@ -32,7 +32,7 @@
 (define (gpg-services machine)
   (list (home-packages gnupg)
         (service home-gpg-agent-service-type
-                 (home-gpg-agent-configuration (pinentry-program (pinentry-bemenu*
+                 (home-gpg-agent-configuration (pinentry-program (bemenu-pinentry
                                                                   (machine-theme
                                                                    machine)))
                                                (default-cache-ttl 60)

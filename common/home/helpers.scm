@@ -123,7 +123,6 @@ vectors become arrays."
                      (chmod #$output #o555))))
 
 (define (home-packages . packages)
-  "Return a service adding PACKAGES to the home profile."
   (simple-service (string->symbol (string-append (package-name (car packages))
                                                  "-packages"))
                   home-profile-service-type packages))

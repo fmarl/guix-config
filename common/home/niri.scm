@@ -243,7 +243,7 @@ org.freedesktop.impl.portal.Notification=gtk;
 
   (check-entry-tags entries
                     '(startup rule bind))
-  (let ((text (kdl-file "config.kdl"
+  (let ((unvalidated (kdl-file "config.kdl"
                         (append (niri-settings (home-niri-configuration-theme
                                                 config))
                                 (tagged-entries entries
@@ -256,9 +256,9 @@ org.freedesktop.impl.portal.Notification=gtk;
                    #~(begin
                        (unless (zero? (system* #$(file-append niri "/bin/niri")
                                                "validate" "-c"
-                                               #$text))
+                                               #$unvalidated))
                          (error "invalid niri configuration"))
-                       (copy-file #$text
+                       (copy-file #$unvalidated
                                   #$output)))))
 
 (define home-niri-service-type

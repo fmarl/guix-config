@@ -33,7 +33,6 @@
                        '("tty1" "tty2" "tty3")))
          (service shepherd-system-log-service-type)
          (service etc-bashrc-d-service-type)
-         (service urandom-seed-service-type)
          (service zram-device-service-type
                   (zram-device-configuration (size "8G")
                                              (compression-algorithm 'zstd)

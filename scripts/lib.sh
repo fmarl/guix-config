@@ -151,7 +151,7 @@ function write_persisted_hash {
     (umask 077 && printf '%s\n' "${hash}" >"${directory}/${name}")
 }
 
-function write_disk {
+function write_disk_module {
     local file="$1" host="$2" luks_uuid="$3" esp_uuid="$4"
     cat >"${file}" <<EOF
 ;;; SPDX-License-Identifier: GPL-3.0-or-later

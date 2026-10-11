@@ -6,9 +6,6 @@
 ;;; Copyright © 2024 Hilton Chain <hako@ultrarare.space>
 ;;; Copyright © 2025, 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
-;; Built with `make installer`.  The image uses the pinned channels and
-;; contains this repository in /etc/guix-config.
-
 (define-module (common system installer)
   #:use-module (guix)
   #:use-module (guix channels)
@@ -46,10 +43,26 @@
       (error "INSTALLER_MACHINE is not set")))
 
 (define (host-kernel host)
-  (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
-                                                                    host)
-                                                                  system))
-                                       '%system)))
+  (if (string=? %machine "generic")
+      linux
+      (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
+                                                                        host)
+                                                                      system))
+                                           '%system))))
+
+(define %installer-kernel-configs
+  '("CONFIG_ISO9660_FS=m"
+    "CONFIG_OVERLAY_FS=m"
+    "CONFIG_SCSI=m"
+    "CONFIG_BLK_DEV_SD=m"
+    "CONFIG_USB_STORAGE=m"
+    "CONFIG_USB_UAS=m"))
+
+(define (installer-kernel host)
+  (if (string=? host "generic")
+      linux
+      (customize-linux #:linux (host-kernel host)
+                       #:configs %installer-kernel-configs)))
 
 (define machine-files
   `(("guix-config-machine" ,(plain-file "guix-config-machine"
@@ -61,7 +74,9 @@
 (define installation-os-nonfree
   (operating-system
     (inherit installation-os)
-    (kernel linux)
+    (kernel (installer-kernel %machine))
+    (initrd-modules (list "nvme" "usbhid" "hid-generic" "usb-storage" "uas"
+                          "sd_mod"))
     (firmware (list linux-firmware))
 
     (kernel-arguments '("net.ifnames=0"))

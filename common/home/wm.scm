@@ -84,14 +84,14 @@
     ('nucleotide (simple-service name home-nucleotide-service-type
                                  (filter-map entry->nucleotide entries)))))
 
-(define (media-binds bindings)
+(define (locked-binds bindings)
   (map (match-lambda
          ((key . command) (wm-bind key command
                                    #:locked? #t))) bindings))
 
 (define audio-binds
   (let ((wpctl (file-append wireplumber "/bin/wpctl")))
-    (media-binds `(("XF86AudioRaiseVolume" ,wpctl "set-volume"
+    (locked-binds `(("XF86AudioRaiseVolume" ,wpctl "set-volume"
                     "@DEFAULT_AUDIO_SINK@" "0.1+")
                    ("XF86AudioLowerVolume" ,wpctl "set-volume"
                     "@DEFAULT_AUDIO_SINK@" "0.1-")
@@ -102,7 +102,7 @@
 
 (define brightness-binds
   (let ((brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
-    (media-binds `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight"
+    (locked-binds `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight"
                     "set" "+10%")
                    ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight"
                     "set" "10%-")))))

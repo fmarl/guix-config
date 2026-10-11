@@ -9,7 +9,7 @@
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
-  #:export (bemenu-askpass pinentry-bemenu* bemenu-services))
+  #:export (bemenu-askpass bemenu-pinentry bemenu-services))
 
 (define (bemenu-settings theme)
   `(("tb" unquote
@@ -90,7 +90,7 @@
                 " \"$@\"\n"))
 
 ;; pinentry-bemenu takes its options only from BEMENU_OPTS
-(define (pinentry-bemenu* theme)
+(define (bemenu-pinentry theme)
   (shell-script "pinentry-bemenu"
                 "export BEMENU_OPTS=\""
                 (bemenu-arguments theme)

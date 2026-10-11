@@ -87,7 +87,7 @@ Defaults umask_override
     ("net.ipv4.conf.all.send_redirects" . "0")
     ("net.ipv4.conf.default.send_redirects" . "0")))
 
-(define %sysctl-service
+(define sysctl-service
   (service sysctl-service-type
            (sysctl-configuration (settings (append %hardened-sysctl-settings
                                                    %default-sysctl-settings)))))
@@ -114,7 +114,7 @@ Defaults umask_override
         (udev-rules-service 'yubikey-personalization yubikey-personalization)
         (udev-rules-service 'u2f-host libu2f-host)
 
-        %sysctl-service
+        sysctl-service
 
         (simple-service 'pam-extensions pam-root-service-type
                         (list u2f-pam-extension umask-pam-extension))))

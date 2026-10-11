@@ -8,18 +8,10 @@
   #:use-module (ice-9 rdelim)
   #:export (create-persisted-directories restore-secrets save-secrets))
 
-(define (permissions class)
-  (string->number (match class
-                    ('shared "755")
-                    ('private "700")
-                    ('secret "600")
-                    ('sticky "1777")) 8))
-
-(define (ensure-directory directory class)
+(define (ensure-directory directory mode)
   (unless (file-exists? directory)
     (mkdir-p directory)
-    (chmod directory
-           (permissions class))))
+    (chmod directory mode)))
 
 (define (replace-file file write)
   (let ((new (string-append file ".new")))
@@ -38,15 +30,14 @@
                 (lambda (new)
                   (call-with-output-file new
                     (lambda (port)
-                      (chmod port
-                             (permissions 'secret))
+                      (chmod port #o600)
                       (display text port)
                       (newline port))))))
 
 (define (create-persisted-directories persist directories)
   (for-each (match-lambda
-              ((directory class)
-               (ensure-directory (string-append persist directory) class)))
+              ((directory mode)
+               (ensure-directory (string-append persist directory) mode)))
             directories))
 
 (define (hash-file persist user)
@@ -79,8 +70,7 @@
         (file (hash-file persist user)))
     (when (and hash
                (string-prefix? "$" hash))
-      (ensure-directory (dirname file)
-                        'private)
+      (ensure-directory (dirname file) #o700)
       (write-secret file hash))))
 
 (define (sync-signing-key persist etc key)
@@ -90,8 +80,7 @@
       ((file-exists? saved)
        (copy-file-atomically saved live))
       ((file-exists? live)
-       (ensure-directory (dirname saved)
-                         'private)
+       (ensure-directory (dirname saved) #o700)
        (copy-file-atomically live saved)))))
 
 (define* (restore-secrets persist users
@@ -107,7 +96,6 @@ PERSIST, or persist the signing key if it is not saved yet."
 
 (define* (save-secrets persist users
                        #:key (etc "/etc"))
-  "Save the password hashes of USERS to PERSIST."
   (for-each (lambda (user)
               (save-password persist
                              (string-append etc "/shadow") user)) users))

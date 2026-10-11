@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
-(define-module (common lib)
+(define-module (common host)
   #:export (host-config))
 
 (define* (host-config type

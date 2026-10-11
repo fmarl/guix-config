@@ -13,7 +13,7 @@
   #:use-module (ice-9 match)
   #:export (swayidle-services))
 
-(define lock-program
+(define lock-screen
   (shell-script "lock-screen"
                 procps
                 "/bin/pgrep -x waylock || "
@@ -31,7 +31,7 @@
   (apply mixed-text-file
          "swayidle-config"
          "timeout 600 '"
-         lock-program
+         lock-screen
          "'\n"
          "timeout 900 "
          (monitors-off wm)))
@@ -47,5 +47,5 @@
                        (wm-autostart (file-append swayidle "/bin/swayidle")
                                      "-w")
                        (wm-bind "Super+Alt+L"
-                                (list lock-program)
-                                #:title "Lock the Screen"))))
+                                (list lock-screen)
+                                #:title "Lock the screen"))))

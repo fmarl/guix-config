@@ -39,12 +39,12 @@
 (define (glyph name)
   (assq-ref %glyphs name))
 
-(define (command program . arguments)
+(define (shell-command program . arguments)
   #~(string-join (list #$program
                        #$@arguments)))
 
-(define (brightness change)
-  (command (file-append brightnessctl "/bin/brightnessctl")
+(define (set-brightness change)
+  (shell-command (file-append brightnessctl "/bin/brightnessctl")
            "--class=backlight" "set" change))
 
 (define-record-type* <status-module> status-module make-status-module
@@ -93,7 +93,7 @@
                                           (glyph 'volume-low)
                                           (glyph 'volume-high)))
                                  ("on-click" unquote
-                                  (command (file-append wireplumber
+                                  (shell-command (file-append wireplumber
                                                         "/bin/wpctl")
                                            "set-mute" "@DEFAULT_AUDIO_SINK@"
                                            "toggle"))))
@@ -104,9 +104,9 @@
                                   (string-append "{percent}% "
                                                  (glyph 'sun)))
                                  ("on-scroll-up" unquote
-                                  (brightness "+5%"))
+                                  (set-brightness "+5%"))
                                  ("on-scroll-down" unquote
-                                  (brightness "5%-"))))
+                                  (set-brightness "5%-"))))
                        (available? machine-mobile?))
         (status-module (name "battery")
                        (config `(("states" ("warning" . 30)

@@ -17,7 +17,6 @@
                                          nucleotide-spawn nucleotide-services))
 
 (define (nucleotide-spawn program . arguments)
-  "Return the spawn action for PROGRAM, a string or file-like."
   `(spawn ,program
           ,@arguments))
 
@@ -92,7 +91,7 @@ nucleotide-spawn."
 (define (autostart->lisp command)
   `("\n    (" ,@(cdr (lisp-strings command)) ")"))
 
-(define (rgba theme name)
+(define (rgb theme name)
   (let ((hex (color theme name)))
     (string-join (map (lambda (start)
                         (number->string (string->number (substring hex start
@@ -102,10 +101,10 @@ nucleotide-spawn."
 
 (define (nucleotide-settings theme)
   (string-append "(defparameter *focused-border-rgba* '("
-                 (rgba theme
+                 (rgb theme
                        'br_blue) " 255))
 (defparameter *unfocused-border-rgba* '("
-                 (rgba theme
+                 (rgb theme
                        'border)
                  " 255))
 
@@ -161,10 +160,7 @@ nucleotide-spawn."
                                                          (entries (append (home-nucleotide-configuration-entries
                                                                            config)
                                                                    entries)))))
-                (description
-                 "Generate the nucleotide init file from the
-autostart programs and key bindings that other services contribute through
-nucleotide-autostart and nucleotide-bind.")))
+                (description "Generate the nucleotide configuration")))
 
 (define portals-conf
   (plain-file "river-portals.conf" "[preferred]

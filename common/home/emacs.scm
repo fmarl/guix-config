@@ -14,28 +14,27 @@
   #:use-module (srfi srfi-1)
   #:export (emacs-tty %emacs-services emacs-desktop-services))
 
-(define %emacs-socket
+(define %emacs-socket-name
   "emacs-daemon")
 
 (define emacsclient
   (file-append emacs-next-pgtk "/bin/emacsclient"))
 
 (define (emacsclient-command . arguments)
-  "Return the emacsclient command line connecting to the daemon, as a list."
-  (cons* emacsclient "-s" %emacs-socket arguments))
+  (cons* emacsclient "-s" %emacs-socket-name arguments))
 
-(define emacs-binary
+(define emacs-program
   (file-append emacs-next-pgtk "/bin/emacs"))
 
 (define emacs-daemon-shepherd-service
   (shepherd-service (provision '(emacs-daemon))
-                    (start #~(make-forkexec-constructor (list #$emacs-binary
+                    (start #~(make-forkexec-constructor (list #$emacs-program
                                                               #$(string-append
                                                                  "--fg-daemon="
-                                                                 %emacs-socket))))
+                                                                 %emacs-socket-name))))
                     (stop #~(make-system-destructor (string-append #$emacsclient
                                                      " --socket-name="
-                                                     #$%emacs-socket
+                                                     #$%emacs-socket-name
                                                      " --eval '(kill-emacs)'")))
                     (documentation "Emacs background daemon")))
 
@@ -86,29 +85,23 @@
         emacs-org-modern
         emacs-denote
 
-        ;; Clojure
         emacs-cider
 
-        ;; Common Lisp
         emacs-sly
 
-        ;; Lang modes
         emacs-gleam-mode
         emacs-haskell-mode
         emacs-nasm-mode
 
-        ;; OCaml
         emacs-tuareg
         ocaml-utop
         dune
 
-        ;; Utils
         emacs-guix
         emacs-geiser
         emacs-circe
         emacs-elfeed
 
-        ;; Treesitter
         tree-sitter-bash
         tree-sitter-gleam
         tree-sitter-json

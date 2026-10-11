@@ -3,6 +3,6 @@
 
 (add-to-load-path (dirname (current-filename)))
 
-(use-modules (common lib))
+(use-modules (common host))
 
 (host-config "home")

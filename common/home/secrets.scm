@@ -25,7 +25,7 @@
                   "fingerprint=$("
                   ssh-keygen
                   " -l -f \"$HOME/"
-                  %ssh-public-key
+                  %ssh-public-key-file
                   "\" | cut -d' ' -f2)\n"
                   ssh-add
                   " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0
@@ -44,9 +44,7 @@
                              " exec ~/.local/bin/ssh-load-key\n")))
 
 (define (secrets-services machine)
-  "Deploy the SOPS secrets and SSH public key of MACHINE.  Secrets are
-decrypted on demand with the YubiKey by ~/.local/bin/secret NAME, the SSH key
-on the first connection to one of the configured hosts."
+  "Deploy the SOPS secrets and SSH public key of MACHINE."
   (define (host-file name)
     (local-file (assume-source-relative-file-name (string-append
                                                    "../../hosts/"
@@ -62,4 +60,4 @@ on the first connection to one of the configured hosts."
                           (".ssh/config.d/ssh-load-key" ,ssh-load-key-config)
                           (".config/sops/secrets.yaml" ,(host-file
                                                          "secrets.yaml"))
-                          (,%ssh-public-key ,(host-file "ssh.pub"))))))
+                          (,%ssh-public-key-file ,(host-file "ssh.pub"))))))

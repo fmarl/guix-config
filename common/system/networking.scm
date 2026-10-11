@@ -26,7 +26,7 @@
                                                                          machine)))))
                                           (name-servers '("1.1.1.1" "8.8.8.8")))))))
 
-(define nm-mac-randomization-conf
+(define mac-randomization-conf
   (plain-file "mac-randomization.conf" "[device]
 wifi.scan-rand-mac-address=yes
 
@@ -36,12 +36,12 @@ wifi.cloned-mac-address=random
 
 (define network-manager-services
   (list (service network-manager-service-type
-                 (network-manager-configuration (extra-configuration-files `(("mac-randomization.conf" ,nm-mac-randomization-conf)))))
+                 (network-manager-configuration (extra-configuration-files `(("mac-randomization.conf" ,mac-randomization-conf)))))
         (service wpa-supplicant-service-type)))
 
 (define (nftables-ruleset open-tcp-ports)
-  "Drop incoming traffic except replies, loopback, what IPv6 needs to work,
-and ping and OPEN-TCP-PORTS from the LAN, which is answered with a reject."
+  "Accept replies, loopback, IPv6 essentials, and ping and OPEN-TCP-PORTS from
+the LAN.  Reject the rest of the LAN, drop everything else."
   (plain-file "nftables.conf"
               (string-append
                "table inet filter {

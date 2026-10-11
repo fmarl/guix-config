@@ -114,9 +114,8 @@ done
                                 #:key (authorized-keys #f)
                                 (packages '())
                                 (services '()))
-  "Return the home environment of MACHINE (left out of the SSH hosts) with
-SERVICES, e.g. desktop-services, %mail-services or secrets-services, added to
-the base services."
+  "Return the home environment of MACHINE with SERVICES added to the base
+services."
   (home-environment
     (packages packages)
     (services

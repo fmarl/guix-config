@@ -11,7 +11,6 @@
   .
   ((indent-tabs-mode . nil)
 
-   ;; Guile and Guix forms used here.
    (eval . (put 'call-with-port 'scheme-indent-function 1))
    (eval . (put 'guard 'scheme-indent-function 1))
    (eval . (put 'lambda* 'scheme-indent-function 1))
@@ -32,7 +31,6 @@
    (eval . (put 'test-assert 'scheme-indent-function 1))
    (eval . (put 'test-equal 'scheme-indent-function 1))
 
-   ;; Record constructors.
    (eval . (put 'bootloader-configuration 'scheme-indent-function 0))
    (eval . (put 'channel 'scheme-indent-function 0))
    (eval . (put 'file-system 'scheme-indent-function 0))

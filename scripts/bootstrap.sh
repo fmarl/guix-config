@@ -8,12 +8,12 @@ set -Eeuo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-readonly REPO_URL="https://codeberg.org/fmarl/guix-config.git"
+readonly DEFAULT_REPO_URL="https://codeberg.org/fmarl/guix-config.git"
 readonly ESP_SIZE="1GiB"
 readonly MNT="/mnt"
 readonly DEV="/dev/mapper/${LUKS_NAME}"
 
-SOURCE_REPO=""
+CLONE_DIR=""
 DISK_TOUCHED=""
 LUKS_OPENED=""
 COW_STORE=""
@@ -22,7 +22,7 @@ function usage {
     cat <<USAGE
 Usage: $(basename "$0") [--repo URL] [DISK [HOSTNAME]]
 
-  --repo URL  Repository to install from, default ${REPO_URL}
+  --repo URL  Repository to install from, default ${DEFAULT_REPO_URL}
   DISK        Target disk, e.g. nvme0n1 or /dev/sda. ALL DATA ON IT IS LOST.
   HOSTNAME    Host to install, a directory in hosts/
 
@@ -31,7 +31,7 @@ USAGE
 }
 
 # Partition N of $DISK: nvme0n1 -> nvme0n1p1, sda -> sda1
-function part {
+function partition {
     if [[ "${DISK}" =~ [0-9]$ ]]; then
         echo "${DISK}p$1"
     else
@@ -40,7 +40,7 @@ function part {
 }
 
 function parse_args {
-    REPO_SOURCE="${REPO_URL}"
+    REPO_URL="${DEFAULT_REPO_URL}"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -50,7 +50,7 @@ function parse_args {
                 ;;
             --repo)
                 [[ $# -ge 2 ]] || die "--repo needs a URL"
-                REPO_SOURCE="$2"
+                REPO_URL="$2"
                 shift 2
                 ;;
             -*)
@@ -70,7 +70,7 @@ function parse_args {
 
     DISK="${1-}"
     HOST="${2-}"
-    readonly REPO_SOURCE
+    readonly REPO_URL
 }
 
 function check_environment {
@@ -86,9 +86,9 @@ function check_environment {
 }
 
 function fetch_repo {
-    SOURCE_REPO="$(mktemp -d)"
-    info "Cloning ${REPO_SOURCE} ..."
-    git clone --quiet "${REPO_SOURCE}" "${SOURCE_REPO}"
+    CLONE_DIR="$(mktemp -d)"
+    info "Cloning ${REPO_URL} ..."
+    git clone --quiet "${REPO_URL}" "${CLONE_DIR}"
 }
 
 function select_disk {
@@ -106,8 +106,8 @@ function select_disk {
     fi
 
     [[ "${DISK}" == /dev/* ]] || DISK="/dev/${DISK}"
-    PART_BOOT="$(part 1)"
-    PART_ROOT="$(part 2)"
+    PART_BOOT="$(partition 1)"
+    PART_ROOT="$(partition 2)"
     readonly DISK PART_BOOT PART_ROOT
 }
 
@@ -120,9 +120,9 @@ function select_host {
 
     if [[ -z "${HOST}" ]]; then
         local -a hosts
-        mapfile -t hosts < <(find "${SOURCE_REPO}/hosts" -mindepth 2 -maxdepth 2 \
+        mapfile -t hosts < <(find "${CLONE_DIR}/hosts" -mindepth 2 -maxdepth 2 \
                                   -name system.scm -printf '%h\n' | xargs -rn1 basename | sort)
-        [[ ${#hosts[@]} -gt 0 ]] || die "Found no hosts in ${REPO_SOURCE}"
+        [[ ${#hosts[@]} -gt 0 ]] || die "Found no hosts in ${REPO_URL}"
 
         PS3="Host to install: "
         select HOST in "${hosts[@]}"; do
@@ -136,10 +136,10 @@ function select_host {
 }
 
 function set_paths {
-    TARGET_REPO="${HOST_PERSIST}/etc/guix-config"
-    REPO="${MNT}${TARGET_REPO}"
+    INSTALLED_REPO="${HOST_PERSIST}/etc/guix-config"
+    MNT_REPO="${MNT}${INSTALLED_REPO}"
     CACHE="${MNT}${HOST_PERSIST}/var/cache/bootstrap"
-    readonly TARGET_REPO REPO CACHE
+    readonly INSTALLED_REPO MNT_REPO CACHE
 }
 
 function preflight {
@@ -205,9 +205,9 @@ function setup_btrfs {
 }
 
 function copy_repo {
-    info "Copying the repository to ${REPO} ..."
-    mkdir -p "${REPO}"
-    cp -rT "${SOURCE_REPO}" "${REPO}"
+    info "Copying the repository to ${MNT_REPO} ..."
+    mkdir -p "${MNT_REPO}"
+    cp -rT "${CLONE_DIR}" "${MNT_REPO}"
 }
 
 function write_host_disk {
@@ -217,9 +217,9 @@ function write_host_disk {
     esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
 
     info "Writing hosts/${HOST}/disk.scm ..."
-    write_disk "${REPO}/hosts/${HOST}/disk.scm" "${HOST}" "${luks_uuid}" "${esp_uuid}"
+    write_disk_module "${MNT_REPO}/hosts/${HOST}/disk.scm" "${HOST}" "${luks_uuid}" "${esp_uuid}"
 
-    read_system "${REPO}" "${HOST}" "${CACHE}"
+    read_system "${MNT_REPO}" "${HOST}" "${CACHE}"
     [[ "${HOST_LUKS_UUID}" == "${luks_uuid}" && "${HOST_ESP_UUID}" == "${esp_uuid}" ]] ||
         die "hosts/${HOST}/system.scm does not use the UUIDs of hosts/${HOST}/disk.scm"
     [[ "${HOST_SUBVOLUMES[*]}" == "${layout[*]}" ]] ||
@@ -228,12 +228,12 @@ function write_host_disk {
 
 function install_system {
     info "Installing hosts/${HOST}/system.scm ..."
-    install_host "${REPO}" "${HOST}" "${MNT}" "${CACHE}"
+    install_host "${MNT_REPO}" "${HOST}" "${MNT}" "${CACHE}"
     herd stop cow-store
     COW_STORE=""
 }
 
-function shadow_entry {
+function set_shadow_entry {
     local shadow="$1" name="$2" hash="$3" days
     days=$(( $(date +%s) / 86400 ))
     sed -i "/^${name}:/d" "${shadow}"
@@ -245,7 +245,7 @@ function store_password_hash {
     if [[ -n "${HOST_PERSIST}" ]]; then
         write_persisted_hash "${MNT}${HOST_PERSIST}" "${name}" "${hash}"
     else
-        shadow_entry "${MNT}/etc/shadow" "${name}" "${hash}"
+        set_shadow_entry "${MNT}/etc/shadow" "${name}" "${hash}"
     fi
 }
 
@@ -256,7 +256,7 @@ function set_passwords {
         mkdir -p "${MNT}/etc"
         touch "${MNT}/etc/shadow"
         chmod 600 "${MNT}/etc/shadow"
-        shadow_entry "${MNT}/etc/shadow" root '!'
+        set_shadow_entry "${MNT}/etc/shadow" root '!'
     fi
 
     for name in "${HOST_USERS[@]}"; do
@@ -267,7 +267,7 @@ function set_passwords {
 
 function cleanup {
     local status=$?
-    [[ -z "${SOURCE_REPO}" ]] || rm -rf "${SOURCE_REPO}"
+    [[ -z "${CLONE_DIR}" ]] || rm -rf "${CLONE_DIR}"
     [[ "${status}" -ne 0 && -n "${DISK_TOUCHED}" ]] || return 0
 
     err "Failed with exit code ${status}, rolling back ..."
@@ -292,8 +292,8 @@ function main {
     fetch_repo
     select_disk
     select_host
-    select_guix "${SOURCE_REPO}"
-    read_layout "${SOURCE_REPO}" "${HOST}"
+    select_guix "${CLONE_DIR}"
+    read_layout "${CLONE_DIR}" "${HOST}"
     set_paths
     preflight
     confirm
@@ -307,7 +307,7 @@ function main {
     set_passwords
     rm -rf "${CACHE}"
 
-    info "Done. After the first login run in ${TARGET_REPO}:"
+    info "Done. After the first login run in ${INSTALLED_REPO}:"
     info "  guix shell -m manifest.scm -- make post-install"
 }
 

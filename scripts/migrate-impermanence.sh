@@ -15,7 +15,7 @@ readonly DEV="/dev/mapper/${LUKS_NAME}"
 readonly CACHE="${MNT}/persist/var/cache/migrate"
 
 TOP=""
-CREATED=""
+SUBVOLUMES_CREATED=""
 COW_STORE=""
 INSTALLING=""
 
@@ -114,7 +114,7 @@ function confirm {
 }
 
 function create_new_subvolumes {
-    CREATED=1
+    SUBVOLUMES_CREATED=1
     btrfs subvolume create "${TOP}/${PERSIST_SUBVOLUME}" "${TOP}/${BOOT_SUBVOLUME}"
     cp -a --reflink=always "${TOP}/@/boot/." "${TOP}/${BOOT_SUBVOLUME}/"
 }
@@ -182,7 +182,7 @@ function cleanup {
         if mountpoint -q "${MNT}"; then
             umount -R "${MNT}" || true
         fi
-        if [[ -n "${CREATED}" ]]; then
+        if [[ -n "${SUBVOLUMES_CREATED}" ]]; then
             btrfs subvolume delete "${TOP}/${PERSIST_SUBVOLUME}" "${TOP}/${BOOT_SUBVOLUME}" || true
         fi
     fi

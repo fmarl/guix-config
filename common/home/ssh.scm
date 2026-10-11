@@ -7,9 +7,9 @@
   #:use-module (common machines)
   #:use-module (common users)
   #:use-module (srfi srfi-1)
-  #:export (%ssh-public-key %ssh-host-names ssh-services))
+  #:export (%ssh-public-key-file %ssh-host-names ssh-services))
 
-(define %ssh-public-key
+(define %ssh-public-key-file
   ".ssh/id_ed25519.pub")
 
 (define %git-hosts
@@ -24,7 +24,7 @@
   (openssh-host (name name)
                 (host-name host-name)
                 (user user)
-                (identity-file (string-append "~/" %ssh-public-key))
+                (identity-file (string-append "~/" %ssh-public-key-file))
                 (extra-content (string-append "  ServerAliveCountMax "
                                               (number->string
                                                server-alive-count-max) "\n"))))
@@ -51,7 +51,7 @@
                                               "  HashKnownHosts yes\n"
                                               "  ServerAliveInterval 30\n"))))
 
-(define* (ssh-services host-name
+(define* (ssh-services self
                        #:key (authorized-keys #f))
   "Other services can add configuration as files in ~/.ssh/config.d/."
   (list (service home-openssh-service-type
@@ -60,7 +60,7 @@
                                                                    git-host
                                                                    %git-hosts)
                                                                   (lan-hosts
-                                                                   host-name)
+                                                                   self)
                                                                   (list
                                                                    default-host))))
                                              (authorized-keys authorized-keys)))

@@ -125,7 +125,7 @@ function main {
     write_system "${dir}/system.scm"
     write_home "${dir}/home.scm"
     write_hardware "${dir}/hardware.scm"
-    write_disk "${dir}/disk.scm" "${HOST}" \
+    write_disk_module "${dir}/disk.scm" "${HOST}" \
         "00000000-0000-0000-0000-000000000000" "0000-0000"
 
     sed -i "s/^${default//\//\\/}\$/        (machine (name '${HOST}))\n&/" "${machines}"

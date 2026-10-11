@@ -58,16 +58,11 @@
      (no-suid no-dev no-exec))))
 
 (define %impermanent-subvolumes
-  `(("/gnu" "@gnu"
-     (no-suid no-dev))
-    (,%persist "@persist"
-     (no-suid no-dev))
-    ("/var/log" "@log"
-     (no-suid no-dev no-exec))
-    ("/home" "@home"
-     (no-suid no-dev))
-    ("/boot" "@boot"
-     (no-suid no-dev no-exec))))
+  (append (alist-delete "/" %default-subvolumes)
+          `((,%persist "@persist"
+             (no-suid no-dev))
+            ("/boot" "@boot"
+             (no-suid no-dev no-exec)))))
 
 (define (subvolume-flags subvolume)
   (match subvolume
@@ -137,12 +132,10 @@
                                    #:key esp
                                    (subvolumes '())
                                    (dependencies '()))
-  (let ((subvolumes (merge-subvolumes %impermanent-subvolumes subvolumes)))
-    (when (memq 'no-exec
-                (subvolume-flags (assoc %persist subvolumes)))
-      (error "/var/tmp is bound from /persist, it must not be no-exec"))
-    (cons %tmpfs-root-file-system
-          (layout-file-systems device options subvolumes esp dependencies))))
+  (cons %tmpfs-root-file-system
+        (layout-file-systems device options
+                             (merge-subvolumes %impermanent-subvolumes
+                                               subvolumes) esp dependencies)))
 
 (define (impermanent-file-systems? file-systems)
   (any (lambda (fs)
@@ -168,7 +161,7 @@
           (list (cons %snapshot-subvolume #f))))
 
 (define (snapshot-subvolumes file-systems)
-  "Return the subvolumes of FILE-SYSTEMS that hold data worth snapshots."
+  "Return the subvolumes of FILE-SYSTEMS to snapshot."
   (filter-map (match-lambda
                 ((name . mount-point) (and (member mount-point
                                                    (list "/home" %persist))
