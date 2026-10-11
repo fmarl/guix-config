@@ -198,8 +198,8 @@ function setup_luks {
 function setup_btrfs {
     info "Setting up btrfs on ${DEV} ..."
     mkfs.btrfs -L guix "${DEV}"
-    create_subvolumes "${DEV}"
-    mount_host "${DEV}" "${PART_BOOT}" "${MNT}"
+    run_target "${CLONE_DIR}" create-subvolumes "${HOST}"
+    run_target "${CLONE_DIR}" mount "${HOST}" "${MNT}"
 
     herd start cow-store "${MNT}"
     COW_STORE=1
@@ -218,34 +218,11 @@ function install_system {
     COW_STORE=""
 }
 
-function set_shadow_entry {
-    local shadow="$1" name="$2" hash="$3" days
-    days=$(( $(date +%s) / 86400 ))
-    sed -i "/^${name}:/d" "${shadow}"
-    printf '%s:%s:%s::::::\n' "${name}" "${hash}" "${days}" >>"${shadow}"
-}
-
-function store_password_hash {
-    local name="$1" hash="$2"
-    if [[ -n "${HOST_PERSIST}" ]]; then
-        write_persisted_hash "${MNT}${HOST_PERSIST}" "${name}" "${hash}"
-    else
-        set_shadow_entry "${MNT}/etc/shadow" "${name}" "${hash}"
-    fi
-}
-
 function set_passwords {
     local name hash
-
-    if [[ -z "${HOST_PERSIST}" ]]; then
-        mkdir -p "${MNT}/etc"
-        touch "${MNT}/etc/shadow"
-        chmod 600 "${MNT}/etc/shadow"
-    fi
-
     for name in "${HOST_USERS[@]}"; do
-        hash="$(ask_password_hash "${name}")"
-        store_password_hash "${name}" "${hash}"
+        hash="$(ask_password_hash "${MNT_REPO}" "${name}")"
+        store_password_hash "${MNT_REPO}" "${HOST}" "${MNT}" "${name}" "${hash}"
     done
 }
 

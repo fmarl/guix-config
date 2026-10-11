@@ -6,7 +6,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
-  #:export (create-persisted-directories restore-secrets save-secrets))
+  #:export (create-persisted-directories restore-secrets save-secrets
+                                         save-password-hash))
 
 (define (ensure-directory directory mode)
   (unless (file-exists? directory)
@@ -65,13 +66,16 @@
                   read-line))
         (close-pipe port)))))
 
+(define (save-password-hash persist user hash)
+  (let ((file (hash-file persist user)))
+    (ensure-directory (dirname file) #o700)
+    (write-secret file hash)))
+
 (define (save-password persist shadow user)
-  (let ((hash (shadow-hash shadow user))
-        (file (hash-file persist user)))
+  (let ((hash (shadow-hash shadow user)))
     (when (and hash
                (string-prefix? "$" hash))
-      (ensure-directory (dirname file) #o700)
-      (write-secret file hash))))
+      (save-password-hash persist user hash))))
 
 (define (sync-signing-key persist etc key)
   (let ((live (string-append etc "/guix/" key))

@@ -120,7 +120,7 @@ function create_new_subvolumes {
 }
 
 function mount_target {
-    mount_host "${DEV}" "/dev/disk/by-uuid/${HOST_ESP_UUID}" "${MNT}"
+    run_target "${REPO}" mount "${HOST}" "${MNT}"
     herd start cow-store "${MNT}"
     COW_STORE=1
     read_system "${REPO}" "${HOST}" "${CACHE}"
@@ -154,9 +154,9 @@ function copy_password_hashes {
         hash="$(awk -F: -v user="${user}" '$1 == user { print $2 }' "${TOP}/@/etc/shadow")"
         if [[ "${hash}" != "\$"* ]]; then
             err "${user} has no password yet"
-            hash="$(ask_password_hash "${user}")"
+            hash="$(ask_password_hash "${REPO}" "${user}")"
         fi
-        write_persisted_hash "${TOP}/${PERSIST_SUBVOLUME}" "${user}" "${hash}"
+        store_password_hash "${REPO}" "${HOST}" "${MNT}" "${user}" "${hash}"
     done
 }
 

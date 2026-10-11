@@ -75,38 +75,10 @@ function read_system {
     [[ ${#HOST_USERS[@]} -gt 0 ]] || die "hosts/${host} has no user accounts"
 }
 
-function create_subvolumes {
-    local dev="$1" top entry
-    top="$(mktemp -d)"
-    mount "${dev}" "${top}"
-    for entry in "${HOST_SUBVOLUMES[@]}"; do
-        btrfs subvolume create "${top}/${entry%%:*}"
-    done
-    umount "${top}"
-    rmdir "${top}"
-}
-
-function mount_host {
-    local dev="$1" esp="$2" target="$3" entry subvolume mount_point
-
-    [[ -z "${HOST_PERSIST}" ]] || mount -t tmpfs -o mode=0755 none "${target}"
-    for entry in "${HOST_SUBVOLUMES[@]}"; do
-        IFS=: read -r subvolume mount_point <<<"${entry}"
-        [[ -n "${mount_point}" ]] || continue
-        mkdir -p "${target}${mount_point}"
-        mount -o "subvol=${subvolume},${BTRFS_OPTIONS}" "${dev}" "${target}${mount_point}"
-    done
-
-    if [[ -n "${HOST_PERSIST}" ]]; then
-        local persist="${target}${HOST_PERSIST}"
-        mkdir -p "${persist}/var/guix" "${target}/var/guix" "${persist}/var/tmp" "${target}/tmp"
-        chmod 1777 "${persist}/var/tmp"
-        mount --bind "${persist}/var/guix" "${target}/var/guix"
-        mount --bind "${persist}/var/tmp" "${target}/tmp"
-    fi
-
-    mkdir -p "${target}/boot/efi"
-    mount -t vfat -o umask=0077 "${esp}" "${target}/boot/efi"
+function run_target {
+    local repo="$1"
+    shift
+    (cd "${repo}" && GUILE_LOAD_PATH="${repo}" guix repl -- scripts/target.scm "$@")
 }
 
 function install_host {
@@ -114,39 +86,20 @@ function install_host {
     XDG_CACHE_HOME="${cache}" repo_guix "${repo}" system init "hosts/${host}/system.scm" "${target}"
 }
 
-function hash_password {
-    guix repl -- /dev/fd/3 3<<'EOF'
-(use-modules (ice-9 rdelim) (rnrs io ports))
-(define alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./")
-(define salt
-  (call-with-input-file "/dev/urandom"
-    (lambda (port)
-      (list->string
-       (map (lambda (_)
-              (string-ref alphabet (modulo (get-u8 port) 64)))
-            (iota 16))))
-    #:binary #t))
-(display (crypt (read-line) (string-append "$6$" salt "$")))
-EOF
-}
-
 function ask_password_hash {
-    local name="$1" password again hash
+    local repo="$1" name="$2" password again hash
     while true; do
-        read -rsp "Password for ${name}: " password && echo >&2
-        read -rsp "Repeat password for ${name}: " again && echo >&2
+        IFS= read -rsp "Password for ${name}: " password && echo >&2
+        IFS= read -rsp "Repeat password for ${name}: " again && echo >&2
         [[ -n "${password}" && "${password}" == "${again}" ]] && break
         err "Passwords are empty or do not match"
     done
-    hash="$(hash_password <<<"${password}")"
+    hash="$(printf '%s\n' "${password}" | run_target "${repo}" hash-password)"
     [[ "${hash}" == "\$6\$"* ]] || die "Could not hash the password for ${name}"
     printf '%s\n' "${hash}"
 }
 
-function write_persisted_hash {
-    local persist="$1" name="$2" hash="$3"
-    local directory="${persist}/etc/shadow.d"
-    mkdir -p "${directory}"
-    chmod 0700 "${directory}"
-    (umask 077 && printf '%s\n' "${hash}" >"${directory}/${name}")
+function store_password_hash {
+    local repo="$1" host="$2" root="$3" name="$4" hash="$5"
+    printf '%s\n' "${hash}" | run_target "${repo}" store-password-hash "${host}" "${root}" "${name}"
 }
