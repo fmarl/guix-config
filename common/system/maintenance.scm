@@ -67,12 +67,11 @@ ago, so that runs missed while the machine was off are caught up."
                                         #:minute 20
                                         #:requirement '(guix-daemon)))))
 
-(define* (btrbk-config subvolumes
-                       #:key (preserve "14d"))
+(define (btrbk-config subvolumes)
   (plain-file "btrbk.conf"
               (string-join `("timestamp_format long"
                              "snapshot_preserve_min 2d"
-                             ,(string-append "snapshot_preserve " preserve)
+                             "snapshot_preserve 14d"
                              "snapshot_create onchange"
                              ""
                              ,(string-append "volume " %btrfs-top-level)

@@ -150,8 +150,7 @@
 
 (define (snapshot-subvolumes file-systems)
   "Return the subvolumes of FILE-SYSTEMS to snapshot."
-  (filter-map (match-lambda
-                ((name . mount-point) (and (member mount-point
-                                                   (list "/home" %persist))
-                                           name)))
-              (btrfs-subvolumes file-systems)))
+  (filter-map (lambda (fs)
+                (and (member (file-system-mount-point fs)
+                             (list "/home" %persist))
+                     (file-system-subvolume fs))) file-systems))

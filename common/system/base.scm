@@ -18,7 +18,6 @@
   #:use-module (common system desktop)
   #:use-module (common system filesystem)
   #:use-module (common system impermanence)
-  #:use-module (common system kernel)
   #:use-module (common system maintenance)
   #:use-module (common system security)
   #:use-module (common users)
@@ -60,6 +59,9 @@
 
          %maintenance-services))
 
+(define %hardened-kernel-arguments
+  '("slab_nomerge" "page_alloc.shuffle=1"))
+
 (define* (base-operating-system machine
                                 #:key kernel-config
                                 initrd-modules
@@ -70,7 +72,8 @@
                                 (services '()))
   (define kernel
     (if kernel-config
-        (linux-with-defconfig kernel-config) linux))
+        (customize-linux #:linux linux
+                         #:defconfig kernel-config) linux))
 
   (operating-system
     (host-name (symbol->string (machine-name machine)))

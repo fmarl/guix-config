@@ -52,7 +52,7 @@
                                               "  ServerAliveInterval 30\n"))))
 
 (define* (ssh-services self
-                       #:key (authorized-keys #f))
+                       #:key authorized-keys)
   "Other services can add configuration as files in ~/.ssh/config.d/."
   (list (service home-openssh-service-type
                  (home-openssh-configuration (hosts (cons drop-in-host

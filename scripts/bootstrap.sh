@@ -30,7 +30,6 @@ DISK and HOSTNAME are asked for when left out.
 USAGE
 }
 
-# Partition N of $DISK: nvme0n1 -> nvme0n1p1, sda -> sda1
 function partition {
     if [[ "${DISK}" =~ [0-9]$ ]]; then
         echo "${DISK}p$1"

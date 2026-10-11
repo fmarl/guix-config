@@ -111,7 +111,7 @@ done
               '())))
 
 (define* (base-home-environment machine
-                                #:key (authorized-keys #f)
+                                #:key authorized-keys
                                 (packages '())
                                 (services '()))
   "Return the home environment of MACHINE with SERVICES added to the base

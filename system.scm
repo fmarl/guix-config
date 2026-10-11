@@ -5,4 +5,4 @@
 
 (use-modules (common host))
 
-(host-config "system")
+(host-config 'system)

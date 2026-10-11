@@ -5,4 +5,4 @@
 
 (use-modules (common host))
 
-(host-config "home")
+(host-config 'home)

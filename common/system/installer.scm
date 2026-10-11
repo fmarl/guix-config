@@ -21,7 +21,8 @@
   #:use-module (gnu services base)
   #:use-module (gnu system)
   #:use-module (gnu system install)
-  #:use-module (nongnu packages linux))
+  #:use-module (nongnu packages linux)
+  #:use-module (common host))
 
 (define %root
   (dirname (dirname (dirname (current-filename)))))
@@ -42,32 +43,34 @@
   (or (getenv "INSTALLER_MACHINE")
       (error "INSTALLER_MACHINE is not set")))
 
-(define (host-kernel host)
-  (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
-                                                                    host)
-                                                                  system))
-                                       '%system)))
+(define %host-kernel
+  (and (not (string=? %machine "generic"))
+       (operating-system-kernel (host-config 'system %machine))))
 
 (define %installer-kernel-configs
-  '("CONFIG_ISO9660_FS=m" "CONFIG_OVERLAY_FS=m" "CONFIG_SCSI=m"
-    "CONFIG_BLK_DEV_SD=m" "CONFIG_USB_STORAGE=m" "CONFIG_USB_UAS=m"))
+  '("CONFIG_ISO9660_FS=m" "CONFIG_ZISOFS=y"
+    "CONFIG_OVERLAY_FS=m"
+    "CONFIG_SCSI=m"
+    "CONFIG_BLK_DEV_SD=m"
+    "CONFIG_USB_STORAGE=m"
+    "CONFIG_USB_UAS=m"))
 
-(define (installer-kernel host)
-  (if (string=? host "generic") linux
-      (customize-linux #:linux (host-kernel host)
-                       #:configs %installer-kernel-configs)))
+(define installer-kernel
+  (if %host-kernel
+      (customize-linux #:linux %host-kernel
+                       #:configs %installer-kernel-configs) linux))
 
 (define machine-files
   `(("guix-config-machine" ,(plain-file "guix-config-machine"
                                         (string-append %machine "\n")))
-    ,@(if (string=? %machine "generic")
-          '()
-          `(("guix-config-kernel" ,(host-kernel %machine))))))
+    ,@(if %host-kernel
+          `(("guix-config-kernel" ,%host-kernel))
+          '())))
 
 (define installation-os-nonfree
   (operating-system
     (inherit installation-os)
-    (kernel (installer-kernel %machine))
+    (kernel installer-kernel)
     (initrd-modules (list "nvme"
                           "usbhid"
                           "hid-generic"
