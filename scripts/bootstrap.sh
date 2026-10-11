@@ -11,8 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 readonly REPO_URL="https://codeberg.org/fmarl/guix-config.git"
 readonly ESP_SIZE="1GiB"
 readonly MNT="/mnt"
-readonly TARGET_REPO="/etc/guix-config"
-readonly REPO="${MNT}${TARGET_REPO}"
+readonly DEV="/dev/mapper/${LUKS_NAME}"
 
 SOURCE_REPO=""
 DISK_TOUCHED=""
@@ -136,12 +135,11 @@ function select_host {
     readonly HOST
 }
 
-function installer_guix_is_pinned {
-    local described commit
-    described="$(guix describe -f channels 2>/dev/null)" || return 1
-    while read -r commit; do
-        [[ "${described}" == *"\"${commit}\""* ]] || return 1
-    done < <(sed -n 's/.*(commit "\([0-9a-f]*\)").*/\1/p' "${SOURCE_REPO}/channels-lock.scm")
+function set_paths {
+    TARGET_REPO="${HOST_PERSIST}/etc/guix-config"
+    REPO="${MNT}${TARGET_REPO}"
+    CACHE="${MNT}${HOST_PERSIST}/var/cache/bootstrap"
+    readonly TARGET_REPO REPO CACHE
 }
 
 function preflight {
@@ -153,19 +151,11 @@ function preflight {
     [[ "${type}" == "disk" ]] || die "${DISK} is not a whole disk"
     [[ -z "${mounts//[[:space:]]/}" ]] || die "${DISK} has mounted partitions"
     ! mountpoint -q "${MNT}" || die "${MNT} is already a mountpoint"
-    [[ ! -e "/dev/mapper/${LUKS_NAME}" ]] || die "/dev/mapper/${LUKS_NAME} is already open"
+    [[ ! -e "${DEV}" ]] || die "${DEV} is already open"
 
-    local system="${SOURCE_REPO}/hosts/${HOST}/system.scm"
-    [[ -f "${system}" ]] || die "hosts/${HOST}/system.scm does not exist"
-    grep -q "(hosts ${HOST} hardware)" "${system}" ||
-        die "hosts/${HOST}/system.scm does not use (hosts ${HOST} hardware)"
-
-    if installer_guix_is_pinned; then
-        GUIX=(guix)
-    else
-        err "Warning: guix differs from channels-lock.scm, using time-machine"
-        GUIX=(guix time-machine -C "${REPO}/channels-lock.scm" --)
-    fi
+    [[ -n "${HOST_LUKS_UUID}" ]] || die "hosts/${HOST}/hardware.scm has no LUKS device"
+    [[ "${HOST_LUKS_TARGET}" == "${LUKS_NAME}" ]] ||
+        die "hosts/${HOST}/hardware.scm maps LUKS to ${HOST_LUKS_TARGET}, not ${LUKS_NAME}"
 }
 
 function confirm {
@@ -205,24 +195,13 @@ function setup_luks {
 }
 
 function setup_btrfs {
-    local dev="/dev/mapper/${LUKS_NAME}" entry subvolume mount_point
-    info "Setting up btrfs on ${dev} ..."
-    mkfs.btrfs -L guix "${dev}"
+    info "Setting up btrfs on ${DEV} ..."
+    mkfs.btrfs -L guix "${DEV}"
+    create_subvolumes "${DEV}"
+    mount_host "${DEV}" "${PART_BOOT}" "${MNT}"
 
-    mount "${dev}" "${MNT}"
-    for entry in "${SUBVOLUMES[@]}"; do
-        btrfs subvolume create "${MNT}/${entry%%:*}"
-    done
-    umount "${MNT}"
-
-    for entry in "${SUBVOLUMES[@]}"; do
-        IFS=: read -r subvolume mount_point _ <<<"${entry}"
-        mkdir -p "${MNT}${mount_point}"
-        mount -o "subvol=${subvolume},${BTRFS_OPTIONS}" "${dev}" "${MNT}${mount_point}"
-    done
-
-    mkdir -p "${MNT}/boot/efi"
-    mount -t vfat -o umask=0077 "${PART_BOOT}" "${MNT}/boot/efi"
+    herd start cow-store "${MNT}"
+    COW_STORE=1
 }
 
 function copy_repo {
@@ -231,54 +210,27 @@ function copy_repo {
     cp -rT "${SOURCE_REPO}" "${REPO}"
 }
 
-function write_host_hardware {
-    local file="${REPO}/hosts/${HOST}/hardware.scm"
-    info "Writing ${file} ..."
-    write_hardware "${file}" "${HOST}" \
-        "$(blkid -s UUID -o value "${PART_ROOT}")" \
-        "$(blkid -s UUID -o value "${PART_BOOT}")"
-}
+function write_host_disk {
+    local luks_uuid esp_uuid
+    local -a layout=("${HOST_SUBVOLUMES[@]}")
+    luks_uuid="$(blkid -s UUID -o value "${PART_ROOT}")"
+    esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
 
-function repo_guix {
-    (cd "${REPO}" &&
-         GUILE_LOAD_PATH="${REPO}" XDG_CACHE_HOME="${MNT}/var/cache/bootstrap" \
-         "${GUIX[@]}" "$@")
+    info "Writing hosts/${HOST}/disk.scm ..."
+    write_disk "${REPO}/hosts/${HOST}/disk.scm" "${HOST}" "${luks_uuid}" "${esp_uuid}"
+
+    read_system "${REPO}" "${HOST}" "${CACHE}"
+    [[ "${HOST_LUKS_UUID}" == "${luks_uuid}" && "${HOST_ESP_UUID}" == "${esp_uuid}" ]] ||
+        die "hosts/${HOST}/system.scm does not use the UUIDs of hosts/${HOST}/disk.scm"
+    [[ "${HOST_SUBVOLUMES[*]}" == "${layout[*]}" ]] ||
+        die "hosts/${HOST}/system.scm does not use the layout of hosts/${HOST}/hardware.scm"
 }
 
 function install_system {
     info "Installing hosts/${HOST}/system.scm ..."
-    herd start cow-store "${MNT}"
-    COW_STORE=1
-    repo_guix system init "hosts/${HOST}/system.scm" "${MNT}"
-}
-
-function account_names {
-    repo_guix repl -- /dev/stdin <<EOF
-(use-modules (gnu system) (gnu system accounts))
-(for-each (lambda (account)
-            (unless (or (user-account-system? account)
-                        (string=? (user-account-name account) "root"))
-              (display (user-account-name account))
-              (newline)))
-          (operating-system-users
-           (module-ref (resolve-interface '(hosts ${HOST} system)) '%system)))
-EOF
-}
-
-function hash_password {
-    guix repl -- /dev/fd/3 3<<'EOF'
-(use-modules (ice-9 rdelim) (rnrs io ports))
-(define alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./")
-(define salt
-  (call-with-input-file "/dev/urandom"
-    (lambda (port)
-      (list->string
-       (map (lambda (_)
-              (string-ref alphabet (modulo (get-u8 port) 64)))
-            (iota 16))))
-    #:binary #t))
-(display (crypt (read-line) (string-append "$6$" salt "$")))
-EOF
+    install_host "${REPO}" "${HOST}" "${MNT}" "${CACHE}"
+    herd stop cow-store
+    COW_STORE=""
 }
 
 function shadow_entry {
@@ -288,28 +240,28 @@ function shadow_entry {
     printf '%s:%s:%s::::::\n' "${name}" "${hash}" "${days}" >>"${shadow}"
 }
 
+function store_password_hash {
+    local name="$1" hash="$2"
+    if [[ -n "${HOST_PERSIST}" ]]; then
+        write_persisted_hash "${MNT}${HOST_PERSIST}" "${name}" "${hash}"
+    else
+        shadow_entry "${MNT}/etc/shadow" "${name}" "${hash}"
+    fi
+}
+
 function set_passwords {
-    local shadow="${MNT}/etc/shadow" name password again hash
-    local -a names
-    mapfile -t names < <(account_names)
-    [[ ${#names[@]} -gt 0 ]] || die "Found no user accounts in hosts/${HOST}/system.scm"
+    local name hash
 
-    mkdir -p "${MNT}/etc"
-    touch "${shadow}"
-    chmod 600 "${shadow}"
+    if [[ -z "${HOST_PERSIST}" ]]; then
+        mkdir -p "${MNT}/etc"
+        touch "${MNT}/etc/shadow"
+        chmod 600 "${MNT}/etc/shadow"
+        shadow_entry "${MNT}/etc/shadow" root '!'
+    fi
 
-    shadow_entry "${shadow}" root '!'
-
-    for name in "${names[@]}"; do
-        while true; do
-            read -rsp "Password for ${name}: " password && echo
-            read -rsp "Repeat password for ${name}: " again && echo
-            [[ -n "${password}" && "${password}" == "${again}" ]] && break
-            err "Passwords are empty or do not match"
-        done
-        hash="$(hash_password <<<"${password}")"
-        [[ "${hash}" == "\$6\$"* ]] || die "Could not hash the password for ${name}"
-        shadow_entry "${shadow}" "${name}" "${hash}"
+    for name in "${HOST_USERS[@]}"; do
+        hash="$(ask_password_hash "${name}")"
+        store_password_hash "${name}" "${hash}"
     done
 }
 
@@ -326,7 +278,7 @@ function cleanup {
     if mountpoint -q "${MNT}"; then
         umount -R "${MNT}" || true
     fi
-    if [[ -n "${LUKS_OPENED}" && -e "/dev/mapper/${LUKS_NAME}" ]]; then
+    if [[ -n "${LUKS_OPENED}" && -e "${DEV}" ]]; then
         cryptsetup close "${LUKS_NAME}" || true
     fi
     wipefs -af "${DISK}" >/dev/null || true
@@ -340,6 +292,9 @@ function main {
     fetch_repo
     select_disk
     select_host
+    select_guix "${SOURCE_REPO}"
+    read_layout "${SOURCE_REPO}" "${HOST}"
+    set_paths
     preflight
     confirm
 
@@ -347,10 +302,10 @@ function main {
     setup_luks
     setup_btrfs
     copy_repo
-    write_host_hardware
+    write_host_disk
     install_system
     set_passwords
-    rm -rf "${MNT}/var/cache/bootstrap"
+    rm -rf "${CACHE}"
 
     info "Done. After the first login run in ${TARGET_REPO}:"
     info "  guix shell -m manifest.scm -- make post-install"

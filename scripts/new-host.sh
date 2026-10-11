@@ -63,6 +63,29 @@ function write_home {
 EOF
 }
 
+function write_hardware {
+    cat >"$1" <<EOF
+(define-module (hosts ${HOST} hardware)
+  #:use-module (gnu)
+  #:use-module (common system filesystem)
+  #:use-module (hosts ${HOST} disk)
+  #:export (%mapped-devices %file-systems))
+
+(define %mapped-devices
+  (list (mapped-device
+          (source (uuid %luks-uuid))
+          (target "${LUKS_NAME}")
+          (type luks-device-mapping)
+          (arguments (list #:allow-discards? #t)))))
+
+(define %file-systems
+  (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
+                      "${BTRFS_OPTIONS}"
+                      #:esp %esp-uuid
+                      #:dependencies %mapped-devices))
+EOF
+}
+
 function main {
     if [[ $# -ne 1 || "$1" == -* ]]; then
         usage >&2
@@ -101,7 +124,8 @@ function main {
     cp "${TMP}/secrets.enc.yaml" "${dir}/secrets.yaml"
     write_system "${dir}/system.scm"
     write_home "${dir}/home.scm"
-    write_hardware "${dir}/hardware.scm" "${HOST}" \
+    write_hardware "${dir}/hardware.scm"
+    write_disk "${dir}/disk.scm" "${HOST}" \
         "00000000-0000-0000-0000-000000000000" "0000-0000"
 
     sed -i "s/^${default//\//\\/}\$/        (machine (name '${HOST}))\n&/" "${machines}"

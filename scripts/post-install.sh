@@ -29,7 +29,7 @@ function main {
     info "Reconfiguring the home environment ..."
     make -C "${TARGET}" home
 
-    info "Done. Commit and push the hardware configuration in ${TARGET}:"
+    info "Done. Commit and push hosts/$(hostname)/disk.scm in ${TARGET}:"
     git -C "${TARGET}" status --short
 }
 

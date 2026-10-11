@@ -23,8 +23,7 @@
 
 (define (monitors-off wm)
   (match wm
-    ('niri (list "'" niri "/bin/niri msg action power-off-monitors'
-"))
+    ('niri (list "'" niri "/bin/niri msg action power-off-monitors'" "\n"))
     ('nucleotide (let ((wlopm (file-append wlopm "/bin/wlopm")))
                    (list "'" wlopm " --off \\*' resume '" wlopm " --on \\*'\n")))))
 

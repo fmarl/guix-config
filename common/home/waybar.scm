@@ -136,7 +136,7 @@
                                                     (string-append
                                                      "{percentage_used}% "
                                                      (glyph 'hard-drive)))
-                                 ("path" . "/")))
+                                 ("path" . "/home")))
                        (color 'dim_0))))
 
 (define (machine-status-modules machine)

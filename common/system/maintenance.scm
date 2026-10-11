@@ -10,6 +10,8 @@
   #:use-module (gnu services linux)
   #:use-module (gnu services networking)
   #:use-module (gnu services shepherd)
+  #:use-module (common system filesystem)
+  #:use-module (srfi srfi-26)
   #:export (%maintenance-services btrfs-maintenance-services))
 
 (define ntp-service
@@ -68,26 +70,22 @@ ago, so that runs missed while the machine was off are caught up."
 (define* (btrbk-config subvolumes
                        #:key (preserve "14d"))
   (plain-file "btrbk.conf"
-              (string-append "timestamp_format long
-snapshot_preserve_min 2d
-snapshot_preserve " preserve
-                             "
-snapshot_create onchange
+              (string-join `("timestamp_format long"
+                             "snapshot_preserve_min 2d"
+                             ,(string-append "snapshot_preserve " preserve)
+                             "snapshot_create onchange"
+                             ""
+                             ,(string-append "volume " %btrfs-top-level)
+                             ,(string-append "  snapshot_dir "
+                                             %snapshot-subvolume)
+                             ,@(map (cut string-append "  subvolume " <>)
+                                    subvolumes)) "\n"
+                           'suffix)))
 
-volume /
-  snapshot_dir .snapshots
-"
-                             (string-concatenate (map (lambda (subvolume)
-                                                        (string-append
-                                                         "  subvolume "
-                                                         subvolume "\n"))
-                                                      subvolumes)))))
-
-(define* (btrfs-maintenance-services #:key (snapshot-subvolumes '("home"))
-                                     (scrub-mount-point "/"))
-  "Snapshots of SNAPSHOT-SUBVOLUMES (relative to /) in /.snapshots via btrbk
-and a monthly scrub of the file system at SCRUB-MOUNT-POINT."
-  (let ((config (btrbk-config snapshot-subvolumes)))
+(define (btrfs-maintenance-services subvolumes)
+  "Snapshots of the top level SUBVOLUMES via btrbk and a monthly scrub of the
+btrfs file system."
+  (let ((config (btrbk-config subvolumes)))
     (list (simple-service 'btrbk-config etc-service-type
                           `(("btrbk/btrbk.conf" ,config)))
           (simple-service 'btrfs-maintenance shepherd-root-service-type
@@ -101,7 +99,7 @@ and a monthly scrub of the file system at SCRUB-MOUNT-POINT."
                                                 (list (file-append btrfs-progs
                                                        "/bin/btrfs") "scrub"
                                                       "start" "-B"
-                                                      scrub-mount-point)
+                                                      %btrfs-top-level)
                                                 #:days 30
                                                 #:minute 50
                                                 #:requirement '(file-systems)))))))

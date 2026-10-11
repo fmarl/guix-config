@@ -3,7 +3,6 @@
 
 (define-module (common system security)
   #:use-module (guix gexp)
-  #:use-module (gnu packages admin)
   #:use-module (gnu packages security-token)
   #:use-module (gnu services)
   #:use-module (gnu services base)
@@ -18,6 +17,10 @@
   (plain-file "u2f-mappings"
               (string-append (user-name %user) ":"
                              (user-u2f-keys %user) "\n")))
+
+(define u2f-authfile
+  #~(string-append "authfile="
+                   #$u2f-mappings))
 
 (define (pam-services-extension names transform)
   "Apply TRANSFORM to the PAM services called NAMES."
@@ -37,10 +40,7 @@
                                                                 (arguments (list
                                                                             "cue"
                                                                             "origin=pam://yubi"
-                                                                            #~
-                                                                            (string-append
-                                                                             "authfile="
-                                                                             #$u2f-mappings))))
+                                                                            u2f-authfile)))
                                                      (pam-service-auth pam)))))))
 
 (define umask-pam-extension
@@ -51,8 +51,8 @@
                                                                     "optional")
                                                                    (module
                                                                     "pam_umask.so")
-                                                                   (arguments '
-                                                                              ("umask=0077")))
+                                                                   (arguments (list
+                                                                               "umask=0077")))
                                                         (pam-service-session
                                                          pam)))))))
 
@@ -105,14 +105,8 @@ Defaults umask_override
 });
 ")))))
 
-(define lock-root-service
-  (simple-service 'lock-root activation-service-type
-                  #~(system* #$(file-append shadow "/sbin/usermod") "--lock"
-                             "root")))
-
 (define %security-services
-  (list lock-root-service
-        (service pcscd-service-type)
+  (list (service pcscd-service-type)
         (simple-service 'pcsc-polkit polkit-service-type
                         (list pcsc-polkit-rules))
         (udev-rules-service 'fido2 libfido2

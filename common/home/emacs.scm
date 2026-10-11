@@ -24,25 +24,24 @@
   "Return the emacsclient command line connecting to the daemon, as a list."
   (cons* emacsclient "-s" %emacs-socket arguments))
 
+(define emacs-binary
+  (file-append emacs-next-pgtk "/bin/emacs"))
+
+(define emacs-daemon-shepherd-service
+  (shepherd-service (provision '(emacs-daemon))
+                    (start #~(make-forkexec-constructor (list #$emacs-binary
+                                                              #$(string-append
+                                                                 "--fg-daemon="
+                                                                 %emacs-socket))))
+                    (stop #~(make-system-destructor (string-append #$emacsclient
+                                                     " --socket-name="
+                                                     #$%emacs-socket
+                                                     " --eval '(kill-emacs)'")))
+                    (documentation "Emacs background daemon")))
+
 (define emacs-daemon-service
   (simple-service 'emacs-daemon home-shepherd-service-type
-                  (list (shepherd-service (provision '(emacs-daemon))
-                                          (start #~(make-forkexec-constructor (list #$
-                                                                               (file-append
-                                                                                emacs-next-pgtk
-                                                                                "/bin/emacs")
-                                                                               #$
-                                                                               (string-append
-                                                                                "--fg-daemon="
-                                                                                %emacs-socket))))
-                                          (stop #~(make-system-destructor #$(file-append
-                                                                             emacs-next-pgtk
-                                                                             "/bin/emacsclient"
-                                                                             " --socket-name="
-                                                                             %emacs-socket
-                                                                             " --eval '(kill-emacs)'")))
-                                          (documentation
-                                           "Emacs background daemon")))))
+                  (list emacs-daemon-shepherd-service)))
 
 (define (emacsclient-script name . arguments)
   (apply shell-script name "exec "

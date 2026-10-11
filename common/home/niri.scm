@@ -50,8 +50,7 @@
 
 (define (niri-window-rule matchers . properties)
   `(rule window-rule
-         (match ,@matchers
-           )
+         ,(cons 'match matchers)
          ,@properties))
 
 (define (niri-settings theme)

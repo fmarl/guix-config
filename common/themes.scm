@@ -77,4 +77,5 @@
 (define (color theme name)
   "Return the color NAME of THEME as #rrggbb."
   (string-append "#"
-                 (assq-ref (theme-colors theme) name)))
+                 (or (assq-ref (theme-colors theme) name)
+                     (error "unknown theme color" name))))

@@ -54,32 +54,25 @@
 
 (define battery-alert
   (shell-script "battery-alert"
-                "notified=\"$XDG_RUNTIME_DIR/battery-alert\"
-"
-                "mkdir -p \"$notified\"\n"
-                "while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do
-"
-                "    for battery in /sys/class/power_supply/BAT*; do
-"
-                "        marker=\"$notified/${battery##*/}\"
-"
-                "        capacity=$(cat \"$battery/capacity\")
-"
-                "        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&
-"
-                "           [ \"$capacity\" -le 15 ]; then\n"
-                "            [ -e \"$marker\" ] ||\n"
-                "                "
-                libnotify
-                "/bin/notify-send -u critical"
-                " \"Akku fast leer\" \"Noch $capacity %\"\n"
-                "            touch \"$marker\"\n"
-                "        else\n"
-                "            rm -f \"$marker\"\n"
-                "        fi\n"
-                "    done\n"
-                "    sleep 60\n"
-                "done\n"))
+   "notified=\"$XDG_RUNTIME_DIR/battery-alert\"
+mkdir -p \"$notified\"
+while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do
+    for battery in /sys/class/power_supply/BAT*; do
+        marker=\"$notified/${battery##*/}\"
+        capacity=$(cat \"$battery/capacity\")
+        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&
+           [ \"$capacity\" -le 15 ]; then
+            [ -e \"$marker\" ] ||
+                " libnotify
+   "/bin/notify-send -u critical \"Akku fast leer\" \"Noch $capacity %\"
+            touch \"$marker\"
+        else
+            rm -f \"$marker\"
+        fi
+    done
+    sleep 60
+done
+"))
 
 (define (desktop-services machine)
   (append (list (home-packages librewolf

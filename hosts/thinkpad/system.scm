@@ -27,6 +27,7 @@
                                            iwlwifi-firmware %base-firmware)
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
+                         #:persisted-directories '(("/etc/mullvad-vpn" private))
                          #:services (append (desktop-session %machine)
                                             (network-services %machine)
                                             (list (service

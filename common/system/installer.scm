@@ -45,17 +45,18 @@
   (or (getenv "INSTALLER_MACHINE")
       (error "INSTALLER_MACHINE is not set")))
 
+(define (host-kernel host)
+  (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
+                                                                    host)
+                                                                  system))
+                                       '%system)))
+
 (define machine-files
   `(("guix-config-machine" ,(plain-file "guix-config-machine"
                                         (string-append %machine "\n")))
     ,@(if (string=? %machine "generic")
           '()
-          `(("guix-config-kernel" ,(operating-system-kernel (module-ref (resolve-interface `
-                                                                         (hosts ,
-                                                                          (string->symbol
-                                                                           %machine)
-                                                                          system))
-                                                                        '%system)))))))
+          `(("guix-config-kernel" ,(host-kernel %machine))))))
 
 (define installation-os-nonfree
   (operating-system

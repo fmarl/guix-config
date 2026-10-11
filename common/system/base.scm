@@ -17,6 +17,7 @@
   #:use-module (common machines)
   #:use-module (common system desktop)
   #:use-module (common system filesystem)
+  #:use-module (common system impermanence)
   #:use-module (common system kernel)
   #:use-module (common system maintenance)
   #:use-module (common system security)
@@ -66,6 +67,7 @@
                                 (firmware %base-firmware)
                                 (mapped-devices '())
                                 (file-systems '())
+                                (persisted-directories '())
                                 (services '()))
   (define kernel
     (if kernel-config
@@ -93,10 +95,20 @@
                   (bootloader grub-efi-bootloader)
                   (targets (list "/boot/efi"))
                   (keyboard-layout %keyboard-layout)))
-    (users (cons %user-account %base-user-accounts))
+    (users (cons* (user-account
+                    (inherit %root-account)
+                    (password "!")) %user-account %base-user-accounts))
     (sudoers-file %sudoers)
     (mapped-devices mapped-devices)
-    (file-systems (append file-systems %hardened-base-file-systems))
+    (file-systems (append file-systems
+                          (persisted-file-systems file-systems
+                                                  persisted-directories)
+                          %hardened-base-file-systems))
     (services
-     (append services %desktop-base-services %security-services
-             (btrfs-maintenance-services) base-services))))
+     (append services
+             %desktop-base-services
+             %security-services
+             (btrfs-maintenance-services (snapshot-subvolumes file-systems))
+             (impermanence-services file-systems persisted-directories
+                                    (list (user-account-name %user-account)))
+             base-services))))

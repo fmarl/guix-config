@@ -10,17 +10,8 @@
   '())
 
 (define %file-systems
-  (append (btrfs-file-systems (file-system-label "ROOT")
-                              "compress=zstd:3,discard=async"
-                              '(("/" "@")
-                                ("/home" "@home"
-                                 (no-suid no-dev))
-                                ("/boot" "@boot"
-                                 (no-suid no-dev no-exec))
-                                ("/var/log" "@log"
-                                 (no-suid no-dev no-exec))
-                                ("/gnu" "@gnu"
-                                 (no-suid no-dev))
-                                ("/.snapshots" ".snapshots"
-                                 (no-suid no-dev no-exec))))
-          (list (efi-file-system "A196-47A5"))))
+  (btrfs-file-systems (file-system-label "ROOT")
+                      "compress=zstd:3,discard=async"
+                      #:esp "A196-47A5"
+                      #:subvolumes '(("/boot" "@boot"
+                                      (no-suid no-dev no-exec)))))

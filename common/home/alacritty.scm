@@ -15,7 +15,6 @@
 (define (alacritty-config theme)
   (toml-file "alacritty.toml"
              `(("font" ("size" . 14))
-               
                ("font.offset" ("x" . 0)
                 ("y" . 2))
 

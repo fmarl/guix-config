@@ -26,8 +26,8 @@
                          #:file-systems %file-systems
                          #:services (append (desktop-session %machine)
                                             (network-services %machine
-                                                              #:open-tcp-ports '
-                                                              ("ssh"))
+                                                              #:open-tcp-ports
+                                                              (list "ssh"))
                                             (list (simple-service 'sensors
                                                    kernel-module-loader-service-type
                                                    (list "it87"))

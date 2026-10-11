@@ -6,7 +6,24 @@
   #:use-module (gnu system uuid)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:export (btrfs-file-systems efi-file-system %hardened-base-file-systems))
+  #:use-module (srfi srfi-26)
+  #:export (%persist %btrfs-top-level
+                     %snapshot-subvolume
+                     btrfs-file-systems
+                     impermanent-file-systems
+                     impermanent-file-systems?
+                     btrfs-subvolumes
+                     snapshot-subvolumes
+                     %hardened-base-file-systems))
+
+(define %persist
+  "/persist")
+
+(define %btrfs-top-level
+  "/.btrfs")
+
+(define %snapshot-subvolume
+  "@snapshots")
 
 (define %tmp-file-system
   (file-system
@@ -23,29 +40,137 @@
                   (string=? (file-system-type fs) "debugfs"))
                 %base-file-systems)))
 
-(define* (btrfs-file-systems device options subvolumes
-                             #:key (dependencies '()))
-  (define (btrfs-file-system mount-point subvolume flags)
-    (file-system
-      (device device)
-      (mount-point mount-point)
-      (type "btrfs")
-      (options (string-append "subvol=" subvolume "," options))
-      (flags (cons 'no-atime flags))
-      (dependencies dependencies)))
+(define %tmpfs-root-file-system
+  (file-system
+    (mount-point "/")
+    (device "tmpfs")
+    (type "tmpfs")
+    (options "mode=0755,size=2G")
+    (check? #f)))
 
-  (map (match-lambda
-         ((mount-point subvolume)
-          (btrfs-file-system mount-point subvolume
-                             '()))
-         ((mount-point subvolume flags)
-          (btrfs-file-system mount-point subvolume flags))) subvolumes))
+(define %default-subvolumes
+  '(("/" "@")
+    ("/gnu" "@gnu"
+     (no-suid no-dev))
+    ("/home" "@home"
+     (no-suid no-dev))
+    ("/var/log" "@log"
+     (no-suid no-dev no-exec))))
 
-(define (efi-file-system uuid-string)
+(define %impermanent-subvolumes
+  `(("/gnu" "@gnu"
+     (no-suid no-dev))
+    (,%persist "@persist"
+     (no-suid no-dev))
+    ("/var/log" "@log"
+     (no-suid no-dev no-exec))
+    ("/home" "@home"
+     (no-suid no-dev))
+    ("/boot" "@boot"
+     (no-suid no-dev no-exec))))
+
+(define (subvolume-flags subvolume)
+  (match subvolume
+    ((_ _)
+     '())
+    ((_ _ flags)
+     flags)))
+
+(define (merge-subvolumes defaults subvolumes)
+  (append (remove (lambda (default)
+                    (assoc (first default) subvolumes)) defaults) subvolumes))
+
+(define (subvolume-file-system device options dependencies subvolume)
+  (match subvolume
+    ((mount-point name . _) (file-system
+                              (device device)
+                              (mount-point mount-point)
+                              (type "btrfs")
+                              (options (string-append "subvol=" name ","
+                                                      options))
+                              (flags (cons 'no-atime
+                                           (subvolume-flags subvolume)))
+                              (needed-for-boot? (string=? mount-point %persist))
+                              (dependencies dependencies)))))
+
+(define (top-level-file-system device options dependencies)
+  (file-system
+    (device device)
+    (mount-point %btrfs-top-level)
+    (type "btrfs")
+    (options (string-append "subvolid=5," options))
+    (flags '(no-atime no-suid no-dev no-exec))
+    (dependencies dependencies)))
+
+(define (efi-file-system esp file-systems)
+  (unless (string? esp)
+    (error "missing #:esp, the UUID of the EFI system partition"))
   (file-system
     (mount-point "/boot/efi")
-    (device (uuid uuid-string
+    (device (uuid esp
                   'fat32))
     (type "vfat")
     (flags '(no-suid no-dev no-exec))
-    (options "umask=0077")))
+    (options "umask=0077")
+    (dependencies (filter (lambda (fs)
+                            (string=? (file-system-mount-point fs) "/boot"))
+                          file-systems))))
+
+(define (layout-file-systems device options subvolumes esp dependencies)
+  (let ((file-systems (cons (top-level-file-system device options dependencies)
+                            (map (cut subvolume-file-system device options
+                                      dependencies <>) subvolumes))))
+    (append file-systems
+            (list (efi-file-system esp file-systems)))))
+
+(define* (btrfs-file-systems device
+                             options
+                             #:key esp
+                             (subvolumes '())
+                             (dependencies '()))
+  (layout-file-systems device options
+                       (merge-subvolumes %default-subvolumes subvolumes) esp
+                       dependencies))
+
+(define* (impermanent-file-systems device
+                                   options
+                                   #:key esp
+                                   (subvolumes '())
+                                   (dependencies '()))
+  (let ((subvolumes (merge-subvolumes %impermanent-subvolumes subvolumes)))
+    (when (memq 'no-exec
+                (subvolume-flags (assoc %persist subvolumes)))
+      (error "/var/tmp is bound from /persist, it must not be no-exec"))
+    (cons %tmpfs-root-file-system
+          (layout-file-systems device options subvolumes esp dependencies))))
+
+(define (impermanent-file-systems? file-systems)
+  (any (lambda (fs)
+         (and (string=? (file-system-mount-point fs) "/")
+              (string=? (file-system-type fs) "tmpfs"))) file-systems))
+
+(define (file-system-subvolume fs)
+  (and (string=? (file-system-type fs) "btrfs")
+       (assoc-ref (file-system-options->alist (file-system-options fs))
+                  "subvol")))
+
+(define (btrfs-subvolumes file-systems)
+  (define mounted
+    (filter-map (lambda (fs)
+                  (and=> (file-system-subvolume fs)
+                         (cut cons <>
+                              (file-system-mount-point fs)))) file-systems))
+
+  (append (sort mounted
+                (lambda (a b)
+                  (string<? (cdr a)
+                            (cdr b))))
+          (list (cons %snapshot-subvolume #f))))
+
+(define (snapshot-subvolumes file-systems)
+  "Return the subvolumes of FILE-SYSTEMS that hold data worth snapshots."
+  (filter-map (match-lambda
+                ((name . mount-point) (and (member mount-point
+                                                   (list "/home" %persist))
+                                           name)))
+              (btrfs-subvolumes file-systems)))

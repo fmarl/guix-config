@@ -70,7 +70,7 @@ VALUE serialized by FORMAT-VALUE."
 (define (toml-value value)
   (match value
     ((? string?)
-     (string-append "\"" value "\""))
+     (quoted value))
     ((? vector?)
      (string-append "["
                     (string-join (map toml-value
