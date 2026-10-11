@@ -50,26 +50,14 @@
 
 (define %default-subvolumes
   '(("/" "@")
-    ("/gnu" "@gnu"
-     (no-suid no-dev))
-    ("/home" "@home"
-     (no-suid no-dev))
-    ("/var/log" "@log"
-     (no-suid no-dev no-exec))))
+    ("/gnu" "@gnu" no-suid no-dev)
+    ("/home" "@home" no-suid no-dev)
+    ("/var/log" "@log" no-suid no-dev no-exec)))
 
 (define %impermanent-subvolumes
   (append (alist-delete "/" %default-subvolumes)
-          `((,%persist "@persist"
-             (no-suid no-dev))
-            ("/boot" "@boot"
-             (no-suid no-dev no-exec)))))
-
-(define (subvolume-flags subvolume)
-  (match subvolume
-    ((_ _)
-     '())
-    ((_ _ flags)
-     flags)))
+          `((,%persist "@persist" no-suid no-dev)
+            ("/boot" "@boot" no-suid no-dev no-exec))))
 
 (define (merge-subvolumes defaults subvolumes)
   (append (remove (lambda (default)
@@ -77,16 +65,16 @@
 
 (define (subvolume-file-system device options dependencies subvolume)
   (match subvolume
-    ((mount-point name . _) (file-system
-                              (device device)
-                              (mount-point mount-point)
-                              (type "btrfs")
-                              (options (string-append "subvol=" name ","
-                                                      options))
-                              (flags (cons 'no-atime
-                                           (subvolume-flags subvolume)))
-                              (needed-for-boot? (string=? mount-point %persist))
-                              (dependencies dependencies)))))
+    ((mount-point name . flags) (file-system
+                                  (device device)
+                                  (mount-point mount-point)
+                                  (type "btrfs")
+                                  (options (string-append "subvol=" name ","
+                                                          options))
+                                  (flags (cons 'no-atime flags))
+                                  (needed-for-boot? (string=? mount-point
+                                                              %persist))
+                                  (dependencies dependencies)))))
 
 (define (top-level-file-system device options dependencies)
   (file-system

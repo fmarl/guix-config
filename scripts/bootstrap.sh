@@ -77,7 +77,7 @@ function check_environment {
     [[ "${EUID}" -eq 0 ]] || die "Must run as root"
 
     local tool
-    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk blkid \
+    for tool in parted wipefs mkfs.fat cryptsetup mkfs.btrfs btrfs udevadm lsblk \
                 mountpoint herd guix getent git; do
         command -v "${tool}" >/dev/null || die "Missing tool: ${tool}"
     done
@@ -154,6 +154,8 @@ function preflight {
     [[ ! -e "${DEV}" ]] || die "${DEV} is already open"
 
     [[ -n "${HOST_LUKS_UUID}" ]] || die "hosts/${HOST}/hardware.scm has no LUKS device"
+    [[ "${HOST_ESP_UUID}" =~ ^[0-9A-F]{4}-[0-9A-F]{4}$ ]] ||
+        die "hosts/${HOST}/hardware.scm has no FAT volume ID as ESP UUID: ${HOST_ESP_UUID}"
     [[ "${HOST_LUKS_TARGET}" == "${LUKS_NAME}" ]] ||
         die "hosts/${HOST}/hardware.scm maps LUKS to ${HOST_LUKS_TARGET}, not ${LUKS_NAME}"
 }
@@ -181,14 +183,14 @@ function partition_disk {
 
     # A previous install with the same layout leaves its signatures at the same offsets
     wipefs -af "${PART_BOOT}" "${PART_ROOT}"
-    mkfs.fat -F 32 -n BOOT "${PART_BOOT}"
+    mkfs.fat -F 32 -n BOOT -i "${HOST_ESP_UUID/-/}" "${PART_BOOT}"
 }
 
 function setup_luks {
     info "Setting up LUKS2 on ${PART_ROOT} ..."
     # GRUB can only unlock PBKDF2 key slots
     cryptsetup luksFormat --batch-mode --verify-passphrase --type luks2 \
-        --pbkdf pbkdf2 "${PART_ROOT}"
+        --pbkdf pbkdf2 --uuid "${HOST_LUKS_UUID}" "${PART_ROOT}"
 
     LUKS_OPENED=1
     cryptsetup open --allow-discards "${PART_ROOT}" "${LUKS_NAME}"
@@ -208,22 +210,6 @@ function copy_repo {
     info "Copying the repository to ${MNT_REPO} ..."
     mkdir -p "${MNT_REPO}"
     cp -rT "${CLONE_DIR}" "${MNT_REPO}"
-}
-
-function write_host_disk {
-    local luks_uuid esp_uuid
-    local -a layout=("${HOST_SUBVOLUMES[@]}")
-    luks_uuid="$(blkid -s UUID -o value "${PART_ROOT}")"
-    esp_uuid="$(blkid -s UUID -o value "${PART_BOOT}")"
-
-    info "Writing hosts/${HOST}/disk.scm ..."
-    write_disk_module "${MNT_REPO}/hosts/${HOST}/disk.scm" "${HOST}" "${luks_uuid}" "${esp_uuid}"
-
-    read_system "${MNT_REPO}" "${HOST}" "${CACHE}"
-    [[ "${HOST_LUKS_UUID}" == "${luks_uuid}" && "${HOST_ESP_UUID}" == "${esp_uuid}" ]] ||
-        die "hosts/${HOST}/system.scm does not use the UUIDs of hosts/${HOST}/disk.scm"
-    [[ "${HOST_SUBVOLUMES[*]}" == "${layout[*]}" ]] ||
-        die "hosts/${HOST}/system.scm does not use the layout of hosts/${HOST}/hardware.scm"
 }
 
 function install_system {
@@ -256,7 +242,6 @@ function set_passwords {
         mkdir -p "${MNT}/etc"
         touch "${MNT}/etc/shadow"
         chmod 600 "${MNT}/etc/shadow"
-        set_shadow_entry "${MNT}/etc/shadow" root '!'
     fi
 
     for name in "${HOST_USERS[@]}"; do
@@ -302,7 +287,7 @@ function main {
     setup_luks
     setup_btrfs
     copy_repo
-    write_host_disk
+    read_system "${MNT_REPO}" "${HOST}" "${CACHE}"
     install_system
     set_passwords
     rm -rf "${CACHE}"

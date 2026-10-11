@@ -4,12 +4,11 @@
 (define-module (hosts thinkpad hardware)
   #:use-module (gnu)
   #:use-module (common system filesystem)
-  #:use-module (hosts thinkpad disk)
   #:export (%mapped-devices %file-systems))
 
 (define %mapped-devices
   (list (mapped-device
-          (source (uuid %luks-uuid))
+          (source (uuid "21bd6649-83f1-45cb-b47f-3cd64ca6dc7a"))
           (target "guix-root")
           (type luks-device-mapping)
           (arguments (list #:allow-discards? #t)))))
@@ -17,5 +16,5 @@
 (define %file-systems
   (impermanent-file-systems "/dev/mapper/guix-root"
                             "compress=zstd:3,discard=async"
-                            #:esp %esp-uuid
+                            #:esp "7A59-010E"
                             #:dependencies %mapped-devices))

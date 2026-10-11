@@ -16,9 +16,8 @@ function move_repo {
 
     info "Moving ${SOURCE} to ${TARGET} ..."
     mkdir -p "$(dirname "${TARGET}")"
-    sudo cp -a "${SOURCE}" "${TARGET}"
+    sudo mv "${SOURCE}" "${TARGET}"
     sudo chown -R "$(id -u):$(id -g)" "${TARGET}"
-    sudo rm -rf "${SOURCE}"
 }
 
 function main {
@@ -29,8 +28,7 @@ function main {
     info "Reconfiguring the home environment ..."
     make -C "${TARGET}" home
 
-    info "Done. Commit and push hosts/$(hostname)/disk.scm in ${TARGET}:"
-    git -C "${TARGET}" status --short
+    info "Done."
 }
 
 main "$@"

@@ -64,16 +64,19 @@ EOF
 }
 
 function write_hardware {
+    local luks_uuid esp_uuid
+    luks_uuid="$(</proc/sys/kernel/random/uuid)"
+    esp_uuid="$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n' | tr a-f A-F)"
+    esp_uuid="${esp_uuid:0:4}-${esp_uuid:4:4}"
     cat >"$1" <<EOF
 (define-module (hosts ${HOST} hardware)
   #:use-module (gnu)
   #:use-module (common system filesystem)
-  #:use-module (hosts ${HOST} disk)
   #:export (%mapped-devices %file-systems))
 
 (define %mapped-devices
   (list (mapped-device
-          (source (uuid %luks-uuid))
+          (source (uuid "${luks_uuid}"))
           (target "${LUKS_NAME}")
           (type luks-device-mapping)
           (arguments (list #:allow-discards? #t)))))
@@ -81,7 +84,7 @@ function write_hardware {
 (define %file-systems
   (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
                       "${BTRFS_OPTIONS}"
-                      #:esp %esp-uuid
+                      #:esp "${esp_uuid}"
                       #:dependencies %mapped-devices))
 EOF
 }
@@ -125,8 +128,6 @@ function main {
     write_system "${dir}/system.scm"
     write_home "${dir}/home.scm"
     write_hardware "${dir}/hardware.scm"
-    write_disk_module "${dir}/disk.scm" "${HOST}" \
-        "00000000-0000-0000-0000-000000000000" "0000-0000"
 
     sed -i "s/^${default//\//\\/}\$/        (machine (name '${HOST}))\n&/" "${machines}"
 

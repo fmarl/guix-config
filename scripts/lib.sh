@@ -150,20 +150,3 @@ function write_persisted_hash {
     chmod 0700 "${directory}"
     (umask 077 && printf '%s\n' "${hash}" >"${directory}/${name}")
 }
-
-function write_disk_module {
-    local file="$1" host="$2" luks_uuid="$3" esp_uuid="$4"
-    cat >"${file}" <<EOF
-;;; SPDX-License-Identifier: GPL-3.0-or-later
-;;; Copyright © $(date +%Y) Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
-
-(define-module (hosts ${host} disk)
-  #:export (%luks-uuid %esp-uuid))
-
-(define %luks-uuid
-  "${luks_uuid}")
-
-(define %esp-uuid
-  "${esp_uuid}")
-EOF
-}

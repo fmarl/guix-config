@@ -9,12 +9,10 @@
              (ice-9 match)
              (srfi srfi-1))
 
-(define (channel-commit-pair channel)
-  (cons (channel-name channel)
-        (channel-commit channel)))
-
 (define (channel-commits channels)
-  (map channel-commit-pair channels))
+  (map (lambda (channel)
+         (cons (channel-name channel)
+               (channel-commit channel))) channels))
 
 (define locked
   (match (command-line)

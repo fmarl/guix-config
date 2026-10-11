@@ -39,76 +39,37 @@
 
                ("selection" ("save_to_clipboard" . #t))
 
-               ("colors.primary" ("background" unquote
-                                  (color theme
-                                         'bg_0))
-                ("foreground" unquote
-                 (color theme
-                        'fg_0)))
+               ("colors.primary" ,@(color-entries theme
+                                                  '(("background" . bg_0)
+                                                    ("foreground" . fg_0))))
 
-               ("colors.cursor" ("cursor" unquote
-                                 (color theme
-                                        'cursor))
-                ("text" unquote
-                 (color theme
-                        'bg_0)))
+               ("colors.cursor" ,@(color-entries theme
+                                                 '(("cursor" . cursor)
+                                                   ("text" . bg_0))))
 
-               ("colors.selection" ("background" unquote
-                                    (color theme
-                                           'bg_region))
-                ("text" unquote
-                 (color theme
-                        'fg_0)))
+               ("colors.selection" ,@(color-entries theme
+                                                    '(("background" . bg_region)
+                                                      ("text" . fg_0))))
 
-               ("colors.normal" ("black" unquote
-                                 (color theme
-                                        'bg_1))
-                ("red" unquote
-                 (color theme
-                        'red))
-                ("green" unquote
-                 (color theme
-                        'green))
-                ("yellow" unquote
-                 (color theme
-                        'yellow))
-                ("blue" unquote
-                 (color theme
-                        'blue))
-                ("magenta" unquote
-                 (color theme
-                        'magenta))
-                ("cyan" unquote
-                 (color theme
-                        'cyan))
-                ("white" unquote
-                 (color theme
-                        'fg_0)))
+               ("colors.normal" ,@(color-entries theme
+                                                 '(("black" . bg_1)
+                                                   ("red" . red)
+                                                   ("green" . green)
+                                                   ("yellow" . yellow)
+                                                   ("blue" . blue)
+                                                   ("magenta" . magenta)
+                                                   ("cyan" . cyan)
+                                                   ("white" . fg_0))))
 
-               ("colors.bright" ("black" unquote
-                                 (color theme
-                                        'bg_active))
-                ("red" unquote
-                 (color theme
-                        'br_red))
-                ("green" unquote
-                 (color theme
-                        'br_green))
-                ("yellow" unquote
-                 (color theme
-                        'br_yellow))
-                ("blue" unquote
-                 (color theme
-                        'br_blue))
-                ("magenta" unquote
-                 (color theme
-                        'br_magenta))
-                ("cyan" unquote
-                 (color theme
-                        'br_cyan))
-                ("white" unquote
-                 (color theme
-                        'dim_0))))))
+               ("colors.bright" ,@(color-entries theme
+                                                 '(("black" . bg_active)
+                                                   ("red" . br_red)
+                                                   ("green" . br_green)
+                                                   ("yellow" . br_yellow)
+                                                   ("blue" . br_blue)
+                                                   ("magenta" . br_magenta)
+                                                   ("cyan" . br_cyan)
+                                                   ("white" . dim_0)))))))
 
 (define (alacritty-services machine)
   (list (home-packages alacritty)

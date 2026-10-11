@@ -3,7 +3,7 @@
 
 (define-module (common themes)
   #:use-module (guix records)
-  #:export (theme-dark? ef-owl modus-operandi-tinted color))
+  #:export (theme-dark? ef-owl modus-operandi-tinted color color-entries))
 
 (define-record-type* <theme> theme make-theme
   theme?
@@ -79,3 +79,9 @@
   (string-append "#"
                  (or (assq-ref (theme-colors theme) name)
                      (error "unknown theme color" name))))
+
+(define (color-entries theme entries)
+  (map (lambda (entry)
+         (cons (car entry)
+               (color theme
+                      (cdr entry)))) entries))

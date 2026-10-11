@@ -12,67 +12,29 @@
   #:export (bemenu-askpass bemenu-pinentry bemenu-services))
 
 (define (bemenu-settings theme)
-  `(("tb" unquote
-     (color theme
-            'bg_1))
-    ("tf" unquote
-     (color theme
-            'br_blue))
-    ("fb" unquote
-     (color theme
-            'bg_1))
-    ("ff" unquote
-     (color theme
-            'fg_0))
-    ("cb" unquote
-     (color theme
-            'bg_1))
-    ("cf" unquote
-     (color theme
-            'cursor))
-    ("nb" unquote
-     (color theme
-            'bg_0))
-    ("nf" unquote
-     (color theme
-            'fg_1))
-    ("ab" unquote
-     (color theme
-            'bg_0))
-    ("af" unquote
-     (color theme
-            'fg_1))
-    ("hb" unquote
-     (color theme
-            'bg_region))
-    ("hf" unquote
-     (color theme
-            'fg_0))
-    ("sb" unquote
-     (color theme
-            'bg_accent))
-    ("sf" unquote
-     (color theme
-            'fg_0))
-    ("fbb" unquote
-     (color theme
-            'bg_0))
-    ("fbf" unquote
-     (color theme
-            'yellow))
-    ("scb" unquote
-     (color theme
-            'bg_1))
-    ("scf" unquote
-     (color theme
-            'bg_active))
-    ("bdr" unquote
-     (color theme
-            'border))
-    ("fn" unquote
-     (string-append %monospace-font " 12"))
-    ("line-height" . "26")
-    ("prompt" . "λ ~>")))
+  (append (color-entries theme
+                         '(("tb" . bg_1) ("tf" . br_blue)
+                           ("fb" . bg_1)
+                           ("ff" . fg_0)
+                           ("cb" . bg_1)
+                           ("cf" . cursor)
+                           ("nb" . bg_0)
+                           ("nf" . fg_1)
+                           ("ab" . bg_0)
+                           ("af" . fg_1)
+                           ("hb" . bg_region)
+                           ("hf" . fg_0)
+                           ("sb" . bg_accent)
+                           ("sf" . fg_0)
+                           ("fbb" . bg_0)
+                           ("fbf" . yellow)
+                           ("scb" . bg_1)
+                           ("scf" . bg_active)
+                           ("bdr" . border)))
+          `(("fn" unquote
+             (string-append %monospace-font " 12"))
+            ("line-height" . "26")
+            ("prompt" . "λ ~>"))))
 
 (define (bemenu-arguments theme)
   (string-concatenate (map (lambda (setting)

@@ -14,23 +14,15 @@
 
 (define (mako-config theme)
   (plain-file "mako-config"
-              (string-append "background-color="
-                             (color theme
-                                    'bg_2)
-                             "\n"
-                             "text-color="
-                             (color theme
-                                    'fg_0)
-                             "\n"
-                             "border-color="
-                             (color theme
-                                    'bg_1)
-                             "\n"
-                             "border-radius=12\n"
-                             "progress-color="
-                             (color theme
-                                    'cyan)
-                             "\n")))
+              (string-concatenate (map (lambda (entry)
+                                         (string-append (car entry) "="
+                                                        (cdr entry) "\n"))
+                                       (cons '("border-radius" . "12")
+                                             (color-entries theme
+                                                            '(("background-color" . bg_2)
+                                                              ("text-color" . fg_0)
+                                                              ("border-color" . bg_1)
+                                                              ("progress-color" . cyan))))))))
 
 (define (mako-services machine)
   (list (home-packages mako-locked libnotify)

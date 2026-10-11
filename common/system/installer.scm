@@ -43,24 +43,17 @@
       (error "INSTALLER_MACHINE is not set")))
 
 (define (host-kernel host)
-  (if (string=? %machine "generic")
-      linux
-      (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
-                                                                        host)
-                                                                      system))
-                                           '%system))))
+  (operating-system-kernel (module-ref (resolve-interface `(hosts ,(string->symbol
+                                                                    host)
+                                                                  system))
+                                       '%system)))
 
 (define %installer-kernel-configs
-  '("CONFIG_ISO9660_FS=m"
-    "CONFIG_OVERLAY_FS=m"
-    "CONFIG_SCSI=m"
-    "CONFIG_BLK_DEV_SD=m"
-    "CONFIG_USB_STORAGE=m"
-    "CONFIG_USB_UAS=m"))
+  '("CONFIG_ISO9660_FS=m" "CONFIG_OVERLAY_FS=m" "CONFIG_SCSI=m"
+    "CONFIG_BLK_DEV_SD=m" "CONFIG_USB_STORAGE=m" "CONFIG_USB_UAS=m"))
 
 (define (installer-kernel host)
-  (if (string=? host "generic")
-      linux
+  (if (string=? host "generic") linux
       (customize-linux #:linux (host-kernel host)
                        #:configs %installer-kernel-configs)))
 
@@ -75,7 +68,11 @@
   (operating-system
     (inherit installation-os)
     (kernel (installer-kernel %machine))
-    (initrd-modules (list "nvme" "usbhid" "hid-generic" "usb-storage" "uas"
+    (initrd-modules (list "nvme"
+                          "usbhid"
+                          "hid-generic"
+                          "usb-storage"
+                          "uas"
                           "sd_mod"))
     (firmware (list linux-firmware))
 
