@@ -25,8 +25,7 @@
   (simple-service 'tuigreet-cache activation-service-type
                   #~(let ((dir "/var/cache/tuigreet")
                           (greeter (getpwnam "greeter")))
-                      (unless (file-exists? dir)
-                        (mkdir dir))
+                      (mkdir-p dir)
                       (chown dir
                              (passwd:uid greeter)
                              (passwd:gid greeter)))))
