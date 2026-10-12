@@ -66,7 +66,6 @@
                           (variant ,(keyboard-layout-variant %keyboard-layout))))
            (touchpad (tap)
                      (click-method "button-areas"))
-           (trackball (off))
            (tablet (off))
            (touch (off))
            (mod-key "Super")

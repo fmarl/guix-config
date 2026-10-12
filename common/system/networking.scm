@@ -13,6 +13,10 @@
   #:export (network-services ssh-server-service))
 
 (define (static-network-services machine)
+  (unless (and (machine-address machine)
+               (machine-gateway machine))
+    (error "static networking needs an address and a gateway"
+           (machine-name machine)))
   (list (service static-networking-service-type
                  (list (static-networking (addresses (list (network-address (device
                                                                              (machine-interface

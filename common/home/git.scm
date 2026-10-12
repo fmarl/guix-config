@@ -5,7 +5,6 @@
   #:use-module (guix gexp)
   #:use-module (gnu home services)
   #:use-module (gnu packages version-control)
-  #:use-module (common home emacs)
   #:use-module (common home helpers)
   #:use-module (common users)
   #:export (%git-services))
@@ -45,8 +44,6 @@
 
 (define %git-services
   (list (home-packages git)
-        (simple-service 'git-editor home-environment-variables-service-type
-                        `(("GIT_EDITOR" unquote emacs-tty)))
         (simple-service 'git-config home-xdg-configuration-files-service-type
                         `(("git/config" ,git-config)
                           ("git/ignore" ,git-ignore)))))

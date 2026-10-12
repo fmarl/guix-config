@@ -15,6 +15,7 @@
              ((guix build utils)
               #:select (invoke mkdir-p))
              (common build impermanence)
+             (common users)
              (common system filesystem)
              (ice-9 match)
              (ice-9 rdelim)
@@ -84,6 +85,7 @@
                                                                file-systems))))
         (top (mkdtemp "/tmp/subvolumes-XXXXXX")))
     (mount device top "btrfs" 0 "subvolid=5")
+    (chmod top #o700)
     (dynamic-wind (const #t)
                   (lambda ()
                     (for-each (match-lambda
@@ -97,17 +99,17 @@
                     (rmdir top)))))
 
 (define (installer-binds target)
-  "Bind /var/guix and /tmp, where cow-store keeps the new store items, to
-the persistent subvolume instead of the tmpfs root."
+  "Bind /var/guix to the persistent subvolume and /tmp, where cow-store keeps
+the new store items, to /var/tmp instead of the tmpfs root."
   (map (match-lambda
          ((source mount-point)
           (file-system
-            (device (string-append target %persist source))
+            (device (string-append target source))
             (mount-point mount-point)
             (type "none")
             (flags '(bind-mount))
             (check? #f))))
-       '(("/var/guix" "/var/guix")
+       `((,(string-append %persist "/var/guix") "/var/guix")
          ("/var/tmp" "/tmp"))))
 
 (define (mount-all file-systems target)
@@ -121,12 +123,10 @@ the persistent subvolume instead of the tmpfs root."
                    (lambda (a b)
                      (string<? (file-system-mount-point a)
                                (file-system-mount-point b)))) target)
+  (chmod (string-append target "/var/tmp") #o1777)
   (when (impermanent-file-systems? file-systems)
-    (let ((persist (string-append target %persist)))
-      (mkdir-p (string-append persist "/var/guix"))
-      (mkdir-p (string-append persist "/var/tmp"))
-      (chmod (string-append persist "/var/tmp") #o1777)
-      (mount-all (installer-binds target) target))))
+    (mkdir-p (string-append target %persist "/var/guix"))
+    (mount-all (installer-binds target) target)))
 
 (define (hash-password password)
   (define alphabet
@@ -259,9 +259,17 @@ the persistent subvolume instead of the tmpfs root."
                                                       %machine))))
         '%home))
 
+(define (license-header)
+  (format #f ";;; SPDX-License-Identifier: GPL-3.0-or-later
+;;; Copyright © ~a ~a <~a>~%~%"
+          (strftime "%Y" (localtime (current-time)))
+          (user-full-name %user)
+          (user-email %user)))
+
 (define (write-forms file forms)
   (call-with-output-file file
     (lambda (port)
+      (display (license-header) port)
       (display (string-join (map (lambda (form)
                                    (call-with-output-string (cut
                                                              pretty-print-with-comments

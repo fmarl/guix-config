@@ -12,7 +12,7 @@
   #:use-module (common home helpers)
   #:use-module (common home wm)
   #:use-module (srfi srfi-1)
-  #:export (emacs-tty %emacs-services emacs-desktop-services))
+  #:export (%emacs-services emacs-desktop-services))
 
 (define %emacs-socket-name
   "emacs-daemon")
@@ -55,6 +55,7 @@
 (define emacs-editor-service
   (simple-service 'emacs-editor home-environment-variables-service-type
                   `(("EDITOR" unquote emacs-tty)
+                    ("GIT_EDITOR" unquote emacs-tty)
                     ("VISUAL" unquote
                      (emacsclient-script "emacs-frame" "-c")))))
 

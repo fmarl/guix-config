@@ -12,6 +12,7 @@
   #:use-module (gnu packages librewolf)
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages ssh)
+  #:use-module (gnu packages text-editors)
   #:use-module (gnu services)
   #:use-module (nongnu packages messaging)
   #:use-module (sagittarius locked image-viewers)
@@ -50,7 +51,17 @@
                                                                  "../../dotfiles/.config/guix/channels.scm"
                                                                  "trusted-channels.scm"))))
                 (service home-xdg-user-directories-service-type))
-          (gpg-services machine) %shell-services %git-services %emacs-services))
+          %shell-services
+          %git-services
+          (if (machine-wm machine)
+              (append (gpg-services machine) %emacs-services)
+              server-editor-services)))
+
+(define server-editor-services
+  (list (home-packages mg)
+        (simple-service 'mg-editor home-environment-variables-service-type
+                        `(("EDITOR" unquote
+                           (file-append mg "/bin/mg"))))))
 
 (define battery-alert
   (shell-script "battery-alert"

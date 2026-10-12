@@ -31,7 +31,6 @@
   (openssh-host (name name)
                 (host-name host-name)
                 (user user)
-                (identity-file (string-append "~/" %ssh-public-key-file))
                 (extra-content (string-append "  ServerAliveCountMax "
                                               (number->string
                                                server-alive-count-max) "\n"))))

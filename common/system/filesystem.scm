@@ -56,7 +56,8 @@
   '(("/" "@")
     ("/gnu" "@gnu" no-suid no-dev)
     ("/home" "@home" no-suid no-dev)
-    ("/var/log" "@log" no-suid no-dev no-exec)))
+    ("/var/log" "@log" no-suid no-dev no-exec)
+    ("/var/tmp" "@tmp" no-suid no-dev)))
 
 (define %impermanent-subvolumes
   (append (alist-delete "/" %default-subvolumes)

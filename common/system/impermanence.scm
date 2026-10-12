@@ -13,7 +13,7 @@
 
 (define %persisted-directories
   '(("/var/guix" #o755)
-    ("/var/tmp" #o1777)
+    ("/root/.cache/guix" #o700)
     ("/var/lib/catch-up" #o755)
     ("/var/lib/bluetooth" #o700)
     ("/var/lib/NetworkManager" #o700)

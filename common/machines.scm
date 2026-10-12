@@ -49,6 +49,8 @@
                  (mobile? #t))
         (machine (name 'fermion)
                  (address "192.168.0.201")
+                 (interface "eth0")
+                 (gateway "192.168.0.1")
                  (wm #f))
         (machine (name 'default))))
 
