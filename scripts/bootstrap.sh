@@ -85,7 +85,7 @@ function check_environment {
 }
 
 function fetch_repo {
-    CLONE_DIR="$(mktemp -d)"
+    CLONE_DIR="$(mktemp -d -p /run)"
     info "Cloning ${REPO_URL} ..."
     git clone --quiet "${REPO_URL}" "${CLONE_DIR}"
 }
@@ -235,6 +235,7 @@ function cleanup {
 
     if [[ -n "${COW_STORE}" ]]; then
         herd stop cow-store || true
+        err "cow-store leaves /tmp and /gnu/store mounted, reboot before retrying"
     fi
     if mountpoint -q "${MNT}"; then
         umount -R "${MNT}" || true

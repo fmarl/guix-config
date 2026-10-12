@@ -5,7 +5,6 @@
   #:use-module (guix gexp)
   #:use-module (gnu packages backup)
   #:use-module (gnu packages linux)
-  #:use-module (gnu packages package-management)
   #:use-module (gnu services)
   #:use-module (gnu services linux)
   #:use-module (gnu services networking)
@@ -58,15 +57,6 @@ ago, so that runs missed while the machine was off are caught up."
                   #~(#$(run-when-due name days command))
                   #:requirement requirement))
 
-(define catch-up-timers
-  (simple-service 'catch-up-timers shepherd-root-service-type
-                  (list (catch-up-timer 'guix-gc
-                                        (list (file-append guix "/bin/guix")
-                                              "gc" "--delete-generations=2w")
-                                        #:days 7
-                                        #:minute 20
-                                        #:requirement '(guix-daemon)))))
-
 (define (btrbk-config subvolumes)
   (plain-file "btrbk.conf"
               (string-join `("timestamp_format long"
@@ -104,5 +94,5 @@ btrfs file system."
                                                 #:requirement '(file-systems)))))))
 
 (define %maintenance-services
-  (list ntp-service catch-up-timers
+  (list ntp-service
         (service earlyoom-service-type)))

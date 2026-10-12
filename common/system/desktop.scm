@@ -4,7 +4,6 @@
 (define-module (common system desktop)
   #:use-module (guix gexp)
   #:use-module (gnu packages admin)
-  #:use-module (gnu packages glib)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages zig-xyz)
@@ -18,6 +17,7 @@
   #:use-module (sagittarius packages wm)
   #:use-module (common locale)
   #:use-module (common machines)
+  #:use-module (common themes)
   #:use-module (ice-9 match)
   #:export (desktop-session %desktop-base-services))
 
@@ -30,6 +30,21 @@
                       (chown dir
                              (passwd:uid greeter)
                              (passwd:gid greeter)))))
+
+(define %tuigreet-theme
+  (string-join (map (match-lambda
+                      ((part . color) (string-append part "="
+                                                     (symbol->string (console-color
+                                                                      color)))))
+                    '(("container" . bg_0) ("text" . fg_0)
+                      ("greet" . fg_0)
+                      ("input" . fg_0)
+                      ("border" . br_blue)
+                      ("title" . br_blue)
+                      ("prompt" . br_blue)
+                      ("button" . br_blue)
+                      ("time" . dim_0)
+                      ("action" . dim_0))) ";"))
 
 (define (greetd-services session)
   "Run tuigreet starting SESSION on tty1, plain shells on tty2-3."
@@ -56,6 +71,8 @@
                                                               "--time"
                                                               "--remember"
                                                               "--asterisks"
+                                                              "--theme"
+                                                              #$%tuigreet-theme
                                                               "--cmd"
                                                               #$session))))
                                                         (map shell-terminal
@@ -71,13 +88,8 @@
   (cons* (simple-service 'compositor profile-service-type
                          (list package))
          (service seatd-service-type)
-         (greetd-services (greetd-user-session (command (file-append dbus
-                                                         "/bin/dbus-run-session"))
-                                               (command-args (cons*
-                                                              "--dbus-daemon"
-                                                              (file-append
-                                                               dbus
-                                                               "/bin/dbus-daemon")
+         (greetd-services (greetd-user-session (command (car session-command))
+                                               (command-args (cdr
                                                               session-command))
                                                (xdg-session-type "wayland")
                                                (extra-env `(("XDG_CURRENT_DESKTOP"
@@ -113,9 +125,9 @@
 (define %desktop-base-services
   (list fontconfig-file-system-service
         (service screen-locker-service-type
-                 (screen-locker-configuration (name "waylock")
-                                              (program (file-append waylock
-                                                        "/bin/waylock"))))
+                 (screen-locker-configuration (name "swaylock")
+                                              (program (file-append swaylock
+                                                        "/bin/swaylock"))))
         (service polkit-service-type)
         (service rtkit-service-type)
         (service fwupd-service-type)

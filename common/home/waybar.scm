@@ -45,7 +45,7 @@
 
 (define (set-brightness change)
   (shell-command (file-append brightnessctl "/bin/brightnessctl")
-           "--class=backlight" "set" change))
+                 "--class=backlight" "set" change))
 
 (define-record-type* <status-module> status-module make-status-module
   status-module?
@@ -94,9 +94,10 @@
                                           (glyph 'volume-high)))
                                  ("on-click" unquote
                                   (shell-command (file-append wireplumber
-                                                        "/bin/wpctl")
-                                           "set-mute" "@DEFAULT_AUDIO_SINK@"
-                                           "toggle"))))
+                                                              "/bin/wpctl")
+                                                 "set-mute"
+                                                 "@DEFAULT_AUDIO_SINK@"
+                                                 "toggle"))))
                        (state-colors '(("muted" . dim_0)))
                        (available? machine-audio?))
         (status-module (name "backlight")
@@ -178,7 +179,7 @@
   (define modules
     (machine-status-modules machine))
 
-  `(("height" . 30) ,@(assq-ref %window-modules
+  `(("height" . 32) ,@(assq-ref %window-modules
                                 (machine-wm machine))
     ("modules-center" . #("clock#time" "custom/dot" "clock#date"))
     ,@(right-modules modules)
@@ -215,89 +216,126 @@
                                             name)))
                  (status-module-state-colors module)))))
 
+  (define (translucent name alpha)
+    (color-rgba theme name alpha))
+
+  (define status-selectors
+    (append (map (lambda (module)
+                   (string-append "#"
+                                  (status-module-name module)))
+                 %status-modules)
+            '("#custom-expand" "#tray")))
+
+  (define (px n)
+    (string-append (number->string n) "px"))
+
   (css-file "waybar-style.css"
             `((("*")
-               ("font-size" . "15px")
                ("font-family" unquote
-                (string-append "\"" %monospace-font "\""))
+                (string-append "\"" %sans-font "\", sans-serif"))
+               ("font-size" . "13px")
+               ("font-weight" . "500")
+               ("font-feature-settings" . "\"tnum\"")
                ("border" . "none")
                ("border-radius" . "0")
                ("min-height" . "0")
-               ("box-shadow" . "none"))
+               ("box-shadow" . "none")
+               ("text-shadow" . "none"))
               (("window#waybar")
                ("background" unquote
-                (color theme
-                       'bg_0))
+                (translucent 'bg_0 0.7))
                ("color" unquote
                 (color theme
                        'fg_0))
                ("border-bottom" unquote
                 (string-append "1px solid "
-                               (color theme
-                                      'bg_2))))
+                               (translucent 'fg_0 0.1))))
+              (("#workspaces")
+               ("margin" . "5px 0 5px 8px")
+               ("padding" . "2px")
+               ("border-radius" unquote
+                (px (+ %small-corner-radius 2)))
+               ("background" unquote
+                (translucent 'fg_0 0.07)))
               (("#workspaces button" "#taskbar button")
-               ("padding" . "0 10px")
+               ("margin" . "0 1px")
+               ("padding" . "0 9px")
+               ("border-radius" unquote
+                (px %small-corner-radius))
                ("color" unquote
-                (color theme
-                       'dim_0))
-               ("background" . "transparent"))
+                (translucent 'fg_0 0.55))
+               ("background" . "transparent")
+               ("transition" . "background 200ms, color 200ms"))
               (("#workspaces button:hover" "#taskbar button:hover")
                ("color" unquote
                 (color theme
-                       'fg_0))
-               ("background" . "transparent"))
+                       'fg_0)))
               (("#workspaces button.active" "#workspaces button.focused"
                 "#taskbar button.active")
                ("color" unquote
                 (color theme
                        'fg_0))
+               ("background" unquote
+                (color theme
+                       'bg_raised))
                ("box-shadow" unquote
-                (string-append "inset 0 -2px "
-                               (color theme
-                                      'br_blue))))
+                (string-append "0 1px 2px "
+                               (translucent 'fg_0 0.18))))
               (("#workspaces button.urgent")
                ("color" unquote
                 (color theme
-                       'red))
-               ("box-shadow" unquote
-                (string-append "inset 0 -2px "
-                               (color theme
-                                      'red))))
+                       'red)))
+              (("#taskbar")
+               ("margin" . "5px 0 5px 8px"))
               (("#window")
-               ("color" unquote
-                (color theme
-                       'dim_0))
-               ("padding" . "0 14px"))
+               ("padding" . "0 14px")
+               ("font-weight" . "700"))
               (("#clock.time" "#clock.date")
-               ("min-width" . "100px")
-               ("padding" . "0"))
+               ("min-width" . "88px"))
+              (("#clock.time")
+               ("font-weight" . "600"))
               (("#clock.date")
                ("color" unquote
-                (color theme
-                       'dim_0))
-               ("font-size" . "13px"))
+                (translucent 'fg_0 0.6)))
               (("#custom-dot")
                ("color" unquote
-                (color theme
-                       'border))
-               ("padding" . "0 10px"))
-              ((,@(map (lambda (module)
-                         (string-append "#"
-                                        (status-module-name module)))
-                       %status-modules) "#custom-expand" "#tray")
-               ("padding" . "0 10px"))
+                (translucent 'fg_0 0.3))
+               ("padding" . "0 4px"))
+              (,status-selectors ("margin" . "4px 1px")
+               ("padding" . "0 9px")
+               ("border-radius" unquote
+                (px %small-corner-radius))
+               ("transition" . "background 200ms"))
+              (,(map (lambda (selector)
+                       (string-append selector ":hover")) status-selectors) ("background"
+                                                                             unquote
+                                                                             (translucent 'fg_0
+                                                                              0.08)))
+              (("#tray")
+               ("margin-right" . "8px"))
               ,@(append-map status-module-rules %status-modules)
               (("#battery.critical")
-               ("font-weight" . "bold"))
+               ("font-weight" . "700"))
               (("#custom-expand")
                ("color" unquote
-                (color theme
-                       'border))
-               ("transition" . "color 300ms"))
-              ,(colored "#custom-expand:hover"
-                        'fg_0)
+                (translucent 'fg_0 0.35))
+               ("transition" . "background 200ms, color 200ms"))
               ,(colored "#status:hover #custom-expand"
-                        'fg_0))))
+                        'fg_0)
+              (("tooltip")
+               ("background" unquote
+                (translucent 'bg_popup 0.97))
+               ("border" unquote
+                (string-append "1px solid "
+                               (color theme
+                                      'border)))
+               ("border-radius" unquote
+                (px %corner-radius)))
+              (("tooltip label")
+               ("color" unquote
+                (color theme
+                       'fg_0))
+               ("padding" . "4px 6px")))))
 
 (define (waybar-services machine)
   (list (home-packages waybar)

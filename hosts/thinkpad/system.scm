@@ -4,6 +4,7 @@
 (define-module (hosts thinkpad system)
   #:use-module (gnu)
   #:use-module (gnu services desktop)
+  #:use-module (gnu services pm)
   #:use-module (nongnu packages linux)
   #:use-module (sagittarius services vpn)
   #:use-module (common machines)
@@ -25,15 +26,20 @@
                          ;; i915 disables runtime PM without its DMC firmware
                          #:firmware (cons* i915-firmware ibt-hw-firmware
                                            iwlwifi-firmware %base-firmware)
+                         #:guix-daemon-options (list "--max-jobs=2")
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:persisted-directories '(("/etc/mullvad-vpn" #o700))
+                         #:persisted-directories '(("/etc/mullvad-vpn" #o700)
+                                                   ("/var/lib/power-profiles-daemon"
+                                                    #o755))
                          #:services (append (desktop-session %machine)
                                             (network-services %machine)
                                             (list (service
                                                    bluetooth-service-type)
                                                   (service acpid-service-type)
                                                   (service upower-service-type)
+                                                  (service
+                                                   power-profiles-daemon-service-type)
                                                   (service
                                                    mullvad-service-type)))))
 

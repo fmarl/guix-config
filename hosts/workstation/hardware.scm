@@ -11,6 +11,5 @@
 
 (define %file-systems
   (btrfs-file-systems (file-system-label "ROOT")
-                      "compress=zstd:3,discard=async"
                       #:esp "A196-47A5"
                       #:subvolumes '(("/boot" "@boot" no-suid no-dev no-exec))))

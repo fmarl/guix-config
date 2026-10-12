@@ -28,7 +28,7 @@ function main {
     info "Reconfiguring the home environment ..."
     make -C "${TARGET}" home
 
-    info "Done."
+    info "Done. Log in again to use the new home environment."
 }
 
 main "$@"

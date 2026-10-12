@@ -4,13 +4,19 @@
 (define-module (common home theme)
   #:use-module (guix gexp)
   #:use-module (gnu home services)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
   #:use-module (nongnu packages fonts)
   #:use-module (common home helpers)
   #:use-module (common machines)
   #:use-module (common themes)
-  #:export (theme-services %cursor-theme %cursor-size %monospace-font))
+  #:export (theme-services %cursor-theme
+                           %cursor-size
+                           %monospace-font
+                           %corner-radius
+                           %small-corner-radius
+                           %sans-font))
 
 (define %cursor-theme
   "Bibata-Modern-Classic")
@@ -20,6 +26,15 @@
 
 (define %monospace-font
   "Aporetic Sans Mono")
+
+(define %corner-radius
+  10)
+
+(define %small-corner-radius
+  6)
+
+(define %sans-font
+  "Inter")
 
 (define (gtk-settings theme)
   (define dark?
@@ -32,7 +47,8 @@
                 (if dark? "Papirus-Dark" "Papirus"))
                ("gtk-cursor-theme-name" unquote %cursor-theme)
                ("gtk-cursor-theme-size" unquote %cursor-size)
-               ("gtk-font-name" . "Aporetic Sans 11")
+               ("gtk-font-name" unquote
+                (string-append %sans-font " 11"))
                ("gtk-application-prefer-dark-theme" unquote dark?)))))
 
 (define (gtk-css theme)
@@ -69,8 +85,12 @@
   (define theme
     (machine-theme machine))
 
-  (list (home-packages adw-gtk3-theme papirus-icon-theme adwaita-icon-theme
-                       bibata-cursor-theme font-awesome-nonfree)
+  (list (home-packages adw-gtk3-theme
+                       papirus-icon-theme
+                       adwaita-icon-theme
+                       bibata-cursor-theme
+                       font-awesome-nonfree
+                       (list font-inter "ttf"))
         (simple-service 'gtk-theme home-xdg-configuration-files-service-type
                         `(("gtk-3.0/settings.ini" ,(gtk-settings theme))
                           ("gtk-3.0/gtk.css" ,(gtk-css theme))

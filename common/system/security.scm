@@ -66,6 +66,7 @@ Defaults umask_override
 (define %hardened-sysctl-settings
   '(("kernel.core_uses_pid" . "1") ("dev.tty.ldisc_autoload" . "0")
     ("kernel.kptr_restrict" . "2")
+    ("kernel.io_uring_disabled" . "2")
     ("kernel.yama.ptrace_scope" . "1")
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
@@ -112,7 +113,6 @@ Defaults umask_override
         (udev-rules-service 'fido2 libfido2
                             #:groups '("plugdev"))
         (udev-rules-service 'yubikey-personalization yubikey-personalization)
-        (udev-rules-service 'u2f-host libu2f-host)
 
         sysctl-service
 

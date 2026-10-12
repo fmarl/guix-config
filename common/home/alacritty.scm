@@ -13,8 +13,19 @@
   #:export (alacritty-services))
 
 (define (alacritty-config theme)
+  (define-values (black white bright-black bright-white)
+                 (if (theme-dark? theme)
+                     (values 'bg_1
+                             'fg_0
+                             'bg_active
+                             'dim_0)
+                     (values 'fg_0
+                             'bg_active
+                             'dim_0
+                             'bg_1)))
+
   (toml-file "alacritty.toml"
-             `(("font" ("size" . 14))
+             `(("font" ("size" . 12))
                ("font.offset" ("x" . 0)
                 ("y" . 2))
 
@@ -52,24 +63,26 @@
                                                       ("text" . fg_0))))
 
                ("colors.normal" ,@(color-entries theme
-                                                 '(("black" . bg_1)
+                                                 `(("black" unquote black)
                                                    ("red" . red)
                                                    ("green" . green)
                                                    ("yellow" . yellow)
                                                    ("blue" . blue)
                                                    ("magenta" . magenta)
                                                    ("cyan" . cyan)
-                                                   ("white" . fg_0))))
+                                                   ("white" unquote white))))
 
                ("colors.bright" ,@(color-entries theme
-                                                 '(("black" . bg_active)
+                                                 `(("black" unquote
+                                                    bright-black)
                                                    ("red" . br_red)
                                                    ("green" . br_green)
                                                    ("yellow" . br_yellow)
                                                    ("blue" . br_blue)
                                                    ("magenta" . br_magenta)
                                                    ("cyan" . br_cyan)
-                                                   ("white" . dim_0)))))))
+                                                   ("white" unquote
+                                                    bright-white)))))))
 
 (define (alacritty-services machine)
   (list (home-packages alacritty)

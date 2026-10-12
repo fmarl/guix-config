@@ -4,7 +4,6 @@
 # shellcheck shell=bash
 
 readonly LUKS_NAME="guix-root"
-readonly BTRFS_OPTIONS="compress=zstd:3,discard=async"
 
 function err {
     printf '\033[41m%s\033[0m\n' "$*" >&2

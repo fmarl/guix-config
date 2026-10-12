@@ -102,10 +102,10 @@ nucleotide-spawn."
 (define (nucleotide-settings theme)
   (string-append "(defparameter *focused-border-rgba* '("
                  (rgb theme
-                       'br_blue) " 255))
+                      'br_blue) " 255))
 (defparameter *unfocused-border-rgba* '("
                  (rgb theme
-                       'border)
+                      'border)
                  " 255))
 
 (clear-keybinds)

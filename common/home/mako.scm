@@ -7,22 +7,34 @@
   #:use-module (gnu packages gnome)
   #:use-module (sagittarius locked wm)
   #:use-module (common home helpers)
+  #:use-module (common home theme)
   #:use-module (common home wm)
   #:use-module (common machines)
   #:use-module (common themes)
   #:export (mako-services))
 
 (define (mako-config theme)
-  (plain-file "mako-config"
-              (string-concatenate (map (lambda (entry)
-                                         (string-append (car entry) "="
-                                                        (cdr entry) "\n"))
-                                       (cons '("border-radius" . "12")
-                                             (color-entries theme
-                                                            '(("background-color" . bg_2)
-                                                              ("text-color" . fg_0)
-                                                              ("border-color" . bg_1)
-                                                              ("progress-color" . cyan))))))))
+  (key-value-file "mako-config"
+                  `(("font" unquote
+                     (string-append %sans-font " 11"))
+                    ("border-radius" unquote %corner-radius)
+                    ("border-size" . 1)
+                    ("padding" . 12)
+                    ("background-color" unquote
+                     (color-hex-alpha theme
+                                      'bg_popup 0.95))
+                    ("border-color" unquote
+                     (color theme
+                            'border))
+                    ,@(color-entries theme
+                                     '(("text-color" . fg_0)
+                                       ("progress-color" . cyan)))
+                    ("[urgency=critical]" . #t)
+                    ("border-size" . 2)
+                    ("border-color" unquote
+                     (color theme
+                            'red)))
+                  #:separator "="))
 
 (define (mako-services machine)
   (list (home-packages mako-locked libnotify)

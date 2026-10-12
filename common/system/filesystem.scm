@@ -7,7 +7,8 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:export (%persist %btrfs-top-level
+  #:export (%persist %btrfs-options
+                     %btrfs-top-level
                      %snapshot-subvolume
                      btrfs-file-systems
                      impermanent-file-systems
@@ -18,6 +19,9 @@
 
 (define %persist
   "/persist")
+
+(define %btrfs-options
+  "compress=zstd:1,discard=async")
 
 (define %btrfs-top-level
   "/.btrfs")
@@ -107,8 +111,8 @@
             (list (efi-file-system esp file-systems)))))
 
 (define* (btrfs-file-systems device
-                             options
                              #:key esp
+                             (options %btrfs-options)
                              (subvolumes '())
                              (dependencies '()))
   (layout-file-systems device options
@@ -116,8 +120,8 @@
                        dependencies))
 
 (define* (impermanent-file-systems device
-                                   options
                                    #:key esp
+                                   (options %btrfs-options)
                                    (subvolumes '())
                                    (dependencies '()))
   (cons %tmpfs-root-file-system

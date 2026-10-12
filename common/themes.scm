@@ -3,7 +3,15 @@
 
 (define-module (common themes)
   #:use-module (guix records)
-  #:export (theme-dark? ef-owl modus-operandi-tinted color color-entries))
+  #:use-module (srfi srfi-1)
+  #:export (theme-dark? ef-owl
+                        modus-operandi-tinted
+                        color
+                        color-entries
+                        console-palette
+                        console-color
+                        color-rgba
+                        color-hex-alpha))
 
 (define-record-type* <theme> theme make-theme
   theme?
@@ -18,6 +26,7 @@
                    (bg_region . "404f66")
                    (bg_accent . "4f509f")
                    (bg_active . "60676b")
+                   (bg_raised . "60676b")
                    (border . "4f5f66")
                    (cursor . "afe6ef")
                    (dim_0 . "857f8f")
@@ -50,6 +59,7 @@
                    (bg_region . "c2bcb5")
                    (bg_accent . "bfc9ff")
                    (bg_active . "c9b9b0")
+                   (bg_raised . "ffffff")
                    (border . "9f9690")
                    (cursor . "d00000")
                    (dim_0 . "595959")
@@ -85,3 +95,53 @@
          (cons (car entry)
                (color theme
                       (cdr entry)))) entries))
+
+(define (color-channels theme name)
+  (let ((hex (color theme name)))
+    (map (lambda (start)
+           (string->number (substring hex start
+                                      (+ start 2)) 16))
+         '(1 3 5))))
+
+(define %console-colors
+  '((black . bg_0) (red . red)
+    (green . green)
+    (yellow . yellow)
+    (blue . blue)
+    (magenta . magenta)
+    (cyan . cyan)
+    (gray . fg_0)
+    (darkgray . dim_0)
+    (lightred . br_red)
+    (lightgreen . br_green)
+    (lightyellow . br_yellow)
+    (lightblue . br_blue)
+    (lightmagenta . br_magenta)
+    (lightcyan . br_cyan)
+    (white . fg_1)))
+
+(define (console-palette theme)
+  "Return the 16 console colors of THEME as (RED GREEN BLUE) lists, black as
+the background and gray as the foreground."
+  (map (lambda (entry)
+         (color-channels theme
+                         (cdr entry))) %console-colors))
+
+(define (console-color name)
+  "Return the console color name showing the theme color NAME."
+  (car (or (find (lambda (entry)
+                   (eq? (cdr entry) name)) %console-colors)
+           (error "no console color for" name))))
+
+(define (color-rgba theme name alpha)
+  "Return the color NAME of THEME with ALPHA as rgba(), as GTK CSS expects."
+  (apply format #f "rgba(~a, ~a, ~a, ~a)"
+         (append (color-channels theme name)
+                 (list alpha))))
+
+(define (color-hex-alpha theme name alpha)
+  "Return the color NAME of THEME with ALPHA as #rrggbbaa."
+  (string-append (color theme name)
+                 (string-pad (number->string (inexact->exact (round (* alpha
+                                                                       255)))
+                                             16) 2 #\0)))

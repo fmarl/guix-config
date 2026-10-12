@@ -5,7 +5,6 @@
   #:use-module (guix gexp)
   #:use-module (gnu home)
   #:use-module (gnu home services)
-  #:use-module (gnu home services desktop)
   #:use-module (gnu home services sound)
   #:use-module (gnu home services xdg)
   #:use-module (gnu packages fonts)
@@ -20,6 +19,7 @@
   #:use-module (sagittarius locked video)
   #:use-module (common home alacritty)
   #:use-module (common home bemenu)
+  #:use-module (common home dbus)
   #:use-module (common home emacs)
   #:use-module (common home git)
   #:use-module (common home gnupg)
@@ -88,7 +88,6 @@ done
                                                #:floating? #t)
                                (wm-window-rule "(?i)signal"
                                                #:hide-from-screencast? #t))
-                (service home-dbus-service-type)
                 (simple-service 'wayland-environment
                                 home-environment-variables-service-type
                                 '(("_JAVA_AWT_WM_NONREPARENTING" . "1")
@@ -98,6 +97,7 @@ done
               '())
           (alacritty-services machine)
           (bemenu-services machine)
+          %dbus-services
           (emacs-desktop-services machine)
           (theme-services machine)
           (wm-services machine)

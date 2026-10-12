@@ -80,7 +80,7 @@ function open_disk {
         cryptsetup open --allow-discards "/dev/disk/by-uuid/${HOST_LUKS_UUID}" "${LUKS_NAME}"
     fi
 
-    TOP="$(mktemp -d)"
+    TOP="$(mktemp -d -p /run)"
     mount -o subvolid=5 "${DEV}" "${TOP}"
 }
 
@@ -178,6 +178,7 @@ function cleanup {
         err "Failed with exit code ${status}, rolling back ..."
         if [[ -n "${COW_STORE}" ]]; then
             herd stop cow-store || true
+            err "cow-store leaves /tmp and /gnu/store mounted, reboot before retrying"
         fi
         if mountpoint -q "${MNT}"; then
             umount -R "${MNT}" || true

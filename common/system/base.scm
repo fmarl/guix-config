@@ -5,6 +5,7 @@
   #:use-module (guix gexp)
   #:use-module (gnu)
   #:use-module (gnu packages bash)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages linux)
   #:use-module (gnu services admin)
   #:use-module (gnu services linux)
@@ -20,7 +21,10 @@
   #:use-module (common system impermanence)
   #:use-module (common system maintenance)
   #:use-module (common system security)
+  #:use-module (common themes)
   #:use-module (common users)
+  #:use-module (ice-9 match)
+  #:use-module (srfi srfi-1)
   #:export (base-operating-system))
 
 (define base-services
@@ -28,7 +32,9 @@
          (service virtual-terminal-service-type)
          (service console-font-service-type
                   (map (lambda (tty)
-                         (cons tty %default-console-font))
+                         (cons tty
+                               (file-append font-terminus
+                                "/share/consolefonts/ter-116n.psf.gz")))
                        '("tty1" "tty2" "tty3")))
          (service shepherd-system-log-service-type)
          (service etc-bashrc-d-service-type)
@@ -62,13 +68,27 @@
 (define %hardened-kernel-arguments
   '("slab_nomerge" "page_alloc.shuffle=1"))
 
+(define (console-palette-arguments theme)
+  (map (match-lambda
+         ((channel . select) (string-append "vt.default_" channel "="
+                                            (string-join (map (compose
+                                                               number->string
+                                                               select)
+                                                              (console-palette
+                                                               theme)) ","))))
+       `(("red" unquote first)
+         ("grn" unquote second)
+         ("blu" unquote third))))
+
 (define* (base-operating-system machine
                                 #:key kernel-config
                                 initrd-modules
+                                (kernel-arguments '())
                                 (firmware %base-firmware)
                                 (mapped-devices '())
                                 (file-systems '())
                                 (persisted-directories '())
+                                (guix-daemon-options '())
                                 (services '()))
   (define kernel
     (if kernel-config
@@ -78,7 +98,9 @@
   (operating-system
     (host-name (symbol->string (machine-name machine)))
     (kernel kernel)
-    (kernel-arguments (append %hardened-kernel-arguments
+    (kernel-arguments (append %hardened-kernel-arguments kernel-arguments
+                              (console-palette-arguments (machine-theme
+                                                          machine))
                               %default-kernel-arguments))
     (initrd microcode-initrd)
     (initrd-modules (or initrd-modules
@@ -113,4 +135,8 @@
              (btrfs-maintenance-services (snapshot-subvolumes file-systems))
              (impermanence-services file-systems persisted-directories
                                     (list (user-account-name %user-account)))
-             base-services))))
+             (modify-services base-services
+               (guix-service-type config =>
+                                  (guix-configuration (inherit config)
+                                                      (extra-options
+                                                       guix-daemon-options))))))))

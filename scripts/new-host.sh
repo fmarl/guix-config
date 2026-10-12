@@ -83,7 +83,6 @@ function write_hardware {
 
 (define %file-systems
   (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
-                      "${BTRFS_OPTIONS}"
                       #:esp "${esp_uuid}"
                       #:dependencies %mapped-devices))
 EOF

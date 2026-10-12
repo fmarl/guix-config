@@ -102,16 +102,16 @@ vectors become arrays."
   (plain-file name
               (string-join (map rule->string rules) "\n")))
 
-(define (key-value-file name entries)
+(define* (key-value-file name entries
+                         #:key (separator " "))
   "ENTRIES is a list of (KEY . VALUE); #t writes just KEY, as gpg.conf expects."
   (plain-file name
               (string-concatenate (map (match-lambda
                                          ((key . #t) (string-append key "\n"))
-                                         ((key . value) (string-append key " "
-                                                                       (value->string
-                                                                        value)
-                                                                       "\n")))
-                                       entries))))
+                                         ((key . value) (string-append key
+                                                         separator
+                                                         (value->string value)
+                                                         "\n"))) entries))))
 
 (define (shell-script name . text)
   "Return an executable /bin/sh script; TEXT may contain file-like objects."

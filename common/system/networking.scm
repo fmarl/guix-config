@@ -5,6 +5,7 @@
   #:use-module (guix gexp)
   #:use-module (gnu services)
   #:use-module (gnu services base)
+  #:use-module (gnu services dns)
   #:use-module (gnu services networking)
   #:use-module (common machines)
   #:export (network-services))
@@ -24,7 +25,20 @@
                                                                        (gateway
                                                                         (machine-gateway
                                                                          machine)))))
-                                          (name-servers '("1.1.1.1" "8.8.8.8")))))))
+                                          (name-servers '("127.0.0.1")))))
+        dns-over-tls-service))
+
+(define %dns-over-tls-servers
+  '("9.9.9.9@853#dns.quad9.net" "149.112.112.112@853#dns.quad9.net"
+    "194.242.2.2@853#dns.mullvad.net"))
+
+(define dns-over-tls-service
+  (service unbound-service-type
+           (unbound-configuration (forward-zone (list (unbound-zone (name ".")
+                                                                    (forward-addr
+                                                                     %dns-over-tls-servers)
+                                                                    (forward-tls-upstream
+                                                                     #t)))))))
 
 (define mac-randomization-conf
   (plain-file "mac-randomization.conf" "[device]

@@ -15,6 +15,5 @@
 
 (define %file-systems
   (impermanent-file-systems "/dev/mapper/guix-root"
-                            "compress=zstd:3,discard=async"
                             #:esp "7A59-010E"
                             #:dependencies %mapped-devices))

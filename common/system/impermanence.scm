@@ -29,7 +29,8 @@
      (append %persisted-directories host-directories))
     ((null? host-directories)
      '())
-    (else (error "persisted directories need impermanent-file-systems" host-directories))))
+    (else (error "persisted directories need impermanent-file-systems"
+                 host-directories))))
 
 (define (persisted-file-systems file-systems host-directories)
   (map (match-lambda

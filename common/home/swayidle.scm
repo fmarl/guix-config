@@ -4,22 +4,39 @@
 (define-module (common home swayidle)
   #:use-module (guix gexp)
   #:use-module (gnu home services)
-  #:use-module (gnu packages linux)
   #:use-module (gnu packages window-management)
-  #:use-module (gnu packages zig-xyz)
   #:use-module (common home helpers)
+  #:use-module (common home theme)
   #:use-module (common home wm)
   #:use-module (common machines)
+  #:use-module (common themes)
   #:use-module (ice-9 match)
   #:export (swayidle-services))
 
-(define lock-screen
-  (shell-script "lock-screen"
-                procps
-                "/bin/pgrep -x waylock || "
-                "exec "
-                waylock
-                "/bin/waylock -fork-on-lock\n"))
+(define (swaylock-config theme)
+  (key-value-file "swaylock-config"
+                  `(("daemonize" . #t) ("line-uses-inside" . #t)
+                    ("font" unquote %sans-font)
+                    ,@(color-entries theme
+                                     '(("color" . bg_0)
+                                       ("inside-color" . bg_0)
+                                       ("inside-clear-color" . bg_0)
+                                       ("inside-ver-color" . bg_0)
+                                       ("inside-wrong-color" . bg_0)
+                                       ("ring-color" . bg_region)
+                                       ("ring-clear-color" . bg_region)
+                                       ("ring-ver-color" . bg_accent)
+                                       ("ring-wrong-color" . red)
+                                       ("key-hl-color" . bg_accent)
+                                       ("bs-hl-color" . red)
+                                       ("text-color" . fg_0)
+                                       ("text-clear-color" . fg_0)
+                                       ("text-ver-color" . fg_0)
+                                       ("text-wrong-color" . red))))
+                  #:separator "="))
+
+(define lock
+  (file-append swaylock "/bin/swaylock"))
 
 (define (monitors-off wm)
   (match wm
@@ -31,21 +48,23 @@
   (apply mixed-text-file
          "swayidle-config"
          "timeout 600 '"
-         lock-screen
+         lock
          "'\n"
          "timeout 900 "
          (monitors-off wm)))
 
 (define (swayidle-services machine)
-  (list (home-packages swayidle waylock)
+  (list (home-packages swayidle swaylock)
         (simple-service 'swayidle-config
                         home-xdg-configuration-files-service-type
                         `(("swayidle/config" ,(swayidle-config (machine-wm
+                                                                machine)))
+                          ("swaylock/config" ,(swaylock-config (machine-theme
                                                                 machine)))))
         (wm-extensions machine
                        'swayidle
                        (wm-autostart (file-append swayidle "/bin/swayidle")
                                      "-w")
                        (wm-bind "Super+Alt+L"
-                                (list lock-screen)
+                                (list lock)
                                 #:title "Lock the screen"))))

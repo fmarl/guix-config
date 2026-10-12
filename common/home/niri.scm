@@ -73,8 +73,7 @@
            (mod-key-nested "Alt"))
 
     (layout (gaps 10)
-            (background-color ,(color theme
-                                      'bg_0))
+            (background-color "transparent")
 
             (center-focused-column "never")
 
@@ -100,6 +99,9 @@
 
     (overview (backdrop-color ,(color theme
                                       'bg_2)))
+
+    (window-rule (geometry-corner-radius ,%corner-radius)
+                 (clip-to-geometry #t))
 
     (screenshot-path
      "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")))
@@ -244,14 +246,14 @@ org.freedesktop.impl.portal.Notification=gtk;
   (check-entry-tags entries
                     '(startup rule bind))
   (let ((unvalidated (kdl-file "config.kdl"
-                        (append (niri-settings (home-niri-configuration-theme
-                                                config))
-                                (tagged-entries entries
-                                                'startup)
-                                (tagged-entries entries
-                                                'rule)
-                                `((binds ,@(tagged-entries entries
-                                                           'bind)))))))
+                               (append (niri-settings (home-niri-configuration-theme
+                                                       config))
+                                       (tagged-entries entries
+                                                       'startup)
+                                       (tagged-entries entries
+                                                       'rule)
+                                       `((binds ,@(tagged-entries entries
+                                                                  'bind)))))))
     (computed-file "niri-config.kdl"
                    #~(begin
                        (unless (zero? (system* #$(file-append niri "/bin/niri")
@@ -276,6 +278,12 @@ org.freedesktop.impl.portal.Notification=gtk;
                                                                     entries)))))
                 (description "Generate the niri configuration")))
 
+(define wallpaper
+  (shell-script "wallpaper" "exec "
+                (file-append swaybg "/bin/swaybg")
+                " --mode fill --image \"$HOME/Pictures/wallpaper.jpg\"
+"))
+
 (define (niri-services theme)
   (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)
         (simple-service 'niri-portals
@@ -283,6 +291,13 @@ org.freedesktop.impl.portal.Notification=gtk;
                         `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
         (service home-niri-service-type
                  (home-niri-configuration (theme theme)
-                                          (entries (map (lambda (node)
-                                                          (cons 'bind node))
-                                                        %binds))))))
+                                          (entries (cons* (niri-spawn-at-startup
+                                                           wallpaper)
+                                                          (niri-layer-rule
+                                                           "^wallpaper$"
+                                                           '(place-within-backdrop
+                                                             #t))
+                                                          (map (lambda (node)
+                                                                 (cons 'bind
+                                                                       node))
+                                                               %binds)))))))

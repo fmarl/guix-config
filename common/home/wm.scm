@@ -4,12 +4,12 @@
 (define-module (common home wm)
   #:use-module (guix gexp)
   #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages linux)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu services)
   #:use-module (common home helpers)
   #:use-module (common home niri)
   #:use-module (common home nucleotide)
+  #:use-module (common home osd)
   #:use-module (common machines)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
@@ -90,22 +90,18 @@
                                    #:locked? #t))) bindings))
 
 (define audio-binds
-  (let ((wpctl (file-append wireplumber "/bin/wpctl")))
-    (locked-binds `(("XF86AudioRaiseVolume" ,wpctl "set-volume"
-                    "@DEFAULT_AUDIO_SINK@" "0.1+")
-                   ("XF86AudioLowerVolume" ,wpctl "set-volume"
-                    "@DEFAULT_AUDIO_SINK@" "0.1-")
-                   ("XF86AudioMute" ,wpctl "set-mute" "@DEFAULT_AUDIO_SINK@"
-                    "toggle")
-                   ("XF86AudioMicMute" ,wpctl "set-mute"
-                    "@DEFAULT_AUDIO_SOURCE@" "toggle")))))
+  (locked-binds `(("XF86AudioRaiseVolume" ,volume-osd "set-volume"
+                   "@DEFAULT_AUDIO_SINK@" "0.1+")
+                  ("XF86AudioLowerVolume" ,volume-osd "set-volume"
+                   "@DEFAULT_AUDIO_SINK@" "0.1-")
+                  ("XF86AudioMute" ,volume-osd "set-mute"
+                   "@DEFAULT_AUDIO_SINK@" "toggle")
+                  ("XF86AudioMicMute" ,volume-osd "set-mute"
+                   "@DEFAULT_AUDIO_SOURCE@" "toggle"))))
 
 (define brightness-binds
-  (let ((brightnessctl (file-append brightnessctl "/bin/brightnessctl")))
-    (locked-binds `(("XF86MonBrightnessUp" ,brightnessctl "--class=backlight"
-                    "set" "+10%")
-                   ("XF86MonBrightnessDown" ,brightnessctl "--class=backlight"
-                    "set" "10%-")))))
+  (locked-binds `(("XF86MonBrightnessUp" ,brightness-osd "+10%")
+                  ("XF86MonBrightnessDown" ,brightness-osd "10%-"))))
 
 (define (wm-services machine)
   (define theme
