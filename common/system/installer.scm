@@ -22,7 +22,8 @@
   #:use-module (gnu system)
   #:use-module (gnu system install)
   #:use-module (nongnu packages linux)
-  #:use-module (common host))
+  #:use-module (common host)
+  #:use-module (common system base))
 
 (define %root
   (dirname (dirname (dirname (current-filename)))))
@@ -43,9 +44,13 @@
   (or (getenv "INSTALLER_MACHINE")
       (error "INSTALLER_MACHINE is not set")))
 
-(define %host-kernel
+(define %host-system
   (and (not (string=? %machine "generic"))
-       (operating-system-kernel (host-config 'system %machine))))
+       (host-config 'system %machine)))
+
+(define %host-kernel
+  (and %host-system
+       (operating-system-kernel %host-system)))
 
 (define %installer-kernel-configs
   '("CONFIG_ISO9660_FS=m" "CONFIG_ZISOFS=y"
@@ -56,7 +61,8 @@
     "CONFIG_USB_UAS=m"))
 
 (define installer-kernel
-  (if %host-kernel
+  (if (and %host-system
+           (not (stock-kernel? %host-system)))
       (customize-linux #:linux %host-kernel
                        #:configs %installer-kernel-configs) linux))
 

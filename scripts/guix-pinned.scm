@@ -1,9 +1,6 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
-;; Exit with 0 when the running guix provides every channel of LOCK at its
-;; locked commit.  Run with: guix repl -- scripts/guix-pinned.scm LOCK
-
 (use-modules (guix channels)
              (guix describe)
              (ice-9 match)

@@ -13,69 +13,96 @@
   #:use-module (common machines)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9)
   #:export (wm-autostart wm-bind wm-layer-rule wm-window-rule wm-extensions
                          wm-services))
 
+(define-record-type <autostart>
+  (make-autostart command) autostart?
+  (command autostart-command))
+
+(define-record-type <binding>
+  (make-binding key command title locked?)
+  binding?
+  (key binding-key)
+  (command binding-command)
+  (title binding-title)
+  (locked? binding-locked?))
+
+(define-record-type <layer-rule>
+  (make-layer-rule namespace hide-from-screencast?) layer-rule?
+  (namespace layer-rule-namespace)
+  (hide-from-screencast? layer-rule-hide-from-screencast?))
+
+(define-record-type <window-rule>
+  (make-window-rule app-id title floating? hide-from-screencast?)
+  window-rule?
+  (app-id window-rule-app-id)
+  (title window-rule-title)
+  (floating? window-rule-floating?)
+  (hide-from-screencast? window-rule-hide-from-screencast?))
+
 (define (wm-autostart program . arguments)
-  `(autostart ,program
-              ,@arguments))
+  (make-autostart (cons program arguments)))
+
+(define* (wm-bind key command
+                  #:key title locked?)
+  (make-binding key command title locked?))
 
 (define* (wm-layer-rule namespace
                         #:key hide-from-screencast?)
-  `(layer-rule ,namespace
-               ,hide-from-screencast?))
+  (make-layer-rule namespace hide-from-screencast?))
 
 (define* (wm-window-rule app-id
                          #:key title floating? hide-from-screencast?)
-  `(window-rule ,app-id
-                ,title
-                ,floating?
-                ,hide-from-screencast?))
+  (make-window-rule app-id title floating? hide-from-screencast?))
 
 (define (screencast-properties hide-from-screencast?)
   (if hide-from-screencast?
       '((block-out-from "screencast"))
       '()))
 
-(define* (wm-bind key command
-                  #:key title locked?)
-  `(bind ,key
-         ,command
-         ,title
-         ,locked?))
-
 (define (entry->niri entry)
-  (match entry
-    (((quote autostart) . command) (apply niri-spawn-at-startup command))
-    (('bind key command title locked?)
-     (niri-bind key
-                (apply niri-spawn command)
-                #:title title
-                #:allow-when-locked? locked?))
-    (('layer-rule namespace hide-from-screencast?)
-     (apply niri-layer-rule namespace
-            (screencast-properties hide-from-screencast?)))
-    (('window-rule app-id title floating? hide-from-screencast?)
+  (cond
+    ((autostart? entry)
+     (apply niri-spawn-at-startup
+            (autostart-command entry)))
+    ((binding? entry)
+     (niri-bind (binding-key entry)
+                (apply niri-spawn
+                       (binding-command entry))
+                #:title (binding-title entry)
+                #:allow-when-locked? (binding-locked? entry)))
+    ((layer-rule? entry)
+     (apply niri-layer-rule
+            (layer-rule-namespace entry)
+            (screencast-properties (layer-rule-hide-from-screencast? entry))))
+    ((window-rule? entry)
      (apply niri-window-rule
-            `(#:app-id ,app-id
-              ,@(if title
-                    `(#:title ,title)
+            `(#:app-id ,(window-rule-app-id entry)
+              ,@(if (window-rule-title entry)
+                    `(#:title ,(window-rule-title entry))
                     '()))
-            (append (if floating?
+            (append (if (window-rule-floating? entry)
                         '((open-floating #t))
                         '())
-                    (screencast-properties hide-from-screencast?))))))
+                    (screencast-properties (window-rule-hide-from-screencast?
+                                            entry)))))
+    (else (error "unknown wm entry:" entry))))
 
 (define (entry->nucleotide entry)
-  (match entry
-    (((quote autostart) . command) (apply nucleotide-autostart command))
-    (('bind key command _ _)
-     (nucleotide-bind key
-                      (apply nucleotide-spawn command)))
-    (('layer-rule _ _)
+  (cond
+    ((autostart? entry)
+     (apply nucleotide-autostart
+            (autostart-command entry)))
+    ((binding? entry)
+     (nucleotide-bind (binding-key entry)
+                      (apply nucleotide-spawn
+                             (binding-command entry))))
+    ((or (layer-rule? entry)
+         (window-rule? entry))
      #f)
-    (('window-rule _ _ _ _)
-     #f)))
+    (else (error "unknown wm entry:" entry))))
 
 (define (wm-extensions machine name . entries)
   (match (machine-wm machine)

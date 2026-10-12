@@ -2,12 +2,19 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home ssh)
+  #:use-module (guix gexp)
   #:use-module (gnu home services ssh)
   #:use-module (gnu services)
   #:use-module (common machines)
   #:use-module (common users)
   #:use-module (srfi srfi-1)
-  #:export (%ssh-public-key-file %ssh-host-names ssh-services))
+  #:use-module (srfi srfi-26)
+  #:export (%ssh-public-key-file %ssh-host-names host-file ssh-services))
+
+(define (host-file host name)
+  (local-file (assume-source-relative-file-name (string-append "../../hosts/"
+                                                               (symbol->string
+                                                                host) "/" name))))
 
 (define %ssh-public-key-file
   ".ssh/id_ed25519.pub")
@@ -52,8 +59,9 @@
                                               "  ServerAliveInterval 30\n"))))
 
 (define* (ssh-services self
-                       #:key authorized-keys)
-  "Other services can add configuration as files in ~/.ssh/config.d/."
+                       #:key ssh-clients)
+  "SSH-CLIENTS are the machines whose ssh.pub may log in.  Other services can
+add configuration as files in ~/.ssh/config.d/."
   (list (service home-openssh-service-type
                  (home-openssh-configuration (hosts (cons drop-in-host
                                                           (append (map
@@ -63,6 +71,11 @@
                                                                    self)
                                                                   (list
                                                                    default-host))))
-                                             (authorized-keys authorized-keys)))
+                                             (authorized-keys (and ssh-clients
+                                                               (map (cut
+                                                                     host-file
+                                                                     <>
+                                                                     "ssh.pub")
+                                                                ssh-clients)))))
         (service home-ssh-agent-service-type
                  (home-ssh-agent-configuration (extra-options '("-t" "1h30m"))))))

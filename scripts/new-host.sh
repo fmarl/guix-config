@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
+# Create hosts/HOSTNAME with a new SSH key and add it to common/machines.scm.
+
 set -Eeuo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -9,97 +11,51 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 readonly REPO
 
+OPTIONS=()
+
 function usage {
     cat <<USAGE
-Usage: $(basename "$0") HOSTNAME
+Usage: $(basename "$0") [--impermanent] [--no-luks] HOSTNAME
+
+  --impermanent  Keep / on a tmpfs and persist state below /persist
+  --no-luks      Do not encrypt the root partition
 USAGE
 }
 
-function write_system {
-    cat >"$1" <<EOF
-(define-module (hosts ${HOST} system)
-  #:use-module (gnu)
-  #:use-module (nongnu packages linux)
-  #:use-module (common machines)
-  #:use-module (common system base)
-  #:use-module (common system desktop)
-  #:use-module (common system networking)
-  #:use-module (hosts ${HOST} hardware)
-  #:export (%system))
+function parse_args {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h | --help)
+                usage
+                exit 0
+                ;;
+            --impermanent) OPTIONS+=(impermanent) ;;
+            --no-luks) OPTIONS+=(no-luks) ;;
+            -*)
+                usage >&2
+                exit 1
+                ;;
+            *) break ;;
+        esac
+        shift
+    done
 
-(define %machine
-  (lookup-machine '${HOST}))
-
-(define %system
-  (base-operating-system %machine
-                         #:initrd-modules (cons "dm-crypt"
-                                                (base-initrd-modules linux))
-                         #:firmware (list linux-firmware)
-                         #:mapped-devices %mapped-devices
-                         #:file-systems %file-systems
-                         #:services (append (desktop-session %machine)
-                                            (network-services %machine))))
-
-%system
-EOF
-}
-
-function write_home {
-    cat >"$1" <<EOF
-(define-module (hosts ${HOST} home)
-  #:use-module (common home base)
-  #:use-module (common machines)
-  #:export (%home))
-
-(define %machine
-  (lookup-machine '${HOST}))
-
-(define %home
-  (base-home-environment %machine
-                         #:services (append (desktop-services %machine)
-                                            (secrets-services %machine))))
-
-%home
-EOF
-}
-
-function write_hardware {
-    local luks_uuid esp_uuid
-    luks_uuid="$(</proc/sys/kernel/random/uuid)"
-    esp_uuid="$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n' | tr a-f A-F)"
-    esp_uuid="${esp_uuid:0:4}-${esp_uuid:4:4}"
-    cat >"$1" <<EOF
-(define-module (hosts ${HOST} hardware)
-  #:use-module (gnu)
-  #:use-module (common system filesystem)
-  #:export (%mapped-devices %file-systems))
-
-(define %mapped-devices
-  (list (mapped-device
-          (source (uuid "${luks_uuid}"))
-          (target "${LUKS_NAME}")
-          (type luks-device-mapping)
-          (arguments (list #:allow-discards? #t)))))
-
-(define %file-systems
-  (btrfs-file-systems "/dev/mapper/${LUKS_NAME}"
-                      #:esp "${esp_uuid}"
-                      #:dependencies %mapped-devices))
-EOF
-}
-
-function main {
-    if [[ $# -ne 1 || "$1" == -* ]]; then
+    if [[ $# -ne 1 ]]; then
         usage >&2
         exit 1
     fi
 
     HOST="$1"
-    readonly HOST
+    valid_hostname "${HOST}" || die "Invalid hostname: ${HOST}"
+    readonly HOST OPTIONS
+}
+
+function main {
+    parse_args "$@"
+
     local dir="${REPO}/hosts/${HOST}" machines="${REPO}/common/machines.scm"
     local default="        (machine (name 'default))))"
 
-    valid_hostname "${HOST}" || die "Invalid hostname: ${HOST}"
     [[ ! -e "${dir}" ]] || die "hosts/${HOST} already exists"
     grep -qF "(name '${HOST})" "${machines}" && die "${HOST} is already in common/machines.scm"
     grep -qxF "${default}" "${machines}" || die "Found no default machine in common/machines.scm"
@@ -121,12 +77,12 @@ function main {
          "${TMP}/secrets.yaml" >"${TMP}/secrets.enc.yaml")
 
     info "Writing hosts/${HOST} ..."
+    (cd "${REPO}" &&
+         GUILE_LOAD_PATH="${REPO}" guix repl -- scripts/host.scm generate "${HOST}" "${TMP}" "${OPTIONS[@]}")
     mkdir -p "${dir}"
     cp "${TMP}/id_ed25519.pub" "${dir}/ssh.pub"
     cp "${TMP}/secrets.enc.yaml" "${dir}/secrets.yaml"
-    write_system "${dir}/system.scm"
-    write_home "${dir}/home.scm"
-    write_hardware "${dir}/hardware.scm"
+    cp "${TMP}"/{system,home,hardware}.scm "${dir}/"
 
     sed -i "s/^${default//\//\\/}\$/        (machine (name '${HOST}))\n&/" "${machines}"
 

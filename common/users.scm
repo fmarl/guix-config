@@ -6,7 +6,8 @@
   #:use-module (guix records)
   #:use-module (gnu packages shells)
   #:use-module (gnu system accounts)
-  #:export (%user %user-account
+  #:use-module (srfi srfi-1)
+  #:export (%user primary-user-account
                   user-name
                   user-full-name
                   user-email
@@ -37,7 +38,10 @@
     "plugdev"
     "kvm"))
 
-(define %user-account
+(define %desktop-groups
+  '("audio" "video" "seat"))
+
+(define* (primary-user-account #:key desktop?)
   (user-account
     (name (user-name %user))
     (comment (user-full-name %user))
@@ -45,4 +49,7 @@
     (shell (file-append zsh "/bin/zsh"))
     (home-directory (string-append "/home/"
                                    (user-name %user)))
-    (supplementary-groups %user-groups)))
+    (supplementary-groups (if desktop? %user-groups
+                              (remove (lambda (group)
+                                        (member group %desktop-groups))
+                                      %user-groups)))))

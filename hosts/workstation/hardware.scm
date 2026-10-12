@@ -10,6 +10,5 @@
   '())
 
 (define %file-systems
-  (btrfs-file-systems (file-system-label "ROOT")
-                      #:esp "A196-47A5"
-                      #:subvolumes '(("/boot" "@boot" no-suid no-dev no-exec))))
+  (impermanent-file-systems (file-system-label "ROOT")
+                            #:esp "A196-47A5"))

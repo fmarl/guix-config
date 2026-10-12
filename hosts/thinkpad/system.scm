@@ -10,7 +10,6 @@
   #:use-module (common machines)
   #:use-module (common system acpi)
   #:use-module (common system base)
-  #:use-module (common system desktop)
   #:use-module (common system networking)
   #:use-module (hosts thinkpad hardware)
   #:export (%system))
@@ -29,11 +28,10 @@
                          #:guix-daemon-options (list "--max-jobs=2")
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:persisted-directories '(("/etc/mullvad-vpn" #o700)
+                         #:persisted-directories '(("/etc/mullvad-vpn" 448)
                                                    ("/var/lib/power-profiles-daemon"
-                                                    #o755))
-                         #:services (append (desktop-session %machine)
-                                            (network-services %machine)
+                                                    493))
+                         #:services (append (network-services %machine)
                                             (list (service
                                                    bluetooth-service-type)
                                                   (service acpid-service-type)

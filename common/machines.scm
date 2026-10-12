@@ -44,11 +44,12 @@
                  (interface "enp5s0")
                  (gateway "192.168.0.1")
                  (audio? #f))
-        (machine (name 'boson)
-                 (address "192.168.0.201"))
         (machine (name 'thinkpad)
                  (wm 'niri)
                  (mobile? #t))
+        (machine (name 'fermion)
+                 (address "192.168.0.201")
+                 (wm #f))
         (machine (name 'default))))
 
 (define %addressed-machines

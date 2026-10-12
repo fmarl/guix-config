@@ -3,9 +3,12 @@
 
 (define-module (common build impermanence)
   #:use-module (guix build utils)
+  #:use-module (ice-9 ftw)
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:export (create-persisted-directories restore-secrets save-secrets
                                          save-password-hash))
 
@@ -77,9 +80,9 @@
                (string-prefix? "$" hash))
       (save-password-hash persist user hash))))
 
-(define (sync-signing-key persist etc key)
-  (let ((live (string-append etc "/guix/" key))
-        (saved (string-append persist "/etc/guix/" key)))
+(define (sync-secret persist etc file)
+  (let ((live (string-append etc "/" file))
+        (saved (string-append persist "/etc/" file)))
     (cond
       ((file-exists? saved)
        (copy-file-atomically saved live))
@@ -87,14 +90,28 @@
        (ensure-directory (dirname saved) #o700)
        (copy-file-atomically live saved)))))
 
+(define (host-key-files persist etc)
+  (define (host-keys directory)
+    (or (scandir directory
+                 (cut string-prefix? "ssh_host_" <>))
+        '()))
+
+  (let ((live (string-append etc "/ssh")))
+    (if (file-exists? live)
+        (map (cut string-append "ssh/" <>)
+             (delete-duplicates (append (host-keys live)
+                                        (host-keys (string-append persist
+                                                                  "/etc/ssh")))))
+        '())))
+
 (define* (restore-secrets persist users
                           #:key chpasswd
                           (etc "/etc"))
-  "Restore the store signing key and the password hashes of USERS from
-PERSIST, or persist the signing key if it is not saved yet."
-  (for-each (lambda (key)
-              (sync-signing-key persist etc key))
-            '("signing-key.pub" "signing-key.sec"))
+  "Restore the store signing key, the SSH host keys and the password hashes
+of USERS from PERSIST, or persist the keys that are not saved yet."
+  (for-each (cut sync-secret persist etc <>)
+            (append '("guix/signing-key.pub" "guix/signing-key.sec")
+                    (host-key-files persist etc)))
   (for-each (lambda (user)
               (restore-password persist chpasswd user)) users))
 

@@ -7,8 +7,10 @@
   #:use-module (gnu services base)
   #:use-module (gnu services dns)
   #:use-module (gnu services networking)
+  #:use-module (gnu services ssh)
   #:use-module (common machines)
-  #:export (network-services))
+  #:use-module (common users)
+  #:export (network-services ssh-server-service))
 
 (define (static-network-services machine)
   (list (service static-networking-service-type
@@ -127,3 +129,13 @@ from the LAN."
                                                            open-tcp-ports))))
                 (service static-networking-service-type
                          (list %loopback-static-networking)) lan-hosts-service)))
+
+(define ssh-server-service
+  (service openssh-service-type
+           (openssh-configuration (password-authentication? #f)
+                                  (permit-root-login #f)
+                                  (challenge-response-authentication? #f)
+                                  (x11-forwarding? #f)
+                                  (extra-content (string-append "AllowUsers "
+                                                  (user-name %user) "\n"
+                                                  "StreamLocalBindUnlink yes\n")))))

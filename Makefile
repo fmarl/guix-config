@@ -36,8 +36,8 @@ installer:
 	INSTALLER_MACHINE=$(MACHINE) $(GUIX) system image -t iso9660 common/system/installer.scm
 
 new-host:
-	@[ -n "$(MACHINE)" ] || { echo "Usage: make new-host MACHINE=<host>" >&2; exit 1; }
-	scripts/new-host.sh $(MACHINE)
+	@[ -n "$(MACHINE)" ] || { echo "Usage: make new-host MACHINE=<host> [OPTIONS=\"--impermanent --no-luks\"]" >&2; exit 1; }
+	scripts/new-host.sh $(OPTIONS) $(MACHINE)
 
 post-install:
 	scripts/post-install.sh

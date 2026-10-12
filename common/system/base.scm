@@ -25,7 +25,7 @@
   #:use-module (common users)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:export (base-operating-system))
+  #:export (base-operating-system stock-kernel?))
 
 (define base-services
   (cons* (service login-service-type)
@@ -95,6 +95,9 @@
         (customize-linux #:linux linux
                          #:defconfig kernel-config) linux))
 
+  (define desktop?
+    (and (machine-wm machine) #t))
+
   (operating-system
     (host-name (symbol->string (machine-name machine)))
     (kernel kernel)
@@ -121,7 +124,9 @@
                   (keyboard-layout %keyboard-layout)))
     (users (cons* (user-account
                     (inherit %root-account)
-                    (password "!")) %user-account %base-user-accounts))
+                    (password "!"))
+                  (primary-user-account #:desktop? desktop?)
+                  %base-user-accounts))
     (sudoers-file %sudoers)
     (mapped-devices mapped-devices)
     (file-systems (append file-systems
@@ -129,14 +134,21 @@
                                                   persisted-directories)
                           %hardened-base-file-systems))
     (services
-     (append services
-             %desktop-base-services
+     (append (if desktop?
+                 (desktop-session machine)
+                 '())
+             services
+             (if desktop? %desktop-base-services
+                 '())
              %security-services
              (btrfs-maintenance-services (snapshot-subvolumes file-systems))
              (impermanence-services file-systems persisted-directories
-                                    (list (user-account-name %user-account)))
+                                    (list (user-name %user)))
              (modify-services base-services
                (guix-service-type config =>
                                   (guix-configuration (inherit config)
                                                       (extra-options
                                                        guix-daemon-options))))))))
+
+(define (stock-kernel? os)
+  (eq? (operating-system-kernel os) linux))

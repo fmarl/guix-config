@@ -45,12 +45,8 @@
 
 (define (secrets-services machine)
   "Deploy the SOPS secrets and SSH public key of MACHINE."
-  (define (host-file name)
-    (local-file (assume-source-relative-file-name (string-append
-                                                   "../../hosts/"
-                                                   (symbol->string (machine-name
-                                                                    machine))
-                                                   "/" name))))
+  (define (own-file name)
+    (host-file (machine-name machine) name))
 
   (list (home-packages sops)
         (simple-service 'secret-files home-files-service-type
@@ -58,6 +54,6 @@
                           (".local/bin/ssh-load-key" ,(ssh-load-key-script (machine-theme
                                                                             machine)))
                           (".ssh/config.d/ssh-load-key" ,ssh-load-key-config)
-                          (".config/sops/secrets.yaml" ,(host-file
+                          (".config/sops/secrets.yaml" ,(own-file
                                                          "secrets.yaml"))
-                          (,%ssh-public-key-file ,(host-file "ssh.pub"))))))
+                          (,%ssh-public-key-file ,(own-file "ssh.pub"))))))

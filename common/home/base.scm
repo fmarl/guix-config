@@ -111,7 +111,7 @@ done
               '())))
 
 (define* (base-home-environment machine
-                                #:key authorized-keys
+                                #:key ssh-clients
                                 (packages '())
                                 (services '()))
   "Return the home environment of MACHINE with SERVICES added to the base
@@ -121,5 +121,5 @@ services."
     (services
      (append services
              (ssh-services (machine-name machine)
-                           #:authorized-keys authorized-keys)
+                           #:ssh-clients ssh-clients)
              (base-services machine) %base-home-services))))
