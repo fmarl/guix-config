@@ -19,16 +19,16 @@
                      (string-append %sans-font " 11"))
                     ("border-radius" unquote %corner-radius)
                     ("border-size" . 1)
-                    ("padding" . 12)
+                    ("padding" unquote %large-spacing)
+                    ("margin" unquote %large-spacing)
                     ("background-color" unquote
                      (color-hex-alpha theme
-                                      'bg_popup 0.95))
+                                      'bg_popup %popup-alpha))
                     ("border-color" unquote
-                     (color theme
-                            'border))
+                     (hairline-color theme))
                     ,@(color-entries theme
                                      '(("text-color" . fg_0)
-                                       ("progress-color" . cyan)))
+                                       ("progress-color" . bg_accent)))
                     ("[urgency=critical]" . #t)
                     ("border-size" . 2)
                     ("border-color" unquote

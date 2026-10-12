@@ -71,7 +71,7 @@
            (mod-key "Super")
            (mod-key-nested "Alt"))
 
-    (layout (gaps 10)
+    (layout (gaps ,%large-spacing)
             (background-color "transparent")
 
             (center-focused-column "never")
@@ -85,8 +85,7 @@
             (focus-ring (width 2)
                         (active-color ,(color theme
                                               'br_blue))
-                        (inactive-color ,(color theme
-                                                'border)))
+                        (inactive-color ,(hairline-color theme)))
 
             (border (off))
 

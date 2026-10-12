@@ -179,7 +179,7 @@
   (define modules
     (machine-status-modules machine))
 
-  `(("height" . 32) ,@(assq-ref %window-modules
+  `(("height" unquote %bar-height) ,@(assq-ref %window-modules
                                 (machine-wm machine))
     ("modules-center" . #("clock#time" "custom/dot" "clock#date"))
     ,@(right-modules modules)
@@ -226,8 +226,19 @@
                  %status-modules)
             '("#custom-expand" "#tray")))
 
-  (define (px n)
-    (string-append (number->string n) "px"))
+  (define (px . values)
+    (string-join (map (lambda (n)
+                        (string-append (number->string n) "px")) values)))
+
+  (define hairline
+    (string-append "1px solid "
+                   (hairline-color theme color-rgba)))
+
+  (define inset
+    2)
+
+  (define pill-margin
+    (px %small-spacing 0 %small-spacing %spacing))
 
   (css-file "waybar-style.css"
             `((("*")
@@ -247,19 +258,19 @@
                ("color" unquote
                 (color theme
                        'fg_0))
-               ("border-bottom" unquote
-                (string-append "1px solid "
-                               (translucent 'fg_0 0.1))))
+               ("border-bottom" unquote hairline))
               (("#workspaces")
-               ("margin" . "5px 0 5px 8px")
-               ("padding" . "2px")
+               ("margin" unquote pill-margin)
+               ("padding" unquote
+                (px inset))
                ("border-radius" unquote
-                (px (+ %small-corner-radius 2)))
+                (px (+ %small-corner-radius inset)))
                ("background" unquote
                 (translucent 'fg_0 0.07)))
               (("#workspaces button" "#taskbar button")
                ("margin" . "0 1px")
-               ("padding" . "0 9px")
+               ("padding" unquote
+                (px 0 %spacing))
                ("border-radius" unquote
                 (px %small-corner-radius))
                ("color" unquote
@@ -277,7 +288,7 @@
                        'fg_0))
                ("background" unquote
                 (color theme
-                       'bg_raised))
+                       'bg_accent))
                ("box-shadow" unquote
                 (string-append "0 1px 2px "
                                (translucent 'fg_0 0.18))))
@@ -286,9 +297,10 @@
                 (color theme
                        'red)))
               (("#taskbar")
-               ("margin" . "5px 0 5px 8px"))
+               ("margin" unquote pill-margin))
               (("#window")
-               ("padding" . "0 14px")
+               ("padding" unquote
+                (px 0 %large-spacing))
                ("font-weight" . "700"))
               (("#clock.time" "#clock.date")
                ("min-width" . "88px"))
@@ -300,9 +312,12 @@
               (("#custom-dot")
                ("color" unquote
                 (translucent 'fg_0 0.3))
-               ("padding" . "0 4px"))
-              (,status-selectors ("margin" . "4px 1px")
-               ("padding" . "0 9px")
+               ("padding" unquote
+                (px 0 %small-spacing)))
+              (,status-selectors ("margin" unquote
+                                  (px %small-spacing 1))
+               ("padding" unquote
+                (px 0 %spacing))
                ("border-radius" unquote
                 (px %small-corner-radius))
                ("transition" . "background 200ms"))
@@ -312,7 +327,8 @@
                                                                              (translucent 'fg_0
                                                                               0.08)))
               (("#tray")
-               ("margin-right" . "8px"))
+               ("margin-right" unquote
+                (px %spacing)))
               ,@(append-map status-module-rules %status-modules)
               (("#battery.critical")
                ("font-weight" . "700"))
@@ -324,18 +340,16 @@
                         'fg_0)
               (("tooltip")
                ("background" unquote
-                (translucent 'bg_popup 0.97))
-               ("border" unquote
-                (string-append "1px solid "
-                               (color theme
-                                      'border)))
+                (translucent 'bg_popup %popup-alpha))
+               ("border" unquote hairline)
                ("border-radius" unquote
                 (px %corner-radius)))
               (("tooltip label")
                ("color" unquote
                 (color theme
                        'fg_0))
-               ("padding" . "4px 6px")))))
+               ("padding" unquote
+                (px %small-spacing %spacing))))))
 
 (define (waybar-services machine)
   (list (home-packages waybar)

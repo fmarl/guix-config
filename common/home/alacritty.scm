@@ -43,8 +43,8 @@
 
                ("window" ("dynamic_padding" . #t))
 
-               ("window.padding" ("x" . 12)
-                ("y" . 12))
+               ("window.padding" ("x" unquote %large-spacing)
+                ("y" unquote %large-spacing))
 
                ("mouse" ("hide_when_typing" . #t))
 

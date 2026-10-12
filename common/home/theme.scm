@@ -11,12 +11,21 @@
   #:use-module (common home helpers)
   #:use-module (common machines)
   #:use-module (common themes)
-  #:export (theme-services %cursor-theme
+  #:export (theme-services %bar-height
+                           %cursor-theme
                            %cursor-size
                            %monospace-font
                            %corner-radius
                            %small-corner-radius
+                           %small-spacing
+                           %spacing
+                           %large-spacing
+                           hairline-color
+                           %popup-alpha
                            %sans-font))
+
+(define %bar-height
+  28)
 
 (define %cursor-theme
   "Bibata-Modern-Classic")
@@ -32,6 +41,24 @@
 
 (define %small-corner-radius
   6)
+
+(define %small-spacing
+  4)
+
+(define %spacing
+  8)
+
+(define %large-spacing
+  12)
+
+(define* (hairline-color theme
+                         #:optional (format-color color-hex-alpha))
+  "Return the color of THEME for thin borders, as FORMAT-COLOR formats it."
+  (format-color theme
+                'fg_0 0.1))
+
+(define %popup-alpha
+  0.95)
 
 (define %sans-font
   "Inter")
