@@ -6,6 +6,7 @@ Host imap.mailbox.org
 User f.m.liestmann@fx-ttr.de
 PassCmd "~/.local/bin/secret mailbox-password"
 TLSType IMAPS
+TLSVersions -1.2
 
 IMAPStore mailbox-remote
 Account mailbox
@@ -18,7 +19,9 @@ SubFolders Verbatim
 Channel mailbox
 Far :mailbox-remote:
 Near :mailbox-local:
-Patterns * !Archives
-Create Near
+Patterns *
+Create Both
+CopyArrivalDate yes
+Remove Both
 Expunge Both
 SyncState *

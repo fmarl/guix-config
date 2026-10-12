@@ -13,7 +13,6 @@
   (base-home-environment %machine
                          #:ssh-clients '(thinkpad)
                          #:services (append (desktop-services %machine)
-                                            %mail-services
                                             (secrets-services %machine))))
 
 %home

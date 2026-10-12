@@ -36,7 +36,7 @@
   #:use-module (common home wm)
   #:use-module (common machines)
   #:export (base-home-environment desktop-services)
-  #:re-export (%mail-services secrets-services))
+  #:re-export (secrets-services))
 
 (define (base-services machine)
   (append (list (home-packages openssh font-aporetic)
@@ -114,6 +114,7 @@ done
           (wm-services machine)
           (waybar-services machine)
           (mako-services machine)
+          %mail-services
           (swayidle-services machine)
           (if (machine-mobile? machine)
               (list (wm-extensions machine

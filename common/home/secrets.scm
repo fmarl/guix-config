@@ -13,7 +13,7 @@
   #:export (secrets-services))
 
 (define secret-script
-  (shell-script "secret" "exec "
+  (shell-script "secret" "cd \"$HOME\" && exec "
                 (file-append sops "/bin/sops")
                 " --decrypt --extract \"[\\\"$1\\\"]\""
                 " \"$HOME/.config/sops/secrets.yaml\"\n"))

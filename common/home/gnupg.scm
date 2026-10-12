@@ -35,8 +35,8 @@
                  (home-gpg-agent-configuration (pinentry-program (bemenu-pinentry
                                                                   (machine-theme
                                                                    machine)))
-                                               (default-cache-ttl 60)
-                                               (max-cache-ttl 120)))
+                                               (default-cache-ttl 1800)
+                                               (max-cache-ttl 1800)))
         (simple-service 'gpg-config home-files-service-type
                         `((".gnupg/gpg.conf" ,gpg-conf)
                           (".gnupg/scdaemon.conf" ,scdaemon-conf)))))
