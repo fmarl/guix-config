@@ -88,6 +88,7 @@
                                 (mapped-devices '())
                                 (file-systems '())
                                 (persisted-directories '())
+                                (snapshot-directories '())
                                 (guix-daemon-options '())
                                 (services '()))
   (define kernel
@@ -141,7 +142,8 @@
              (if desktop? %desktop-base-services
                  '())
              %security-services
-             (btrfs-maintenance-services (snapshot-subvolumes file-systems))
+             (btrfs-maintenance-services (snapshot-subvolumes file-systems
+                                                              snapshot-directories))
              (impermanence-services file-systems persisted-directories
                                     (list (user-name %user)))
              (modify-services base-services

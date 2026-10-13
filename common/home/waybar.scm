@@ -5,7 +5,10 @@
   #:use-module (guix gexp)
   #:use-module (guix records)
   #:use-module (gnu home services)
+  #:use-module (gnu packages guile)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages package-management)
+  #:use-module (gnu packages version-control)
   #:use-module (gnu packages window-management)
   #:use-module (common home helpers)
   #:use-module (common home theme)
@@ -34,10 +37,12 @@
     (wifi . "\uf1eb")
     (network-wired . "\uf6ff")
     (circle-xmark . "\uf057")
+    (clock-rotate-left . "\uf1da")
     (hard-drive . "\uf0a0")))
 
 (define (glyph name)
-  (assq-ref %glyphs name))
+  (string-append "<span font_weight=\"900\">"
+                 (assq-ref %glyphs name) "</span>"))
 
 (define (shell-command program . arguments)
   #~(string-join (list #$program
@@ -46,6 +51,89 @@
 (define (set-brightness change)
   (shell-command (file-append brightnessctl "/bin/brightnessctl")
                  "--class=backlight" "set" change))
+
+(define profile-generations
+  (program-file "waybar-generations"
+                (with-extensions (list guix guile-git guile-json-4)
+                  #~(begin
+                      (use-modules (git)
+                                   (gnu services)
+                                   (guix channels)
+                                   (guix git)
+                                   (guix profiles)
+                                   (json)
+                                   (srfi srfi-1)
+                                   (srfi srfi-11)
+                                   (srfi srfi-19))
+
+                      (define (commit-seconds channel)
+                        (false-if-exception
+                         (with-repository (url-cache-directory (channel-url
+                                                                channel))
+                                          repository
+                           (commit-time (commit-lookup repository
+                                                       (string->oid (channel-commit
+                                                                     channel)))))))
+
+                      (define (generation label profile)
+                        (let* ((number (generation-number profile))
+                               (channel (find guix-channel?
+                                              (system-provenance (generation-file-name
+                                                                  profile
+                                                                  number))))
+                               (committed (and=> channel commit-seconds)))
+                          (values (and committed
+                                       (quotient (- (time-second (current-time
+                                                                  time-utc))
+                                                    committed) 86400))
+                                  (string-append label
+                                                 ": Gen "
+                                                 (number->string number)
+                                                 (if channel
+                                                     (string-append " on "
+                                                                    (string-take
+                                                                     (channel-commit
+                                                                      channel)
+                                                                     7))
+                                                     "")
+                                                 (if committed
+                                                     (string-append " from "
+                                                                    (date->string
+                                                                     (time-utc->date
+                                                                      (make-time
+                                                                       time-utc
+                                                                       0
+                                                                       committed))
+                                                                     "~d.~m.~Y"))
+                                                     "")))))
+
+                      (define (show days)
+                        (if days
+                            (format #f "~ad" days) "?"))
+
+                      (let-values (((system-days system-line)
+                                    (generation "System"
+                                                "/var/guix/profiles/system"))
+                                   ((home-days home-line)
+                                    (generation "Home"
+                                                (string-append
+                                                 %profile-directory
+                                                 "/guix-home"))))
+                        (let ((oldest (max (or system-days 0)
+                                           (or home-days 0))))
+                          (scm->json `(("text" unquote
+                                        (string-append (show system-days) "/"
+                                                       (show home-days)))
+                                       ("tooltip" unquote
+                                        (string-append system-line "\n"
+                                                       home-line))
+                                       ("class" unquote
+                                        (cond
+                                          ((>= oldest 12) "critical")
+                                          ((>= oldest 5) "warning")
+                                          (else "fresh")))))
+                          (newline)))))
+                #:guile guile-3.0-latest))
 
 (define-record-type* <status-module> status-module make-status-module
   status-module?
@@ -137,8 +225,22 @@
                                                     (string-append
                                                      "{percentage_used}% "
                                                      (glyph 'hard-drive)))
-                                 ("path" . "/home")))
-                       (color 'dim_0))))
+                                 ("path" . "/home"))))
+        (status-module (name "custom/generation")
+                       (config `(("exec" unquote profile-generations)
+                                 ("return-type" . "json")
+                                 ("interval" . 600)
+                                 ("format" unquote
+                                  (string-append "{} "
+                                                 (glyph 'clock-rotate-left)))))
+                       (state-colors '(("warning" . yellow)
+                                       ("critical" . red))))))
+
+(define (status-module-selector module)
+  (string-append "#"
+                 (string-map (lambda (c)
+                               (if (char=? c #\/) #\- c))
+                             (status-module-name module))))
 
 (define (machine-status-modules machine)
   (filter (lambda (module)
@@ -207,8 +309,7 @@
        (color theme name))))
 
   (define (status-module-rules module)
-    (let ((selector (string-append "#"
-                                   (status-module-name module))))
+    (let ((selector (status-module-selector module)))
       (cons (colored selector
                      (status-module-color module))
             (map (match-lambda
@@ -220,10 +321,7 @@
     (color-rgba theme name alpha))
 
   (define status-selectors
-    (append (map (lambda (module)
-                   (string-append "#"
-                                  (status-module-name module)))
-                 %status-modules)
+    (append (map status-module-selector %status-modules)
             '("#custom-expand" "#tray")))
 
   (define (px . values)

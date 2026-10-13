@@ -153,9 +153,9 @@
                             (cdr b))))
           (list (cons %snapshot-subvolume #f))))
 
-(define (snapshot-subvolumes file-systems)
-  "Return the subvolumes of FILE-SYSTEMS to snapshot."
+(define* (snapshot-subvolumes file-systems
+                              #:optional (mount-points '()))
   (filter-map (lambda (fs)
                 (and (member (file-system-mount-point fs)
-                             (list "/home" %persist))
+                             (cons* "/home" %persist mount-points))
                      (file-system-subvolume fs))) file-systems))

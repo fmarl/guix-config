@@ -13,6 +13,7 @@
   (base-home-environment %machine
                          #:ssh-clients '(thinkpad)
                          #:services (append (desktop-services %machine)
-                                            (secrets-services %machine))))
+                                            (secrets-services %machine)
+                                            (syncthing-services 'fermion))))
 
 %home

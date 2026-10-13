@@ -14,7 +14,8 @@
                         machine-wm
                         machine-theme
                         machine-mobile?
-                        machine-audio?))
+                        machine-audio?
+                        machine-syncthing-id))
 
 (define %lan-subnet
   "192.168.0.0/24")
@@ -35,7 +36,9 @@
   (mobile? machine-mobile?
            (default #f))
   (audio? machine-audio?
-          (default #t)))
+          (default #t))
+  (syncthing-id machine-syncthing-id
+                (default #f)))
 
 (define %machines
   (list (machine (name 'workstation)
@@ -43,15 +46,21 @@
                  (address "192.168.0.200")
                  (interface "enp5s0")
                  (gateway "192.168.0.1")
-                 (audio? #f))
+                 (audio? #f)
+                 (syncthing-id
+                  "6E6JF2J-WMHAHHL-HPW7MXR-XCAKSWE-QH4XBGK-HVBIWRV-AFWMRQI-2E2L7QG"))
         (machine (name 'thinkpad)
                  (wm 'niri)
-                 (mobile? #t))
+                 (mobile? #t)
+                 (syncthing-id
+                  "JBWKNB3-QHCRMWW-LABCNB5-R4VTXQI-3UVDZT3-7PXRCTB-YJL3CCA-HEDR7AG"))
         (machine (name 'fermion)
                  (address "192.168.0.201")
                  (interface "eth0")
                  (gateway "192.168.0.1")
-                 (wm #f))
+                 (wm #f)
+                 (syncthing-id
+                  "RJLHUQJ-PZP6AZ2-UHRQNWJ-7AUYI45-WBKQ7IH-Z4XXWAF-2N55XM2-5IMSMAG"))
         (machine (name 'default))))
 
 (define %addressed-machines

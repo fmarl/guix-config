@@ -14,6 +14,7 @@
   (base-home-environment %machine
                          #:packages (list mullvad-vpn-desktop)
                          #:services (append (desktop-services %machine)
-                                            (secrets-services %machine))))
+                                            (secrets-services %machine)
+                                            (syncthing-services 'fermion))))
 
 %home
