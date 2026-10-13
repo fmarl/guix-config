@@ -6,6 +6,7 @@
   #:use-module (nongnu packages linux)
   #:use-module (common machines)
   #:use-module (common syncthing)
+  #:use-module (common system backup)
   #:use-module (common system base)
   #:use-module (common system networking)
   #:use-module (common system server)
@@ -22,7 +23,10 @@
                          #:firmware (list linux-firmware)
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:persisted-directories `((,%syncthing-state-directory
+                         #:persisted-directories `((,%restic-directory #o700)
+                                                   (,%restic-cache-directory
+                                                    #o700)
+                                                   (,%syncthing-state-directory
                                                     #o700))
                          #:snapshot-directories (list %sync-directory)
                          #:services (append %server-services
@@ -32,6 +36,12 @@
                                                                %syncthing-port))
                                             (syncthing-server-services
                                              %sync-directory
-                                             '(workstation thinkpad)))))
+                                             '(workstation thinkpad))
+                                            (restic-services 'local
+                                                             (string-append
+                                                              %backup-directory
+                                                              "/restic")
+                                                             (list
+                                                              %sync-directory)))))
 
 %system

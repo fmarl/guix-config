@@ -11,7 +11,7 @@
   #:use-module (gnu services shepherd)
   #:use-module (common system filesystem)
   #:use-module (srfi srfi-26)
-  #:export (%maintenance-services btrfs-maintenance-services))
+  #:export (%maintenance-services btrfs-maintenance-services catch-up-timer))
 
 (define ntp-service
   (service ntp-service-type
@@ -33,7 +33,8 @@
                                                (or (not (file-exists? #$stamp))
                                                    (> (- (current-time)
                                                          (stat:mtime (stat #$stamp)))
-                                                      #$(* days 24 60 60))))
+                                                      #$(* (- (* days 24) 1)
+                                                           60 60))))
 
                                              (define (record-success)
                                                (mkdir-p (dirname #$stamp))
