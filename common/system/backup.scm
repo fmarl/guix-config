@@ -16,22 +16,31 @@
 (define %restic-cache-directory
   "/var/cache/restic")
 
-(define (restic-command name repository)
+(define (restic-command name repository environment)
   (program-file (string-append "restic-"
                                (symbol->string name))
                 #~(begin
-                    (setenv "RESTIC_REPOSITORY"
-                            #$repository)
-                    (setenv "RESTIC_PASSWORD_FILE"
-                            #$(string-append %restic-directory "/password"))
-                    (setenv "RESTIC_CACHE_DIR"
-                            #$%restic-cache-directory)
+                    (use-modules (ice-9 match))
+                    (for-each (match-lambda
+                                ((key . value)
+                                 (setenv key value)))
+                              '#$(append (list (cons "RESTIC_REPOSITORY"
+                                                     repository)
+                                               (cons "RESTIC_PASSWORD_FILE"
+                                                     (string-append
+                                                      %restic-directory
+                                                      "/password"))
+                                               (cons "RESTIC_CACHE_DIR"
+                                                     %restic-cache-directory))
+                                         environment))
                     (apply execl
                            #$(file-append restic "/bin/restic") "restic"
                            (cdr (command-line))))))
 
-(define (restic-services name repository files)
-  (let ((command (restic-command name repository)))
+(define* (restic-services name repository files
+                          #:key (environment '())
+                          (excludes '()))
+  (let ((command (restic-command name repository environment)))
     (define* (timer action arguments
                     #:key days minute)
       (catch-up-timer (symbol-append 'restic- name
@@ -46,7 +55,10 @@
           (simple-service (symbol-append 'restic- name
                                          '-timers) shepherd-root-service-type
                           (list (timer 'backup
-                                       files
+                                       (append (map (lambda (pattern)
+                                                      (string-append
+                                                       "--exclude=" pattern))
+                                                    excludes) files)
                                        #:days 1
                                        #:minute 10)
                                 (timer 'forget

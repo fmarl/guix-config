@@ -17,6 +17,18 @@
 (define %machine
   (lookup-machine 'fermion))
 
+(define %s3-region
+  "eu-central-2")
+
+(define %s3-repository
+  (string-append "s3:https://s3-" %s3-region
+                 ".ionoscloud.com/backups-default-gfw21t/restic"))
+
+(define %s3-environment
+  (list (cons "AWS_SHARED_CREDENTIALS_FILE"
+              (string-append %restic-directory "/s3-credentials"))
+        (cons "AWS_DEFAULT_REGION" %s3-region)))
+
 (define %system
   (base-operating-system %machine
                          #:kernel-arguments (list "net.ifnames=0")
@@ -42,6 +54,16 @@
                                                               %backup-directory
                                                               "/restic")
                                                              (list
-                                                              %sync-directory)))))
+                                                              %sync-directory)
+                                                             #:excludes
+                                                             %syncthing-temporary-files)
+                                            (restic-services 's3
+                                                             %s3-repository
+                                                             (list
+                                                              %sync-directory)
+                                                             #:environment
+                                                             %s3-environment
+                                                             #:excludes
+                                                             %syncthing-temporary-files))))
 
 %system

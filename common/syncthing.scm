@@ -4,10 +4,15 @@
 (define-module (common syncthing)
   #:use-module (gnu services syncthing)
   #:use-module (common machines)
-  #:export (%syncthing-port syncthing-peer synced-folders-config))
+  #:export (%syncthing-port %syncthing-temporary-files
+                           syncthing-peer
+                           synced-folders-config))
 
 (define %syncthing-port
   "22000")
+
+(define %syncthing-temporary-files
+  '(".syncthing.*.tmp"))
 
 (define %synced-folders
   '("Pictures" "Documents" "Videos" "Music" "Org"))
