@@ -66,7 +66,8 @@
          %maintenance-services))
 
 (define %hardened-kernel-arguments
-  '("slab_nomerge" "page_alloc.shuffle=1"))
+  '("slab_nomerge" "page_alloc.shuffle=1" "efi=disable_early_pci_dma"
+    "iommu.strict=1"))
 
 (define (console-palette-arguments theme)
   (map (match-lambda
@@ -129,6 +130,7 @@
                   (primary-user-account #:desktop? desktop?)
                   %base-user-accounts))
     (sudoers-file %sudoers)
+    (privileged-programs %privileged-programs)
     (mapped-devices mapped-devices)
     (file-systems (append file-systems
                           (persisted-file-systems file-systems

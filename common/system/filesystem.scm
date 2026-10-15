@@ -7,18 +7,18 @@
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
-  #:export (%persist %btrfs-options
+  #:use-module ((guix-impermanence file-systems)
+                #:select (%persist impermanent-file-systems?
+                          tmpfs-root-file-system))
+  #:re-export (%persist impermanent-file-systems?)
+  #:export (%btrfs-options
                      %btrfs-top-level
                      %snapshot-subvolume
                      btrfs-file-systems
                      impermanent-file-systems
-                     impermanent-file-systems?
                      btrfs-subvolumes
                      snapshot-subvolumes
                      %hardened-base-file-systems))
-
-(define %persist
-  "/persist")
 
 (define %btrfs-options
   "compress=zstd:1,discard=async")
@@ -38,19 +38,19 @@
     (options "mode=1777")
     (check? #f)))
 
+(define (harden-file-system fs)
+  (if (string=? (file-system-mount-point fs) "/dev/shm")
+      (file-system
+        (inherit fs)
+        (flags (cons 'no-exec
+                     (file-system-flags fs)))) fs))
+
 (define %hardened-base-file-systems
   (cons %tmp-file-system
-        (remove (lambda (fs)
-                  (string=? (file-system-type fs) "debugfs"))
-                %base-file-systems)))
-
-(define %tmpfs-root-file-system
-  (file-system
-    (mount-point "/")
-    (device "tmpfs")
-    (type "tmpfs")
-    (options "mode=0755,size=2G")
-    (check? #f)))
+        (map harden-file-system
+             (remove (lambda (fs)
+                       (string=? (file-system-type fs) "debugfs"))
+                     %base-file-systems))))
 
 (define %default-subvolumes
   '(("/" "@")
@@ -125,15 +125,10 @@
                                    (options %btrfs-options)
                                    (subvolumes '())
                                    (dependencies '()))
-  (cons %tmpfs-root-file-system
+  (cons (tmpfs-root-file-system)
         (layout-file-systems device options
                              (merge-subvolumes %impermanent-subvolumes
                                                subvolumes) esp dependencies)))
-
-(define (impermanent-file-systems? file-systems)
-  (any (lambda (fs)
-         (and (string=? (file-system-mount-point fs) "/")
-              (string=? (file-system-type fs) "tmpfs"))) file-systems))
 
 (define (file-system-subvolume fs)
   (and (string=? (file-system-type fs) "btrfs")

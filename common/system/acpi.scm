@@ -38,11 +38,9 @@
                     (match (command-line)
                       ((_ "close")
                        (when (any-lid-closed?)
-                         (when (zero? (status:exit-val (system* #$(file-append
-                                                                   procps
-                                                                   "/bin/pkill")
-                                                                "-USR1" "-x"
-                                                                "swayidle")))
+                         (when (zero? (system* #$(file-append procps
+                                                              "/bin/pkill")
+                                               "-USR1" "-x" "swayidle"))
                            (sleep 1))
                          (call-with-output-file "/sys/power/state"
                            (lambda (port)

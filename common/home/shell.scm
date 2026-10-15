@@ -40,6 +40,6 @@
   (list (home-packages direnv fzf ripgrep htop zsh-syntax-highlighting)
         (service home-zsh-service-type
                  (home-zsh-configuration (zshrc (list (local-file
-                                                       "./../../dotfiles/.zshrc"
+                                                       "../../dotfiles/.zshrc"
                                                        "zshrc")))))
         locale-variables fzf-variables))

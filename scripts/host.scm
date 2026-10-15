@@ -14,7 +14,7 @@
               #:select (mount umount))
              ((guix build utils)
               #:select (invoke mkdir-p))
-             (common build impermanence)
+             (guix-impermanence build persist)
              (common users)
              (common system filesystem)
              (ice-9 match)

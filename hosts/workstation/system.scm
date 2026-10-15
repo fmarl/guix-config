@@ -19,7 +19,8 @@
                          #:kernel-config (local-file "defconfig")
                          #:initrd-modules (list "nvme" "usbhid" "hid-generic")
                          #:kernel-arguments (list
-                                             "it87.ignore_resource_conflict=1")
+                                             "it87.ignore_resource_conflict=1"
+                                             "amd_iommu=force_isolation")
                          #:firmware (list amdgpu-firmware realtek-firmware)
                          #:guix-daemon-options (list "--max-jobs=4")
                          #:mapped-devices %mapped-devices

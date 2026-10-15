@@ -22,6 +22,7 @@
                ("whitespace" . "fix,-indent-with-non-tab,trailing-space,cr-at-eol")
                ("autocrlf" . #f)
                ("safecrlf" . #t))
+              ("safe" ("bareRepository" . "explicit"))
               ("log" ("abbrevCommit" . #t))
               ("pull" ("rebase" . #t))
               ("tag" ("gpgSign" . #t))

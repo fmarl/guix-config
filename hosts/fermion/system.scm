@@ -29,9 +29,16 @@
               (string-append %restic-directory "/s3-credentials"))
         (cons "AWS_DEFAULT_REGION" %s3-region)))
 
+(define* (backup-services name repository
+                          #:key (environment '()))
+  (restic-services name repository
+                   (list %sync-directory)
+                   #:environment environment
+                   #:excludes %syncthing-temporary-files))
+
 (define %system
   (base-operating-system %machine
-                         #:kernel-arguments (list "net.ifnames=0")
+                         #:kernel-arguments (list "net.ifnames=0" "intel_iommu=on")
                          #:firmware (list linux-firmware)
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
@@ -49,21 +56,13 @@
                                             (syncthing-server-services
                                              %sync-directory
                                              '(workstation thinkpad))
-                                            (restic-services 'local
+                                            (backup-services 'local
                                                              (string-append
                                                               %backup-directory
-                                                              "/restic")
-                                                             (list
-                                                              %sync-directory)
-                                                             #:excludes
-                                                             %syncthing-temporary-files)
-                                            (restic-services 's3
+                                                              "/restic"))
+                                            (backup-services 's3
                                                              %s3-repository
-                                                             (list
-                                                              %sync-directory)
                                                              #:environment
-                                                             %s3-environment
-                                                             #:excludes
-                                                             %syncthing-temporary-files))))
+                                                             %s3-environment))))
 
 %system

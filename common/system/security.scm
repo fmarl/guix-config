@@ -3,15 +3,22 @@
 
 (define-module (common system security)
   #:use-module (guix gexp)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages security-token)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services dbus)
   #:use-module (gnu services security-token)
+  #:use-module (gnu services shepherd)
   #:use-module (gnu services sysctl)
+  #:use-module (gnu system)
   #:use-module (gnu system pam)
+  #:use-module (gnu system privilege)
+  #:use-module (guix-apparmor services)
   #:use-module (common users)
-  #:export (%sudoers %security-services))
+  #:use-module (srfi srfi-1)
+  #:export (%sudoers %privileged-programs pam-session-extension
+                     %security-services))
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
@@ -27,6 +34,14 @@
   (pam-extension (transformer (lambda (pam)
                                 (if (member (pam-service-name pam) names)
                                     (transform pam) pam)))))
+
+(define (pam-session-extension names entry)
+  (pam-services-extension names
+                          (lambda (pam)
+                            (pam-service (inherit pam)
+                                         (session (cons entry
+                                                        (pam-service-session
+                                                         pam)))))))
 
 (define u2f-pam-extension
   (pam-services-extension '("login" "greetd" "sudo")
@@ -44,17 +59,10 @@
                                                      (pam-service-auth pam)))))))
 
 (define umask-pam-extension
-  (pam-services-extension '("login" "greetd" "sshd")
-                          (lambda (pam)
-                            (pam-service (inherit pam)
-                                         (session (cons (pam-entry (control
-                                                                    "optional")
-                                                                   (module
-                                                                    "pam_umask.so")
-                                                                   (arguments (list
-                                                                               "umask=0077")))
-                                                        (pam-service-session
-                                                         pam)))))))
+  (pam-session-extension '("login" "greetd" "sshd")
+                         (pam-entry (control "optional")
+                                    (module "pam_umask.so")
+                                    (arguments (list "umask=0077")))))
 
 (define %sudoers
   (plain-file "sudoers" "root ALL=(ALL) ALL
@@ -63,14 +71,35 @@ Defaults umask=0022
 Defaults umask_override
 "))
 
+(define %unneeded-privileged-programs
+  '("/bin/chfn" "/bin/sg"
+    "/bin/su"
+    "/bin/newgrp"
+    "/bin/passwd"
+    "/bin/mount"
+    "/bin/umount"
+    "/bin/fusermount"
+    "/bin/newuidmap"
+    "/bin/newgidmap"))
+
+(define %privileged-programs
+  (remove (lambda (program)
+            (let ((file (privileged-program-program program)))
+              (and (file-append? file)
+                   (member (string-concatenate (file-append-suffix file))
+                           %unneeded-privileged-programs))))
+          %default-privileged-programs))
+
 (define %hardened-sysctl-settings
   '(("kernel.core_uses_pid" . "1") ("dev.tty.ldisc_autoload" . "0")
     ("kernel.kptr_restrict" . "2")
     ("kernel.io_uring_disabled" . "2")
-    ("kernel.yama.ptrace_scope" . "1")
+    ("kernel.yama.ptrace_scope" . "2")
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
     ("fs.suid_dumpable" . "0")
+    ("vm.mmap_rnd_bits" . "32")
+    ("-kernel.unprivileged_userns_apparmor_policy" . "0")
     ("net.core.bpf_jit_harden" . "2")
     ("net.ipv4.tcp_rfc1337" . "1")
     ("net.ipv4.conf.default.accept_source_route" . "0")
@@ -106,6 +135,27 @@ Defaults umask_override
 });
 ")))))
 
+(define proc-hidepid-shepherd-service
+  (shepherd-service (provision '(proc-hidepid))
+                    (requirement '(file-systems))
+                    (one-shot? #t)
+                    (start #~(lambda _
+                               (let* ((polkitd (false-if-exception (getgrnam
+                                                                    "polkitd")))
+                                      (options (if polkitd
+                                                (format #f
+                                                 "remount,hidepid=invisible,gid=~a"
+                                                 (group:gid polkitd))
+                                                "remount,hidepid=invisible")))
+                                 (unless (zero? (system* #$(file-append
+                                                            util-linux
+                                                            "/bin/mount") "-o"
+                                                         options "/proc"))
+                                   (format (current-error-port)
+                                    "proc-hidepid: cannot remount /proc~%"))
+                                 #t)))
+                    (documentation "Hide other users' processes in /proc")))
+
 (define %security-services
   (list (service pcscd-service-type)
         (simple-service 'pcsc-polkit polkit-service-type
@@ -115,6 +165,13 @@ Defaults umask_override
         (udev-rules-service 'yubikey-personalization yubikey-personalization)
 
         sysctl-service
+
+        (service apparmor-service-type)
+
+        (simple-service 'proc-hidepid shepherd-root-service-type
+                        (list proc-hidepid-shepherd-service))
+        (simple-service 'proc-hidepid-before-login user-processes-service-type
+                        '(proc-hidepid))
 
         (simple-service 'pam-extensions pam-root-service-type
                         (list u2f-pam-extension umask-pam-extension))))

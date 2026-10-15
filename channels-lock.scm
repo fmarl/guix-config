@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "2d4d9f167f75f45e3d86b62f8309bb4ce7f145e2")
+       (commit "1fe7ff77424c46289154c61b3bb5627a48508441")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "c0e1cd5cd22919ebf2f89fc6578f2169ae9f1323")
+       (commit "4b21ba0c885907aff3b1b6c717ac830144d3c575")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,17 +22,47 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "7e3d8e862c867dbca7c80ac404f86d92702144c2")
+       (commit "a7dabd5f6bb6ecb4d18db4ec02312942bbff667e")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
          (openpgp-fingerprint
           "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D"))))
       (channel
+       (name 'guix-cage)
+       (url "https://github.com/fmarl/guix-cage")
+       (branch "main")
+       (commit "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc")
+       (introduction
+        (make-channel-introduction
+         "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc"
+         (openpgp-fingerprint
+          "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D"))))
+      (channel
+       (name 'guix-apparmor)
+       (url "https://github.com/fmarl/guix-apparmor")
+       (branch "main")
+       (commit "2f525872b29f52123ef7c593be185c872343a38e")
+       (introduction
+        (make-channel-introduction
+         "2f525872b29f52123ef7c593be185c872343a38e"
+         (openpgp-fingerprint
+          "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D"))))
+      (channel
+       (name 'guix-impermanence)
+       (url "https://github.com/fmarl/guix-impermanence")
+       (branch "main")
+       (commit "b4f6a01fe77ab0f484119b673ad105d9768a9780")
+       (introduction
+        (make-channel-introduction
+         "b4f6a01fe77ab0f484119b673ad105d9768a9780"
+         (openpgp-fingerprint
+          "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D"))))
+      (channel
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "e9870202ec2babc9cca6f19db5c91ead4a88cac1")
+       (commit "a87671d0e61a2a69ee8fd7222e83ceef5ff5075a")
        (introduction
         (make-channel-introduction
          "98a7990c273bae32085240cc762e6aac45e82fd9"

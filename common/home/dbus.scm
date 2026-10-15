@@ -7,7 +7,7 @@
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu packages admin)
-  #:use-module (gnu packages glib)
+  #:use-module (guix-apparmor packages dbus)
   #:use-module (gnu services)
   #:export (%dbus-services))
 
@@ -33,11 +33,11 @@
   <include>~a</include>
   <pidfile>~a</pidfile>
 </busconfig>~%"
-                                      #$(file-append dbus
+                                      #$(file-append dbus-apparmor
                                          "/share/dbus-1/session.conf")
                                       pid-file)))
                                  ((make-forkexec-constructor (list #$(file-append
-                                                                      dbus
+                                                                      dbus-apparmor
                                                                       "/bin/dbus-daemon")
                                                                    "--nofork"
                                                                    (string-append

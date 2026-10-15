@@ -14,9 +14,13 @@
   #:use-module (gnu services firmware)
   #:use-module (gnu services xorg)
   #:use-module (gnu system keyboard)
+  #:use-module (gnu system pam)
   #:use-module (sagittarius packages wm)
   #:use-module (common locale)
   #:use-module (common machines)
+  #:use-module (guix-apparmor profiles)
+  #:use-module (guix-apparmor services)
+  #:use-module (common system security)
   #:use-module (common themes)
   #:use-module (ice-9 match)
   #:export (desktop-session %desktop-base-services))
@@ -107,8 +111,8 @@
                       #:desktop-name "niri"))
 
 (define %nucleotide-session
-  (compositor-session river-0.4
-                      (list (file-append river-0.4 "/bin/river") "-c"
+  (compositor-session river
+                      (list (file-append river "/bin/river") "-c"
                             (file-append nucleotide "/bin/nucleotide"))
                       #:desktop-name "river"
                       #:extra-env `(("XKB_DEFAULT_LAYOUT" unquote
@@ -121,14 +125,32 @@
     ('niri %niri-session)
     ('nucleotide %nucleotide-session)))
 
+(define realtime-limits
+  (plain-file "realtime-limits.conf" "@audio - rtprio 95
+@audio - nice -19
+@audio - memlock 4194304
+@audio - rttime 200000
+"))
+
+(define realtime-limits-pam-extension
+  (pam-session-extension '("login" "greetd")
+                         (pam-entry (control "required")
+                                    (module "pam_limits.so")
+                                    (arguments (list #~(string-append "conf="
+                                                                      #$realtime-limits))))))
+
 (define %desktop-base-services
   (list fontconfig-file-system-service
         (service screen-locker-service-type
                  (screen-locker-configuration (name "swaylock")
                                               (program (file-append swaylock
-                                                        "/bin/swaylock"))))
+                                                        "/bin/swaylock"))
+                                              (using-setuid? #f)))
         (service polkit-service-type)
-        (service rtkit-service-type)
+        (simple-service 'realtime-limits pam-root-service-type
+                        (list realtime-limits-pam-extension))
         (service fwupd-service-type)
         (service dbus-root-service-type)
-        (udev-rules-service 'brightnessctl brightnessctl)))
+        (udev-rules-service 'brightnessctl brightnessctl)
+        (simple-service 'librewolf-apparmor apparmor-service-type
+                        (list %librewolf-profile))))
