@@ -3,7 +3,6 @@
 
 (define-module (hosts fermion system)
   #:use-module (gnu)
-  #:use-module (nongnu packages linux)
   #:use-module (common machines)
   #:use-module (common syncthing)
   #:use-module (common system backup)
@@ -38,8 +37,10 @@
 
 (define %system
   (base-operating-system %machine
-                         #:kernel-arguments (list "net.ifnames=0" "intel_iommu=on")
-                         #:firmware (list linux-firmware)
+                         #:kernel-config (local-file "defconfig")
+                         #:initrd-modules '()
+                         #:kernel-arguments (list "net.ifnames=0")
+                         #:firmware '()
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
                          #:persisted-directories `((,%restic-directory #o700)

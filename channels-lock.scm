@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "1fe7ff77424c46289154c61b3bb5627a48508441")
+       (commit "46104698d4f7965f07d89debd196f6475860eccd")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "a7dabd5f6bb6ecb4d18db4ec02312942bbff667e")
+       (commit "762c3a06ea88ecf424749a63b40a65c952da8797")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -42,7 +42,7 @@
        (name 'guix-apparmor)
        (url "https://github.com/fmarl/guix-apparmor")
        (branch "main")
-       (commit "2f525872b29f52123ef7c593be185c872343a38e")
+       (commit "10ad609bb37570deea52f65c9839777093c17ff0")
        (introduction
         (make-channel-introduction
          "2f525872b29f52123ef7c593be185c872343a38e"
@@ -62,7 +62,7 @@
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "a87671d0e61a2a69ee8fd7222e83ceef5ff5075a")
+       (commit "da1c2b575e7ea26e163925b1c72d19f2299f8aaa")
        (introduction
         (make-channel-introduction
          "98a7990c273bae32085240cc762e6aac45e82fd9"

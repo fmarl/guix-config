@@ -153,4 +153,4 @@
         (service dbus-root-service-type)
         (udev-rules-service 'brightnessctl brightnessctl)
         (simple-service 'librewolf-apparmor apparmor-service-type
-                        (list %librewolf-profile))))
+                        (list %librewolf-profile %signal-desktop-profile))))

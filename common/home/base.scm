@@ -14,10 +14,10 @@
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages text-editors)
   #:use-module (gnu services)
-  #:use-module (nongnu packages messaging)
   #:use-module (sagittarius locked image-viewers)
   #:use-module (sagittarius locked pdf)
   #:use-module (sagittarius locked video)
+  #:use-module (sagittarius packages messaging)
   #:use-module (common home alacritty)
   #:use-module (common home bemenu)
   #:use-module (common home dbus)
@@ -90,6 +90,8 @@ done
 (define (desktop-services machine)
   (append (list (home-packages librewolf
                                signal-desktop
+                               gnome-keyring
+                               gcr-3
                                imv-locked
                                zathura-locked
                                zathura-pdf-mupdf
