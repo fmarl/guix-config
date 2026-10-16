@@ -11,6 +11,7 @@
   #:use-module (gnu system accounts)
   #:use-module (gnu system shadow)
   #:use-module (common machines)
+  #:use-module (guix-apparmor services)
   #:use-module (common syncthing)
   #:use-module (ice-9 match)
   #:export (%syncthing-state-directory syncthing-server-services))
@@ -81,6 +82,9 @@ and link its configuration"))))
         (simple-service 'syncthing-setup-before-syncthing
                         user-processes-service-type
                         '(syncthing-setup))
+        (simple-service 'syncthing-apparmor apparmor-service-type
+                        (list (syncthing-apparmor-profile
+                               %syncthing-state-directory directory)))
         (service syncthing-service-type
                  (syncthing-configuration (user %syncthing-user)
                                           (group %syncthing-user)

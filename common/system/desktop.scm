@@ -12,12 +12,14 @@
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
   #:use-module (gnu services firmware)
+  #:use-module (gnu services sysctl)
   #:use-module (gnu services xorg)
   #:use-module (gnu system keyboard)
   #:use-module (gnu system pam)
   #:use-module (sagittarius packages wm)
   #:use-module (common locale)
   #:use-module (common machines)
+  #:use-module (common syncthing)
   #:use-module (guix-apparmor profiles)
   #:use-module (guix-apparmor services)
   #:use-module (common system security)
@@ -152,5 +154,9 @@
         (service fwupd-service-type)
         (service dbus-root-service-type)
         (udev-rules-service 'brightnessctl brightnessctl)
+        (simple-service 'coredump-sysctl sysctl-service-type
+                        '(("kernel.core_uses_pid" . "1")))
         (simple-service 'librewolf-apparmor apparmor-service-type
-                        (list %librewolf-profile %signal-desktop-profile))))
+                        (list %librewolf-profile %signal-desktop-profile
+                              (syncthing-apparmor-profile
+                               "@{HOME}/.local/state/syncthing" "@{HOME}")))))

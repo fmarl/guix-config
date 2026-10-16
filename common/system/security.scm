@@ -91,9 +91,8 @@ Defaults umask_override
           %default-privileged-programs))
 
 (define %hardened-sysctl-settings
-  '(("kernel.core_uses_pid" . "1") ("dev.tty.ldisc_autoload" . "0")
+  '(("dev.tty.ldisc_autoload" . "0")
     ("kernel.kptr_restrict" . "2")
-    ("kernel.io_uring_disabled" . "2")
     ("kernel.yama.ptrace_scope" . "2")
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
