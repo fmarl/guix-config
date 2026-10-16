@@ -4,7 +4,9 @@
 (define-module (common home theme)
   #:use-module (guix gexp)
   #:use-module (gnu home services)
+  #:use-module (gnu packages base)
   #:use-module (gnu packages fonts)
+  #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
   #:use-module (nongnu packages fonts)
@@ -108,6 +110,18 @@
                                                         ("warning_color" . yellow)
                                                         ("error_color" . red)))))))
 
+(define (color-scheme-activation theme)
+  #~(system* #$(file-append coreutils "/bin/env")
+             "GSETTINGS_BACKEND=keyfile"
+             (string-append "GSETTINGS_SCHEMA_DIR="
+                            #$(file-append gsettings-desktop-schemas
+                                           "/share/glib-2.0/schemas"))
+             (string-append #$glib:bin "/bin/gsettings")
+             "set"
+             "org.gnome.desktop.interface"
+             "color-scheme"
+             #$(if (theme-dark? theme) "prefer-dark" "default")))
+
 (define (theme-services machine)
   (define theme
     (machine-theme machine))
@@ -122,7 +136,12 @@
                         `(("gtk-3.0/settings.ini" ,(gtk-settings theme))
                           ("gtk-3.0/gtk.css" ,(gtk-css theme))
                           ("gtk-4.0/settings.ini" ,(gtk-settings theme))
-                          ("gtk-4.0/gtk.css" ,(gtk-css theme))))
+                          ("gtk-4.0/gtk.css" ,(gtk-css theme))
+                          ("theme" ,(plain-file "theme"
+                                                (symbol->string (theme-name
+                                                                 theme))))))
+        (simple-service 'color-scheme home-activation-service-type
+                        (color-scheme-activation theme))
         (simple-service 'cursor-theme home-environment-variables-service-type
                         `(("XCURSOR_THEME" unquote %cursor-theme)
                           ("XCURSOR_SIZE" unquote

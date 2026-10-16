@@ -93,7 +93,7 @@
                     (spread 5)
                     (offset #:x 0
                             #:y 5)
-                    (color "#0007")))
+                    (color ,(if (theme-dark? theme) "#000b" "#0007"))))
 
     (overview (backdrop-color ,(color theme
                                       'bg_2)))

@@ -4,32 +4,35 @@
 (define-module (common themes)
   #:use-module (guix records)
   #:use-module (srfi srfi-1)
-  #:export (theme-dark? ef-owl
-                        modus-operandi-tinted
-                        color
-                        color-entries
-                        console-palette
-                        console-color
-                        color-rgba
-                        color-hex-alpha))
+  #:use-module (ice-9 match)
+  #:export (theme-name theme-dark?
+                       ef-owl
+                       modus-operandi-tinted
+                       color
+                       color-entries
+                       console-palette
+                       console-color
+                       color-rgba
+                       color-hex-alpha))
 
 (define-record-type* <theme> theme make-theme
   theme?
+  (name theme-name)
   (dark? theme-dark?)
   (colors theme-colors))
 
 (define ef-owl
-  (theme (dark? #t)
+  (theme (name 'ef-owl)
+         (dark? #t)
          (colors '((bg_0 . "292c2f") (bg_1 . "373b3d")
                    (bg_2 . "40474b")
                    (bg_popup . "33363a")
                    (bg_region . "404f66")
                    (bg_accent . "4f509f")
                    (bg_active . "60676b")
-                   (bg_raised . "60676b")
                    (border . "4f5f66")
                    (cursor . "afe6ef")
-                   (dim_0 . "857f8f")
+                   (dim_0 . "9a94a4")
                    (fg_0 . "d0d0d0")
                    (fg_1 . "aab9af")
 
@@ -52,14 +55,14 @@
                    (br_violet . "d389af")))))
 
 (define modus-operandi-tinted
-  (theme (dark? #f)
+  (theme (name 'modus-operandi-tinted)
+         (dark? #f)
          (colors '((bg_0 . "fbf7f0") (bg_1 . "efe9dd")
                    (bg_2 . "dfd5cf")
                    (bg_popup . "f6eddd")
                    (bg_region . "c2bcb5")
                    (bg_accent . "bfc9ff")
                    (bg_active . "c9b9b0")
-                   (bg_raised . "ffffff")
                    (border . "9f9690")
                    (cursor . "d00000")
                    (dim_0 . "595959")
@@ -123,9 +126,12 @@
 (define (console-palette theme)
   "Return the 16 console colors of THEME as (RED GREEN BLUE) lists, black as
 the background and gray as the foreground."
-  (map (lambda (entry)
-         (color-channels theme
-                         (cdr entry))) %console-colors))
+  (map (match-lambda
+         ((console . name) (color-channels theme
+                                           (if (and (eq? console
+                                                         'white)
+                                                    (theme-dark? theme))
+                                               'fg_0 name)))) %console-colors))
 
 (define (console-color name)
   "Return the console color name showing the theme color NAME."

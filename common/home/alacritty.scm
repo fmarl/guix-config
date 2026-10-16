@@ -16,9 +16,9 @@
   (define-values (black white bright-black bright-white)
                  (if (theme-dark? theme)
                      (values 'bg_1
-                             'fg_0
-                             'bg_active
-                             'dim_0)
+                             'fg_1
+                             'dim_0
+                             'fg_0)
                      (values 'fg_0
                              'bg_active
                              'dim_0
