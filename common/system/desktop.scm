@@ -16,6 +16,7 @@
   #:use-module (gnu services xorg)
   #:use-module (gnu system keyboard)
   #:use-module (gnu system pam)
+  #:use-module (gnu system privilege)
   #:use-module (sagittarius packages wm)
   #:use-module (common locale)
   #:use-module (common machines)
@@ -141,22 +142,31 @@
                                     (arguments (list #~(string-append "conf="
                                                                       #$realtime-limits))))))
 
+(define %fuse-services
+  (list (udev-rules-service 'fuse fuse)
+        (simple-service 'fusermount privileged-program-service-type
+                        (list (privileged-program
+                                (program (file-append fuse "/bin/fusermount3"))
+                                (setuid? #t))))))
+
 (define %desktop-base-services
-  (list fontconfig-file-system-service
-        (service screen-locker-service-type
-                 (screen-locker-configuration (name "swaylock")
-                                              (program (file-append swaylock
-                                                        "/bin/swaylock"))
-                                              (using-setuid? #f)))
-        (service polkit-service-type)
-        (simple-service 'realtime-limits pam-root-service-type
-                        (list realtime-limits-pam-extension))
-        (service fwupd-service-type)
-        (service dbus-root-service-type)
-        (udev-rules-service 'brightnessctl brightnessctl)
-        (simple-service 'coredump-sysctl sysctl-service-type
-                        '(("kernel.core_uses_pid" . "1")))
-        (simple-service 'librewolf-apparmor apparmor-service-type
-                        (list %librewolf-profile %signal-desktop-profile
-                              (syncthing-apparmor-profile
-                               "@{HOME}/.local/state/syncthing" "@{HOME}")))))
+  (cons* fontconfig-file-system-service
+         (service screen-locker-service-type
+                  (screen-locker-configuration (name "swaylock")
+                                               (program (file-append swaylock
+                                                         "/bin/swaylock"))
+                                               (using-setuid? #f)))
+         (service polkit-service-type)
+         (simple-service 'realtime-limits pam-root-service-type
+                         (list realtime-limits-pam-extension))
+         (service fwupd-service-type)
+         (service dbus-root-service-type)
+         (udev-rules-service 'brightnessctl brightnessctl)
+         (udev-rules-service 'alsa-utils alsa-utils)
+         (simple-service 'coredump-sysctl sysctl-service-type
+                         '(("kernel.core_uses_pid" . "1")))
+         (simple-service 'librewolf-apparmor apparmor-service-type
+                         (list %librewolf-profile %signal-desktop-profile
+                               (syncthing-apparmor-profile
+                                "@{HOME}/.local/state/syncthing" "@{HOME}")))
+         (append %fuse-services %security-token-services)))

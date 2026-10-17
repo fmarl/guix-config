@@ -6,6 +6,7 @@
   #:use-module (gnu packages backup)
   #:use-module (gnu services)
   #:use-module (gnu services shepherd)
+  #:use-module (guix-impermanence services)
   #:use-module (common system helpers)
   #:use-module (common system maintenance)
   #:export (%restic-directory %restic-cache-directory restic-services))
@@ -52,6 +53,11 @@
                       #:requirement '(file-systems)))
 
     (list (system-commands command)
+          (simple-service (symbol-append 'restic- name
+                                         '-state)
+                          persisted-directories-service-type
+                          `((,%restic-directory 448)
+                            (,%restic-cache-directory 448)))
           (simple-service (symbol-append 'restic- name
                                          '-timers) shepherd-root-service-type
                           (list (timer 'backup

@@ -9,6 +9,7 @@
   #:use-module (gnu services linux)
   #:use-module (gnu services networking)
   #:use-module (gnu services shepherd)
+  #:use-module (guix-impermanence services)
   #:use-module (common system filesystem)
   #:use-module (srfi srfi-26)
   #:export (%maintenance-services btrfs-maintenance-services catch-up-timer))
@@ -96,4 +97,6 @@ btrfs file system."
 
 (define %maintenance-services
   (list ntp-service
-        (service earlyoom-service-type)))
+        (service earlyoom-service-type)
+        (simple-service 'catch-up-state persisted-directories-service-type
+                        '(("/var/lib/catch-up" 493)))))

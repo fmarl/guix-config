@@ -7,6 +7,7 @@
   #:use-module (gnu services pm)
   #:use-module (nongnu packages linux)
   #:use-module (sagittarius services vpn)
+  #:use-module (guix-impermanence services)
   #:use-module (common machines)
   #:use-module (common system acpi)
   #:use-module (common system base)
@@ -28,11 +29,14 @@
                          #:guix-daemon-options (list "--max-jobs=2")
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:persisted-directories '(("/etc/mullvad-vpn" 448)
-                                                   ("/var/lib/power-profiles-daemon"
-                                                    493))
                          #:services (append (network-services %machine)
-                                            (list (service
+                                            (list (simple-service 'thinkpad-state
+                                                   persisted-directories-service-type
+                                                   '(("/etc/mullvad-vpn" 448)
+                                                     ("/var/lib/bluetooth" 448)
+                                                     ("/var/lib/power-profiles-daemon"
+                                                      493)))
+                                                  (service
                                                    bluetooth-service-type)
                                                   (service acpid-service-type)
                                                   (service upower-service-type)

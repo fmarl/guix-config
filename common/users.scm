@@ -39,7 +39,7 @@
     "kvm"))
 
 (define %desktop-groups
-  '("audio" "video" "seat"))
+  '("audio" "video" "seat" "plugdev"))
 
 (define* (primary-user-account #:key desktop?)
   (user-account

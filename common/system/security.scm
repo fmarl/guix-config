@@ -18,7 +18,7 @@
   #:use-module (common users)
   #:use-module (srfi srfi-1)
   #:export (%sudoers %privileged-programs pam-session-extension
-                     %security-services))
+                     %hardening-services %security-token-services))
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
@@ -79,6 +79,9 @@ Defaults umask_override
     "/bin/mount"
     "/bin/umount"
     "/bin/fusermount"
+    "/bin/fusermount3"
+    "/bin/ping"
+    "/bin/ping6"
     "/bin/newuidmap"
     "/bin/newgidmap"))
 
@@ -91,8 +94,7 @@ Defaults umask_override
           %default-privileged-programs))
 
 (define %hardened-sysctl-settings
-  '(("dev.tty.ldisc_autoload" . "0")
-    ("kernel.kptr_restrict" . "2")
+  '(("dev.tty.ldisc_autoload" . "0") ("kernel.kptr_restrict" . "2")
     ("kernel.yama.ptrace_scope" . "2")
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
@@ -100,6 +102,7 @@ Defaults umask_override
     ("vm.mmap_rnd_bits" . "32")
     ("-kernel.unprivileged_userns_apparmor_policy" . "0")
     ("net.core.bpf_jit_harden" . "2")
+    ("net.ipv4.ping_group_range" . "0 2147483647")
     ("net.ipv4.tcp_rfc1337" . "1")
     ("net.ipv4.conf.default.accept_source_route" . "0")
     ("net.ipv4.conf.all.log_martians" . "1")
@@ -155,15 +158,8 @@ Defaults umask_override
                                  #t)))
                     (documentation "Hide other users' processes in /proc")))
 
-(define %security-services
-  (list (service pcscd-service-type)
-        (simple-service 'pcsc-polkit polkit-service-type
-                        (list pcsc-polkit-rules))
-        (udev-rules-service 'fido2 libfido2
-                            #:groups '("plugdev"))
-        (udev-rules-service 'yubikey-personalization yubikey-personalization)
-
-        sysctl-service
+(define %hardening-services
+  (list sysctl-service
 
         (service apparmor-service-type)
 
@@ -172,5 +168,16 @@ Defaults umask_override
         (simple-service 'proc-hidepid-before-login user-processes-service-type
                         '(proc-hidepid))
 
-        (simple-service 'pam-extensions pam-root-service-type
-                        (list u2f-pam-extension umask-pam-extension))))
+        (simple-service 'pam-umask pam-root-service-type
+                        (list umask-pam-extension))))
+
+(define %security-token-services
+  (list (service pcscd-service-type)
+        (simple-service 'pcsc-polkit polkit-service-type
+                        (list pcsc-polkit-rules))
+        (udev-rules-service 'fido2 libfido2
+                            #:groups '("plugdev"))
+        (udev-rules-service 'yubikey-personalization yubikey-personalization)
+
+        (simple-service 'pam-u2f pam-root-service-type
+                        (list u2f-pam-extension))))

@@ -7,6 +7,10 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages networking)
+  #:use-module (gnu packages nss)
+  #:use-module (gnu packages text-editors)
+  #:use-module (gnu packages wget)
   #:use-module (gnu services admin)
   #:use-module (gnu services linux)
   #:use-module (gnu services shepherd)
@@ -56,14 +60,18 @@
          (service log-cleanup-service-type
                   (log-cleanup-configuration (directory "/var/log/guix/drvs")))
 
-         (service udev-service-type
-                  (udev-configuration (rules (list lvm2 fuse alsa-utils crda))))
+         (service udev-service-type)
 
          (service special-files-service-type
                   `(("/bin/sh" ,(file-append bash "/bin/sh"))
                     ("/usr/bin/env" ,(file-append coreutils "/bin/env"))))
 
          %maintenance-services))
+
+(define %system-packages
+  (append (lset-difference eq? %base-packages-interactive
+                           (list nano nvi)) %base-packages-linux
+          (list iproute iputils wget nss-certs) %base-packages-utils))
 
 (define %hardened-kernel-arguments
   '("slab_nomerge" "page_alloc.shuffle=1" "efi=disable_early_pci_dma"
@@ -88,7 +96,6 @@
                                 (firmware %base-firmware)
                                 (mapped-devices '())
                                 (file-systems '())
-                                (persisted-directories '())
                                 (snapshot-directories '())
                                 (guix-daemon-options '())
                                 (services '()))
@@ -132,10 +139,8 @@
     (sudoers-file %sudoers)
     (privileged-programs %privileged-programs)
     (mapped-devices mapped-devices)
-    (file-systems (append file-systems
-                          (persisted-file-systems file-systems
-                                                  persisted-directories)
-                          %hardened-base-file-systems))
+    (file-systems (append file-systems %hardened-base-file-systems))
+    (packages %system-packages)
     (services
      (append (if desktop?
                  (desktop-session machine)
@@ -143,10 +148,13 @@
              services
              (if desktop? %desktop-base-services
                  '())
-             %security-services
+             %hardening-services
+             (if (null? mapped-devices)
+                 '()
+                 (list (udev-rules-service 'lvm2 lvm2)))
              (btrfs-maintenance-services (snapshot-subvolumes file-systems
                                                               snapshot-directories))
-             (impermanence-services file-systems persisted-directories
+             (impermanence-services file-systems
                                     (list (user-name %user)))
              (modify-services base-services
                (guix-service-type config =>

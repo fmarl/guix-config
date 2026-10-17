@@ -43,17 +43,13 @@
                          #:firmware '()
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:persisted-directories `((,%restic-directory #o700)
-                                                   (,%restic-cache-directory
-                                                    #o700)
-                                                   (,%syncthing-state-directory
-                                                    #o700))
                          #:snapshot-directories (list %sync-directory)
                          #:services (append %server-services
                                             (network-services %machine
-                                                              #:open-tcp-ports
-                                                              (list "ssh"
-                                                               %syncthing-port))
+                                             #:open-tcp-ports (list "ssh"
+                                                               %syncthing-port)
+                                             #:output-rules
+                                             %syncthing-output-rules)
                                             (syncthing-server-services
                                              %sync-directory
                                              '(workstation thinkpad))

@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "33ad056f4e26ee4bee00479fa1ef1b032f1f6a05")
+       (commit "33164ec31d83ea889c028f9235d05679e4e8f316")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -52,7 +52,7 @@
        (name 'guix-impermanence)
        (url "https://github.com/fmarl/guix-impermanence")
        (branch "main")
-       (commit "b4f6a01fe77ab0f484119b673ad105d9768a9780")
+       (commit "1146b53a4d9449e1e400d9a3ad58d5bab782adcc")
        (introduction
         (make-channel-introduction
          "b4f6a01fe77ab0f484119b673ad105d9768a9780"

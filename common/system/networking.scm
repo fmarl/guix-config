@@ -3,11 +3,13 @@
 
 (define-module (common system networking)
   #:use-module (guix gexp)
+  #:use-module (gnu packages linux)
   #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services dns)
   #:use-module (gnu services networking)
   #:use-module (gnu services ssh)
+  #:use-module (guix-impermanence services)
   #:use-module (common machines)
   #:use-module (common users)
   #:export (network-services ssh-server-service))
@@ -57,11 +59,19 @@ wifi.cloned-mac-address=random
 (define network-manager-services
   (list (service network-manager-service-type
                  (network-manager-configuration (extra-configuration-files `(("mac-randomization.conf" ,mac-randomization-conf)))))
-        (service wpa-supplicant-service-type)))
+        (service wpa-supplicant-service-type)
+        (simple-service 'wireless-tools profile-service-type
+                        (list iw))
+        (udev-rules-service 'crda crda)
+        (simple-service 'network-manager-state
+                        persisted-directories-service-type
+                        '(("/var/lib/NetworkManager" 448)
+                          ("/etc/NetworkManager/system-connections" 448)))))
 
-(define (nftables-ruleset open-tcp-ports)
+(define (nftables-ruleset open-tcp-ports output-rules)
   "Accept replies, loopback, IPv6 essentials, and ping and OPEN-TCP-PORTS from
-the LAN.  Reject the rest of the LAN, drop everything else."
+the LAN.  Reject the rest of the LAN, drop everything else.  Filter outgoing
+traffic with OUTPUT-RULES."
   (plain-file "nftables.conf"
               (string-append
                "table inet filter {
@@ -110,9 +120,14 @@ the LAN.  Reject the rest of the LAN, drop everything else."
 
   chain output {
     type filter hook output priority filter; policy accept;
-  }
-}
-")))
+"
+               (if (null? output-rules) ""
+                   (string-append "\n"
+                                  (string-join (map (lambda (rule)
+                                                      (string-append "    "
+                                                                     rule))
+                                                    output-rules) "\n") "\n"))
+               "  }\n}\n")))
 
 (define lan-hosts-service
   (simple-service 'lan-hosts hosts-service-type
@@ -122,15 +137,17 @@ the LAN.  Reject the rest of the LAN, drop everything else."
                        %addressed-machines)))
 
 (define* (network-services machine
-                           #:key (open-tcp-ports '()))
+                           #:key (open-tcp-ports '())
+                           (output-rules '()))
   "Return the network services of MACHINE: a static address if it has an
 interface, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS
-from the LAN."
+from the LAN and applying OUTPUT-RULES to outgoing traffic."
   (append (if (machine-interface machine)
               (static-network-services machine) network-manager-services)
           (list (service nftables-service-type
                          (nftables-configuration (ruleset (nftables-ruleset
-                                                           open-tcp-ports))))
+                                                           open-tcp-ports
+                                                           output-rules))))
                 (service static-networking-service-type
                          (list %loopback-static-networking)) lan-hosts-service)))
 

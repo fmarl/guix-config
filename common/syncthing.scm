@@ -45,13 +45,12 @@
                          (relays-enabled? #f)
                          (nat-enabled? #f)
                          (start-browser? #f)
+                         (gui-enabled? #f)
                          (usage-reporting-accepted -1)
                          (crash-reporting-enabled? #f)
                          (auto-upgrade-interval-hours 0)))
 
 (define (syncthing-apparmor-profile state-directory directory)
-  "Return an AppArmor profile confining Syncthing to STATE-DIRECTORY and the
-synced folders in DIRECTORY."
   (plain-file "syncthing-apparmor-profile"
               (format #f "abi <abi/5.0>,
 

@@ -12,15 +12,25 @@
   #:use-module (gnu system shadow)
   #:use-module (common machines)
   #:use-module (guix-apparmor services)
+  #:use-module (guix-impermanence services)
   #:use-module (common syncthing)
   #:use-module (ice-9 match)
-  #:export (%syncthing-state-directory syncthing-server-services))
+  #:export (%syncthing-state-directory %syncthing-output-rules
+                                       syncthing-server-services))
 
 (define %syncthing-user
   "syncthing")
 
 (define %syncthing-id
   800)
+
+(define %syncthing-output-rules
+  (map (lambda (rule)
+         (string-append "meta skuid "
+                        (number->string %syncthing-id) " " rule))
+       (list "ct state { established, related } accept" "oif lo accept"
+             (string-append "ip daddr " %lan-subnet " accept")
+             "reject with icmpx type admin-prohibited")))
 
 (define %syncthing-state-directory
   "/var/lib/syncthing")
@@ -77,6 +87,8 @@ and link its configuration"))))
                                                                       syncthing-peer
                                                                       lookup-machine)
                                                                      clients))))))
+        (simple-service 'syncthing-state persisted-directories-service-type
+                        `((,%syncthing-state-directory 448)))
         (simple-service 'syncthing-setup shepherd-root-service-type
                         (list (syncthing-setup-service directory)))
         (simple-service 'syncthing-setup-before-syncthing

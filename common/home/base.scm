@@ -40,7 +40,7 @@
   #:re-export (secrets-services syncthing-services))
 
 (define (base-services machine)
-  (append (list (home-packages openssh font-aporetic)
+  (append (list (home-packages openssh)
                 (simple-service 'guile-config home-files-service-type
                                 `((".guile" ,(local-file
                                               "../../dotfiles/.guile" "guile"))))
@@ -56,7 +56,8 @@
                                                                    "$HOME/Src"))))
           %shell-services %git-services
           (if (machine-wm machine)
-              (append (gpg-services machine) %emacs-services)
+              (append (gpg-services machine) %emacs-services
+                      (list (home-packages font-aporetic)))
               server-editor-services)))
 
 (define server-editor-services

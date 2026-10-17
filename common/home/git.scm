@@ -33,7 +33,8 @@
                ("st" . "status")
                ("ci" . "commit")
                ("br" . "branch")
-               ("lg" . "log --graph --oneline --decorate --all"))
+               ("lg" . "log --graph --oneline --decorate --all")
+               ("mirror" . "!f() { r=$(git remote get-url origin | sed 's|.*fmarl/||; s|\\.git$||'); git config --unset-all remote.origin.pushurl; git remote set-url --add --push origin codeberg.org:fmarl/$r && git remote set-url --add --push origin git@github.com:fmarl/$r.git; }; f"))
               ("color" ("ui" . "auto")))))
 
 (define git-ignore
