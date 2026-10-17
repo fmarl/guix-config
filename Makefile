@@ -6,7 +6,7 @@ HOSTS := $(notdir $(wildcard hosts/*))
 
 export GUILE_LOAD_PATH := $(CURDIR)$(if $(GUILE_LOAD_PATH),:$(GUILE_LOAD_PATH))
 
-.PHONY: all system home check fmt update installer new-host post-install
+.PHONY: all system home check test fmt update installer new-host post-install
 
 all: system home
 
@@ -24,6 +24,13 @@ check:
 	    fi; \
 	    echo "== $$host: home"; \
 	    $(GUIX) home build --dry-run hosts/$$host/home.scm >/dev/null || exit 1; \
+	done
+
+test:
+	@for test in tests/*.scm; do \
+	    echo "== $$test"; \
+	    out=$$($(GUIX) build -f $$test) || exit 1; \
+	    grep '^# of' $$out/host.log; \
 	done
 
 update:

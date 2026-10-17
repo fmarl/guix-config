@@ -17,7 +17,8 @@
   #:use-module (guix-apparmor services)
   #:use-module (common users)
   #:use-module (srfi srfi-1)
-  #:export (%sudoers %privileged-programs pam-session-extension
+  #:export (%sudoers %privileged-programs %hardened-sysctl-settings
+                     pam-session-extension
                      %hardening-services %security-token-services))
 
 (define u2f-mappings
