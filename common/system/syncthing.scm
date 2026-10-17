@@ -15,8 +15,8 @@
   #:use-module (guix-impermanence services)
   #:use-module (common syncthing)
   #:use-module (ice-9 match)
-  #:export (%syncthing-state-directory %syncthing-output-rules
-                                       syncthing-server-services))
+  #:use-module (common system networking)
+  #:export (%syncthing-state-directory syncthing-server-services))
 
 (define %syncthing-user
   "syncthing")
@@ -94,6 +94,11 @@ and link its configuration"))))
         (simple-service 'syncthing-setup-before-syncthing
                         user-processes-service-type
                         '(syncthing-setup))
+        (simple-service 'syncthing-firewall firewall-service-type
+                        (firewall-configuration (open-tcp-ports (list
+                                                                 %syncthing-port))
+                                                (output-rules
+                                                 %syncthing-output-rules)))
         (simple-service 'syncthing-apparmor apparmor-service-type
                         (list (syncthing-apparmor-profile
                                %syncthing-state-directory directory)))

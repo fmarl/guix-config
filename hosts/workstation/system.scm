@@ -25,12 +25,10 @@
                          #:guix-daemon-options (list "--max-jobs=4")
                          #:mapped-devices %mapped-devices
                          #:file-systems %file-systems
-                         #:services (append (network-services %machine
-                                                              #:open-tcp-ports
-                                                              (list "ssh"))
+                         #:services (append (network-services %machine)
+                                            ssh-server-services
                                             (list (simple-service 'sensors
                                                    kernel-module-loader-service-type
-                                                   (list "it87"))
-                                                  ssh-server-service))))
+                                                   (list "it87"))))))
 
 %system

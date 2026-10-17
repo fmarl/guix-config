@@ -8,8 +8,8 @@
   #:export (%server-services))
 
 (define %server-services
-  (cons ssh-server-service
-        (map (lambda (tty)
-               (service mingetty-service-type
-                        (mingetty-configuration (tty tty))))
-             '("tty1" "tty2" "tty3"))))
+  (append ssh-server-services
+          (map (lambda (tty)
+                 (service mingetty-service-type
+                          (mingetty-configuration (tty tty))))
+               '("tty1" "tty2" "tty3"))))

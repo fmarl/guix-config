@@ -45,11 +45,7 @@
                          #:file-systems %file-systems
                          #:snapshot-directories (list %sync-directory)
                          #:services (append %server-services
-                                            (network-services %machine
-                                             #:open-tcp-ports (list "ssh"
-                                                               %syncthing-port)
-                                             #:output-rules
-                                             %syncthing-output-rules)
+                                            (network-services %machine)
                                             (syncthing-server-services
                                              %sync-directory
                                              '(workstation thinkpad))

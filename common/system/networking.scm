@@ -3,6 +3,7 @@
 
 (define-module (common system networking)
   #:use-module (guix gexp)
+  #:use-module (guix records)
   #:use-module (gnu packages linux)
   #:use-module (gnu services)
   #:use-module (gnu services base)
@@ -12,7 +13,9 @@
   #:use-module (guix-impermanence services)
   #:use-module (common machines)
   #:use-module (common users)
-  #:export (network-services ssh-server-service))
+  #:use-module (srfi srfi-1)
+  #:export (firewall-service-type firewall-configuration network-services
+                                  ssh-server-services))
 
 (define (static-network-services machine)
   (unless (and (machine-address machine)
@@ -136,27 +139,51 @@ traffic with OUTPUT-RULES."
                                (symbol->string (machine-name machine))))
                        %addressed-machines)))
 
-(define* (network-services machine
-                           #:key (open-tcp-ports '())
-                           (output-rules '()))
+(define-record-type* <firewall-configuration> firewall-configuration
+  make-firewall-configuration
+  firewall-configuration?
+  (open-tcp-ports firewall-configuration-open-tcp-ports
+                  (default '()))
+  (output-rules firewall-configuration-output-rules
+                (default '())))
+
+(define firewall-service-type
+  (service-type (inherit nftables-service-type)
+                (name 'firewall)
+                (description
+                 "Run nftables with a ruleset opening the ports and applying
+the output rules of the firewall configuration and its extensions.")
+                (compose identity)
+                (extend (lambda (config extensions)
+                          (let ((configs (cons config extensions)))
+                            (nftables-configuration (ruleset (nftables-ruleset
+                                                              (append-map
+                                                               firewall-configuration-open-tcp-ports
+                                                               configs)
+                                                              (append-map
+                                                               firewall-configuration-output-rules
+                                                               configs)))))))
+                (default-value (firewall-configuration))))
+
+(define (network-services machine)
   "Return the network services of MACHINE: a static address if it has an
-interface, NetworkManager otherwise, and a firewall allowing OPEN-TCP-PORTS
-from the LAN and applying OUTPUT-RULES to outgoing traffic."
+interface, NetworkManager otherwise, and a firewall that other services extend
+with the ports and output rules they need."
   (append (if (machine-interface machine)
               (static-network-services machine) network-manager-services)
-          (list (service nftables-service-type
-                         (nftables-configuration (ruleset (nftables-ruleset
-                                                           open-tcp-ports
-                                                           output-rules))))
+          (list (service firewall-service-type)
                 (service static-networking-service-type
                          (list %loopback-static-networking)) lan-hosts-service)))
 
-(define ssh-server-service
-  (service openssh-service-type
-           (openssh-configuration (password-authentication? #f)
-                                  (permit-root-login #f)
-                                  (challenge-response-authentication? #f)
-                                  (x11-forwarding? #f)
-                                  (extra-content (string-append "AllowUsers "
-                                                  (user-name %user) "\n"
-                                                  "StreamLocalBindUnlink yes\n")))))
+(define ssh-server-services
+  (list (service openssh-service-type
+                 (openssh-configuration (password-authentication? #f)
+                                        (permit-root-login #f)
+                                        (challenge-response-authentication? #f)
+                                        (x11-forwarding? #f)
+                                        (extra-content (string-append
+                                                        "AllowUsers "
+                                                        (user-name %user) "\n"
+                                                        "StreamLocalBindUnlink yes\n"))))
+        (simple-service 'ssh-firewall firewall-service-type
+                        (firewall-configuration (open-tcp-ports '("ssh"))))))
