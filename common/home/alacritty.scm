@@ -50,6 +50,10 @@
 
                ("selection" ("save_to_clipboard" . #t))
 
+               ;; Programs in microvms and over SSH could fill the clipboard
+               ;; with commands to paste.
+               ("terminal" ("osc52" . "Disabled"))
+
                ("colors.primary" ,@(color-entries theme
                                                   '(("background" . bg_0)
                                                     ("foreground" . fg_0))))

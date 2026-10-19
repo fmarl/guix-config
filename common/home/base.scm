@@ -18,6 +18,7 @@
   #:use-module (sagittarius locked pdf)
   #:use-module (sagittarius locked video)
   #:use-module (sagittarius packages messaging)
+  #:use-module (sagittarius packages microvms)
   #:use-module (common home alacritty)
   #:use-module (common home bemenu)
   #:use-module (common home dbus)
@@ -90,6 +91,7 @@ done
 
 (define (desktop-services machine)
   (append (list (home-packages librewolf
+                               librewolf-vm
                                signal-desktop
                                gnome-keyring
                                gcr-3

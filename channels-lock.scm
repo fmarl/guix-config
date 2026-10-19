@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "33164ec31d83ea889c028f9235d05679e4e8f316")
+       (commit "6f7a669c334efd12524ba62aaed87e5fc4eca7e3")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "4b21ba0c885907aff3b1b6c717ac830144d3c575")
+       (commit "25226c35c150f03d469b0c855d10b2402a094bc1")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "0156cc11546232af1adcac5a9bee4a250608239e")
+       (commit "f0b8fbcf68ffdfd923c167b6421216e43a7a4b84")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -62,9 +62,9 @@
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "da1c2b575e7ea26e163925b1c72d19f2299f8aaa")
+       (commit "6bc8d3841eb20ddb8dfdf66bc513f6bae1f8c79e")
        (introduction
         (make-channel-introduction
-         "98a7990c273bae32085240cc762e6aac45e82fd9"
+         "4d022a4f59b7a0ddc851d6f4795ae03ce6bbb504"
          (openpgp-fingerprint
           "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D")))))

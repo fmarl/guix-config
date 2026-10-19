@@ -58,6 +58,6 @@
         (url "https://github.com/fmarl/guix-microvm")
         (branch "main")
         (introduction
-         (make-channel-introduction "98a7990c273bae32085240cc762e6aac45e82fd9"
+         (make-channel-introduction "4d022a4f59b7a0ddc851d6f4795ae03ce6bbb504"
           (openpgp-fingerprint
            "F2E3 8B47 808B AF7B 81D5  B27F 52C5 7B54 89B5 819D")))))

@@ -9,6 +9,7 @@
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages ocaml)
   #:use-module (gnu packages tree-sitter)
+  #:use-module (guix-microvm packages emacs)
   #:use-module (common home helpers)
   #:use-module (common home wm)
   #:use-module (srfi srfi-1)
@@ -100,6 +101,7 @@
         dune
 
         emacs-guix
+        emacs-guix-microvm
         emacs-geiser
         emacs-circe
         emacs-elfeed

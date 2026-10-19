@@ -43,7 +43,6 @@
 (define %machines
   (list (machine (name 'workstation)
                  (wm 'niri)
-                 (theme ef-owl)
                  (address "192.168.0.200")
                  (interface "enp5s0")
                  (gateway "192.168.0.1")

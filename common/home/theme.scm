@@ -136,10 +136,7 @@
                         `(("gtk-3.0/settings.ini" ,(gtk-settings theme))
                           ("gtk-3.0/gtk.css" ,(gtk-css theme))
                           ("gtk-4.0/settings.ini" ,(gtk-settings theme))
-                          ("gtk-4.0/gtk.css" ,(gtk-css theme))
-                          ("theme" ,(plain-file "theme"
-                                                (symbol->string (theme-name
-                                                                 theme))))))
+                          ("gtk-4.0/gtk.css" ,(gtk-css theme))))
         (simple-service 'color-scheme home-activation-service-type
                         (color-scheme-activation theme))
         (simple-service 'cursor-theme home-environment-variables-service-type
