@@ -13,10 +13,10 @@
   #:use-module (common home helpers)
   #:use-module (common home wm)
   #:use-module (srfi srfi-1)
-  #:export (%emacs-services emacs-desktop-services))
+  #:export (%emacs-services
+            emacs-desktop-services))
 
-(define %emacs-socket-name
-  "emacs-daemon")
+(define %emacs-socket-name "emacs-daemon")
 
 (define emacsclient
   (file-append emacs-next-pgtk "/bin/emacsclient"))
@@ -28,16 +28,16 @@
   (file-append emacs-next-pgtk "/bin/emacs"))
 
 (define emacs-daemon-shepherd-service
-  (shepherd-service (provision '(emacs-daemon))
-                    (start #~(make-forkexec-constructor (list #$emacs-program
-                                                              #$(string-append
-                                                                 "--fg-daemon="
-                                                                 %emacs-socket-name))))
-                    (stop #~(make-system-destructor (string-append #$emacsclient
-                                                     " --socket-name="
-                                                     #$%emacs-socket-name
-                                                     " --eval '(kill-emacs)'")))
-                    (documentation "Emacs background daemon")))
+  (shepherd-service
+    (provision '(emacs-daemon))
+    (start #~(make-forkexec-constructor
+              (list #$emacs-program
+                    #$(string-append "--fg-daemon=" %emacs-socket-name))))
+    (stop #~(make-system-destructor
+             (string-append #$emacsclient
+                            " --socket-name=" #$%emacs-socket-name
+                            " --eval '(kill-emacs)'")))
+    (documentation "Emacs background daemon")))
 
 (define emacs-daemon-service
   (simple-service 'emacs-daemon home-shepherd-service-type
@@ -55,10 +55,9 @@
 
 (define emacs-editor-service
   (simple-service 'emacs-editor home-environment-variables-service-type
-                  `(("EDITOR" unquote emacs-tty)
-                    ("GIT_EDITOR" unquote emacs-tty)
-                    ("VISUAL" unquote
-                     (emacsclient-script "emacs-frame" "-c")))))
+                  `(("EDITOR" . ,emacs-tty)
+                    ("GIT_EDITOR" . ,emacs-tty)
+                    ("VISUAL" . ,(emacsclient-script "emacs-frame" "-c")))))
 
 (define emacs-packages
   (list emacs-modus-themes
@@ -115,17 +114,16 @@
         tree-sitter-yaml))
 
 (define %emacs-services
-  (list (simple-service 'emacs-packages home-profile-service-type
-                        (cons emacs-next-pgtk emacs-packages))
-        emacs-daemon-service emacs-editor-service))
+  (list (apply home-packages emacs-next-pgtk emacs-packages)
+        emacs-daemon-service
+        emacs-editor-service))
 
 (define (emacs-desktop-services machine)
-  (list (wm-extensions machine
-                       'emacs-wm
+  (list (wm-extensions machine 'emacs-wm
                        (wm-bind "Mod+E"
                                 (emacsclient-command "-c" "-n")
                                 #:title "Open Emacs")
                        (wm-bind "Mod+Shift+D"
-                                (emacsclient-command "-c" "-n" "-e"
-                                                     "(dirvish-dwim)")
+                                (emacsclient-command "-c" "-n"
+                                                     "-e" "(dirvish-dwim)")
                                 #:title "Start dirvish"))))

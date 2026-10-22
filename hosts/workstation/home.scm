@@ -10,10 +10,6 @@
   (lookup-machine 'workstation))
 
 (define %home
-  (base-home-environment %machine
-                         #:ssh-clients '(thinkpad)
-                         #:services (append (desktop-services %machine)
-                                            (secrets-services %machine)
-                                            (syncthing-services 'fermion))))
+  (base-home-environment %machine))
 
 %home

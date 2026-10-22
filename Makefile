@@ -6,7 +6,7 @@ HOSTS := $(notdir $(wildcard hosts/*))
 
 export GUILE_LOAD_PATH := $(CURDIR)$(if $(GUILE_LOAD_PATH),:$(GUILE_LOAD_PATH))
 
-.PHONY: all system home check test fmt update installer new-host post-install
+.PHONY: all system home check test update installer new-host post-install
 
 all: system home
 
@@ -43,11 +43,8 @@ installer:
 	INSTALLER_MACHINE=$(MACHINE) $(GUIX) system image -t iso9660 common/system/installer.scm
 
 new-host:
-	@[ -n "$(MACHINE)" ] || { echo "Usage: make new-host MACHINE=<host> [OPTIONS=\"--impermanent --no-luks\"]" >&2; exit 1; }
+	@[ -n "$(MACHINE)" ] || { echo "Usage: make new-host MACHINE=<host> [OPTIONS=\"--no-luks\"]" >&2; exit 1; }
 	scripts/new-host.sh $(OPTIONS) $(MACHINE)
 
 post-install:
 	scripts/post-install.sh
-
-fmt:
-	guix style -f $(shell git ls-files '*.scm' | grep -v '^channels-lock.scm$$')

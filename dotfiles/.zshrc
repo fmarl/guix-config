@@ -10,13 +10,11 @@ HISTFILE="$HOME/.zsh_history"
 setopt HIST_FCNTL_LOCK
 setopt HIST_IGNORE_SPACE
 setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_SAVE_NO_DUPS
-setopt HIST_FIND_NO_DUPS
 setopt SHARE_HISTORY
 
 setopt AUTO_CD
 
-export GPG_TTY="$(tty)"
+export GPG_TTY=$TTY
 
 autoload -Uz vcs_info add-zsh-hook
 
@@ -29,26 +27,23 @@ add-zsh-hook precmd vcs_info
 setopt PROMPT_SUBST
 PROMPT='${SSH_CONNECTION:+%m:}%~${vcs_info_msg_0_} '"${${SHLVL:#1}:+[$((SHLVL-1))] }"'%(?..%F{red}%? %f)%(!.%F{red}#%f.λ) '
 
+fpath=(~/.guix-home/profile/share/zsh/site-functions $fpath)
 autoload -U compinit
 
 () {
     setopt LOCAL_OPTIONS EXTENDED_GLOB
-    if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.mh+24) ]]; then
-        compinit
+    local dump=${ZDOTDIR:-$HOME}/.zcompdump
+    if [[ -n $dump(#qN.mh+24) || ! -e $dump ]]; then
+        compinit -d $dump
+        touch $dump
     else
-        compinit -C
+        compinit -C -d $dump
     fi
+    [[ $dump.zwc -nt $dump ]] || zcompile $dump
 }
 
-if (( $+commands[direnv] )); then
-    eval "$(direnv hook zsh)"
-fi
-
-if (( $+commands[fzf] )); then
-    source <(fzf --zsh)
-fi
+eval "$(direnv hook zsh)"
+source <(fzf --zsh)
 
 # Has to be sourced last
-zsh_hl="$HOME/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-[[ -r "$zsh_hl" ]] && source "$zsh_hl"
-unset zsh_hl
+source ~/.guix-home/profile/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

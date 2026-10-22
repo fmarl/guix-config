@@ -3,10 +3,10 @@
 
 (define-module (common locale)
   #:use-module (gnu system keyboard)
-  #:export (%keyboard-layout %regional-locale))
+  #:export (%keyboard-layout
+            %regional-locale))
 
 (define %keyboard-layout
   (keyboard-layout "us" "altgr-intl"))
 
-(define %regional-locale
-  "de_DE")
+(define %regional-locale "de_DE")

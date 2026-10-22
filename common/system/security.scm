@@ -17,63 +17,65 @@
   #:use-module (guix-apparmor services)
   #:use-module (common users)
   #:use-module (srfi srfi-1)
-  #:export (%sudoers %privileged-programs %hardened-sysctl-settings
-                     pam-session-extension
-                     %hardening-services %security-token-services))
+  #:export (%sudoers
+            %privileged-programs
+            %hardened-sysctl-settings
+            %hardening-services
+            %security-token-services))
 
 (define u2f-mappings
   (plain-file "u2f-mappings"
-              (string-append (user-name %user) ":"
-                             (user-u2f-keys %user) "\n")))
+              (string-append (user-name %user) ":" (user-u2f-keys %user)
+                             "\n")))
 
 (define u2f-authfile
-  #~(string-append "authfile="
-                   #$u2f-mappings))
+  #~(string-append "authfile=" #$u2f-mappings))
 
 (define (pam-services-extension names transform)
-  "Apply TRANSFORM to the PAM services called NAMES."
-  (pam-extension (transformer (lambda (pam)
-                                (if (member (pam-service-name pam) names)
-                                    (transform pam) pam)))))
+  (pam-extension
+   (transformer (lambda (pam)
+                  (if (member (pam-service-name pam) names)
+                      (transform pam)
+                      pam)))))
 
 (define (pam-session-extension names entry)
   (pam-services-extension names
                           (lambda (pam)
-                            (pam-service (inherit pam)
-                                         (session (cons entry
-                                                        (pam-service-session
-                                                         pam)))))))
+                            (pam-service
+                             (inherit pam)
+                             (session (cons entry
+                                            (pam-service-session pam)))))))
 
 (define u2f-pam-extension
-  (pam-services-extension '("login" "greetd" "sudo")
-                          (lambda (pam)
-                            (pam-service (inherit pam)
-                                         (auth (cons (pam-entry (control
-                                                                 "sufficient")
-                                                                (module (file-append
-                                                                         pam-u2f
-                                                                         "/lib/security/pam_u2f.so"))
-                                                                (arguments (list
-                                                                            "cue"
-                                                                            "origin=pam://yubi"
-                                                                            u2f-authfile)))
-                                                     (pam-service-auth pam)))))))
+  (pam-services-extension
+   '("login" "greetd" "sudo")
+   (lambda (pam)
+     (pam-service
+      (inherit pam)
+      (auth (cons (pam-entry
+                   (control "sufficient")
+                   (module (file-append pam-u2f "/lib/security/pam_u2f.so"))
+                   (arguments (list "cue" "origin=pam://yubi" u2f-authfile)))
+                  (pam-service-auth pam)))))))
 
 (define umask-pam-extension
   (pam-session-extension '("login" "greetd" "sshd")
-                         (pam-entry (control "optional")
-                                    (module "pam_umask.so")
-                                    (arguments (list "umask=0077")))))
+                         (pam-entry
+                          (control "optional")
+                          (module "pam_umask.so")
+                          (arguments (list "umask=0077")))))
 
 (define %sudoers
-  (plain-file "sudoers" "root ALL=(ALL) ALL
+  (plain-file "sudoers" "\
+root ALL=(ALL) ALL
 %wheel ALL=(ALL) ALL
 Defaults umask=0022
 Defaults umask_override
 "))
 
 (define %unneeded-privileged-programs
-  '("/bin/chfn" "/bin/sg"
+  '("/bin/chfn"
+    "/bin/sg"
     "/bin/su"
     "/bin/newgrp"
     "/bin/passwd"
@@ -95,7 +97,8 @@ Defaults umask_override
           %default-privileged-programs))
 
 (define %hardened-sysctl-settings
-  '(("dev.tty.ldisc_autoload" . "0") ("kernel.kptr_restrict" . "2")
+  '(("dev.tty.ldisc_autoload" . "0")
+    ("kernel.kptr_restrict" . "2")
     ("kernel.yama.ptrace_scope" . "2")
     ("fs.protected_fifos" . "2")
     ("fs.protected_regular" . "2")
@@ -122,14 +125,15 @@ Defaults umask_override
 
 (define sysctl-service
   (service sysctl-service-type
-           (sysctl-configuration (settings (append %hardened-sysctl-settings
-                                                   %default-sysctl-settings)))))
+           (sysctl-configuration
+            (settings (append %hardened-sysctl-settings
+                              %default-sysctl-settings)))))
 
 (define pcsc-polkit-rules
   (file-union "pcsc-polkit-rules"
-              `(("share/polkit-1/rules.d/50-pcsc.rules" ,(plain-file
-                                                          "50-pcsc.rules"
-                                                          "polkit.addRule(function(action, subject) {
+              `(("share/polkit-1/rules.d/50-pcsc.rules"
+                 ,(plain-file "50-pcsc.rules" "\
+polkit.addRule(function(action, subject) {
   if ((action.id == \"org.debian.pcsc-lite.access_pcsc\" ||
        action.id == \"org.debian.pcsc-lite.access_card\") &&
       subject.isInGroup(\"plugdev\")) {
@@ -139,25 +143,23 @@ Defaults umask_override
 ")))))
 
 (define proc-hidepid-shepherd-service
-  (shepherd-service (provision '(proc-hidepid))
-                    (requirement '(file-systems))
-                    (one-shot? #t)
-                    (start #~(lambda _
-                               (let* ((polkitd (false-if-exception (getgrnam
-                                                                    "polkitd")))
-                                      (options (if polkitd
-                                                (format #f
-                                                 "remount,hidepid=invisible,gid=~a"
-                                                 (group:gid polkitd))
-                                                "remount,hidepid=invisible")))
-                                 (unless (zero? (system* #$(file-append
-                                                            util-linux
-                                                            "/bin/mount") "-o"
-                                                         options "/proc"))
-                                   (format (current-error-port)
-                                    "proc-hidepid: cannot remount /proc~%"))
-                                 #t)))
-                    (documentation "Hide other users' processes in /proc")))
+  (shepherd-service
+    (provision '(proc-hidepid))
+    (requirement '(file-systems))
+    (one-shot? #t)
+    (start
+     #~(lambda _
+         (let* ((polkitd (false-if-exception (getgrnam "polkitd")))
+                (options (if polkitd
+                             (format #f "remount,hidepid=invisible,gid=~a"
+                                     (group:gid polkitd))
+                             "remount,hidepid=invisible")))
+           (unless (zero? (system* #$(file-append util-linux "/bin/mount")
+                                   "-o" options "/proc"))
+             (format (current-error-port)
+                     "proc-hidepid: cannot remount /proc~%"))
+           #t)))
+    (documentation "Hide other users' processes in /proc")))
 
 (define %hardening-services
   (list sysctl-service
@@ -176,8 +178,7 @@ Defaults umask_override
   (list (service pcscd-service-type)
         (simple-service 'pcsc-polkit polkit-service-type
                         (list pcsc-polkit-rules))
-        (udev-rules-service 'fido2 libfido2
-                            #:groups '("plugdev"))
+        (udev-rules-service 'fido2 libfido2 #:groups '("plugdev"))
         (udev-rules-service 'yubikey-personalization yubikey-personalization)
 
         (simple-service 'pam-u2f pam-root-service-type

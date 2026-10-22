@@ -13,8 +13,8 @@
   #:export (secrets-services))
 
 (define secret-script
-  (shell-script "secret" "cd \"$HOME\" && exec "
-                (file-append sops "/bin/sops")
+  (shell-script "secret"
+                "cd \"$HOME\" && exec " (file-append sops "/bin/sops")
                 " --decrypt --extract \"[\\\"$1\\\"]\""
                 " \"$HOME/.config/sops/secrets.yaml\"\n"))
 
@@ -22,43 +22,31 @@
   (let ((ssh-add (file-append openssh "/bin/ssh-add"))
         (ssh-keygen (file-append openssh "/bin/ssh-keygen")))
     (shell-script "ssh-load-key"
-                  "fingerprint=$("
-                  ssh-keygen
-                  " -l -f \"$HOME/"
-                  %ssh-public-key-file
-                  "\" | cut -d' ' -f2)\n"
-                  ssh-add
-                  " -l 2>/dev/null | grep -qF \"$fingerprint\" && exit 0
-"
-                  secret-script
-                  " ssh | SSH_ASKPASS="
-                  (bemenu-askpass theme)
-                  " SSH_ASKPASS_REQUIRE=force "
-                  ssh-add
-                  " -q -\n")))
+                  "fingerprint=$(" ssh-keygen " -l -f \"$HOME/"
+                  %ssh-public-key-file "\" | cut -d' ' -f2)\n"
+                  ssh-add " -l 2>/dev/null | grep -qF \"$fingerprint\" \
+&& exit 0\n"
+                  secret-script " ssh | SSH_ASKPASS=" (bemenu-askpass theme)
+                  " SSH_ASKPASS_REQUIRE=force " ssh-add " -q -\n")))
 
 (define ssh-load-key-config
   (plain-file "ssh-load-key"
               (string-append "Match originalhost "
                              (string-join %ssh-host-names ",")
                              " exec ~/.local/bin/ssh-load-key\n"
-                             "Host "
-                             (string-join %ssh-host-names " ")
-                             "\n  IdentityFile ~/"
-                             %ssh-public-key-file
-                             "\n")))
+                             "Host " (string-join %ssh-host-names " ")
+                             "\n  IdentityFile ~/" %ssh-public-key-file "\n")))
 
 (define (secrets-services machine)
-  "Deploy the SOPS secrets and SSH public key of MACHINE."
   (define (own-file name)
     (host-file (machine-name machine) name))
 
   (list (home-packages sops)
         (simple-service 'secret-files home-files-service-type
                         `((".local/bin/secret" ,secret-script)
-                          (".local/bin/ssh-load-key" ,(ssh-load-key-script (machine-theme
-                                                                            machine)))
+                          (".local/bin/ssh-load-key"
+                           ,(ssh-load-key-script (machine-theme machine)))
                           (".ssh/config.d/ssh-load-key" ,ssh-load-key-config)
-                          (".config/sops/secrets.yaml" ,(own-file
-                                                         "secrets.yaml"))
+                          (".config/sops/secrets.yaml"
+                           ,(own-file "secrets.yaml"))
                           (,%ssh-public-key-file ,(own-file "ssh.pub"))))))

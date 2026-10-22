@@ -8,7 +8,7 @@
 
 (define-module (common system installer)
   #:use-module (guix)
-  #:use-module (guix channels)
+  #:use-module (guix ui)
   #:use-module (gnu packages base)
   #:use-module (gnu packages cryptsetup)
   #:use-module (gnu packages curl)
@@ -22,20 +22,16 @@
   #:use-module (gnu system)
   #:use-module (gnu system install)
   #:use-module (nongnu packages linux)
+  #:use-module (common files)
   #:use-module (common host)
   #:use-module (common system base))
 
-(define %root
-  (dirname (dirname (dirname (current-filename)))))
-
 (define %channels
-  (eval (call-with-input-file (string-append %root "/channels-lock.scm")
-          read)
-        (current-module)))
+  (load* (string-append %config-root "/channels-lock.scm")
+         '((guix channels))))
 
 (define guix-config
-  (local-file %root
-              "guix-config"
+  (local-file %config-root "guix-config"
               #:recursive? #t
               #:select? (lambda (file stat)
                           (not (string=? (basename file) ".git")))))
@@ -53,7 +49,8 @@
        (operating-system-kernel %host-system)))
 
 (define %installer-kernel-configs
-  '("CONFIG_ISO9660_FS=m" "CONFIG_ZISOFS=y"
+  '("CONFIG_ISO9660_FS=m"
+    "CONFIG_ZISOFS=y"
     "CONFIG_OVERLAY_FS=m"
     "CONFIG_SCSI=m"
     "CONFIG_BLK_DEV_SD=m"
@@ -64,11 +61,12 @@
   (if (and %host-system
            (not (stock-kernel? %host-system)))
       (customize-linux #:linux %host-kernel
-                       #:configs %installer-kernel-configs) linux))
+                       #:configs %installer-kernel-configs)
+      linux))
 
 (define machine-files
-  `(("guix-config-machine" ,(plain-file "guix-config-machine"
-                                        (string-append %machine "\n")))
+  `(("guix-config-machine"
+     ,(plain-file "guix-config-machine" (string-append %machine "\n")))
     ,@(if %host-kernel
           `(("guix-config-kernel" ,%host-kernel))
           '())))
@@ -92,16 +90,15 @@
                             `(("guix-config" ,guix-config)
                               ,@machine-files))
             (modify-services (operating-system-user-services installation-os)
-              (guix-service-type config =>
-                                 (guix-configuration (inherit config)
-                                                     (guix (guix-for-channels
-                                                            %channels))
-                                                     (channels %channels)))
-              (special-files-service-type files =>
-                                          (cons `("/usr/bin/env" ,(file-append
-                                                                   coreutils
-                                                                   "/bin/env"))
-                                                files)))))
+              (guix-service-type
+               config => (guix-configuration
+                          (inherit config)
+                          (guix (guix-for-channels %channels))
+                          (channels %channels)))
+              (special-files-service-type
+               files => (cons `("/usr/bin/env"
+                                ,(file-append coreutils "/bin/env"))
+                              files)))))
 
     (packages (append (list git
                             curl

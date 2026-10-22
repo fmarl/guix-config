@@ -4,10 +4,10 @@
 (define-module (hosts workstation hardware)
   #:use-module (gnu)
   #:use-module (common system filesystem)
-  #:export (%mapped-devices %file-systems))
+  #:export (%mapped-devices
+            %file-systems))
 
-(define %mapped-devices
-  '())
+(define %mapped-devices '())
 
 (define %file-systems
   (impermanent-file-systems (file-system-label "ROOT")

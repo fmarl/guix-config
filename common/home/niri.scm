@@ -14,25 +14,23 @@
   #:use-module (common home theme)
   #:use-module (common locale)
   #:use-module (common themes)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:export (home-niri-service-type niri-spawn-at-startup
-                                   niri-bind
-                                   niri-spawn
-                                   niri-layer-rule
-                                   niri-window-rule
-                                   niri-services))
+  #:export (home-niri-service-type
+            niri-spawn-at-startup
+            niri-bind
+            niri-spawn
+            niri-layer-rule
+            niri-window-rule
+            niri-services))
 
 (define (niri-spawn program . arguments)
-  `(spawn ,program
-          ,@arguments))
+  `(spawn ,program ,@arguments))
 
 (define (niri-spawn-at-startup program . arguments)
-  `(startup spawn-at-startup
-            ,program
-            ,@arguments))
+  `(startup spawn-at-startup ,program ,@arguments))
 
-(define* (niri-bind key action
-                    #:key title allow-when-locked?)
+(define* (niri-bind key action #:key title allow-when-locked?)
   `(bind ,key
          ,@(if title
                `(#:hotkey-overlay-title ,title)
@@ -44,8 +42,7 @@
 
 (define (niri-layer-rule namespace . properties)
   `(rule layer-rule
-         (match #:namespace
-           ,namespace)
+         (match #:namespace ,namespace)
          ,@properties))
 
 (define (niri-window-rule matchers . properties)
@@ -55,58 +52,67 @@
 
 (define (niri-settings theme)
   `((prefer-no-csd)
-    (hotkey-overlay (skip-at-startup))
-    (xwayland-satellite (path ,(file-append xwayland-satellite
-                                            "/bin/xwayland-satellite")))
+    (hotkey-overlay
+     (skip-at-startup))
+    (xwayland-satellite
+     (path ,(file-append xwayland-satellite "/bin/xwayland-satellite")))
 
-    (cursor (xcursor-theme ,%cursor-theme)
-            (xcursor-size ,%cursor-size))
+    (cursor
+     (xcursor-theme ,%cursor-theme)
+     (xcursor-size ,%cursor-size))
 
-    (input (keyboard (xkb (layout ,(keyboard-layout-name %keyboard-layout))
-                          (variant ,(keyboard-layout-variant %keyboard-layout))))
-           (touchpad (tap)
-                     (click-method "button-areas"))
-           (tablet (off))
-           (touch (off))
-           (mod-key "Super")
-           (mod-key-nested "Alt"))
+    (input
+     (keyboard
+      (xkb
+       (layout ,(keyboard-layout-name %keyboard-layout))
+       (variant ,(keyboard-layout-variant %keyboard-layout))))
+     (touchpad
+      (tap)
+      (click-method "button-areas"))
+     (tablet (off))
+     (touch (off))
+     (mod-key "Super")
+     (mod-key-nested "Alt"))
 
-    (layout (gaps ,%large-spacing)
-            (background-color "transparent")
+    (layout
+     (gaps ,%large-spacing)
+     (background-color "transparent")
 
-            (center-focused-column "never")
+     (center-focused-column "never")
 
-            (preset-column-widths (proportion 0.33333)
-                                  (proportion 0.5)
-                                  (proportion 0.66667))
+     (preset-column-widths
+      (proportion 0.33333)
+      (proportion 0.5)
+      (proportion 0.66667))
 
-            (default-column-width (proportion 0.5))
+     (default-column-width (proportion 0.5))
 
-            (focus-ring (width 2)
-                        (active-color ,(color theme
-                                              'br_blue))
-                        (inactive-color ,(hairline-color theme)))
+     (focus-ring
+      (width 2)
+      (active-color ,(color theme 'br_blue))
+      (inactive-color ,(hairline-color theme)))
 
-            (border (off))
+     (border (off))
 
-            (shadow (softness 30)
-                    (spread 5)
-                    (offset #:x 0
-                            #:y 5)
-                    (color ,(if (theme-dark? theme) "#000b" "#0007"))))
+     (shadow
+      (softness 30)
+      (spread 5)
+      (offset #:x 0 #:y 5)
+      (color ,(if (theme-dark? theme) "#000b" "#0007"))))
 
-    (overview (backdrop-color ,(color theme
-                                      'bg_2)))
+    (overview
+     (backdrop-color ,(color theme 'bg_2)))
 
-    (window-rule (geometry-corner-radius ,%corner-radius)
-                 (clip-to-geometry #t))
+    (window-rule
+     (geometry-corner-radius ,%corner-radius)
+     (clip-to-geometry #t))
 
     (screenshot-path
      "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png")))
 
 (define portals-conf
-  (plain-file "niri-portals.conf"
-              "[preferred]
+  (plain-file "niri-portals.conf" "\
+[preferred]
 default=gnome;gtk;
 org.freedesktop.impl.portal.Access=gtk;
 org.freedesktop.impl.portal.FileChooser=gtk;
@@ -115,10 +121,8 @@ org.freedesktop.impl.portal.Notification=gtk;
 
 (define %binds
   `((Mod+Shift+Slash (show-hotkey-overlay))
-    (Mod+O #:repeat #f
-           (toggle-overview))
-    (Mod+Shift+C #:repeat #f
-                 (close-window))
+    (Mod+O #:repeat #f (toggle-overview))
+    (Mod+Shift+C #:repeat #f (close-window))
 
     (Mod+Left (focus-column-left))
     (Mod+H (focus-column-left))
@@ -174,10 +178,8 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Mod+Shift+Page_Up (move-workspace-up))
     (Mod+Shift+I (move-workspace-up))
 
-    (Mod+WheelScrollDown #:cooldown-ms 150
-                         (focus-workspace-down))
-    (Mod+WheelScrollUp #:cooldown-ms 150
-                       (focus-workspace-up))
+    (Mod+WheelScrollDown #:cooldown-ms 150 (focus-workspace-down))
+    (Mod+WheelScrollUp #:cooldown-ms 150 (focus-workspace-up))
     (Mod+Ctrl+WheelScrollDown #:cooldown-ms 150
                               (move-column-to-workspace-down))
     (Mod+Ctrl+WheelScrollUp #:cooldown-ms 150
@@ -217,8 +219,7 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Ctrl+Print (screenshot-screen))
     (Alt+Print (screenshot-window))
 
-    (Mod+Escape #:allow-inhibiting #f
-                (toggle-keyboard-shortcuts-inhibit))
+    (Mod+Escape #:allow-inhibiting #f (toggle-keyboard-shortcuts-inhibit))
 
     (Mod+Shift+E (quit))
     (Ctrl+Alt+Delete (quit))
@@ -226,14 +227,16 @@ org.freedesktop.impl.portal.Notification=gtk;
 
     ,@(append-map (lambda (index)
                     (let ((n (number->string index)))
-                      `((,(string-append "Mod+" n) (focus-workspace ,index))
-                        (,(string-append "Mod+Ctrl+" n) (move-column-to-workspace ,index)))))
+                      `((,(string-append "Mod+" n)
+                         (focus-workspace ,index))
+                        (,(string-append "Mod+Ctrl+" n)
+                         (move-column-to-workspace ,index)))))
                   (iota 9 1))))
 
-(define-record-type* <home-niri-configuration> home-niri-configuration
-                     make-home-niri-configuration
+(define-record-type* <home-niri-configuration>
+  home-niri-configuration make-home-niri-configuration
   home-niri-configuration?
-  (theme home-niri-configuration-theme)
+  (theme   home-niri-configuration-theme)
   (entries home-niri-configuration-entries
            (default '())))
 
@@ -241,61 +244,65 @@ org.freedesktop.impl.portal.Notification=gtk;
   (define entries
     (home-niri-configuration-entries config))
 
-  (check-entry-tags entries
-                    '(startup rule bind))
-  (let ((unvalidated (kdl-file "config.kdl"
-                               (append (niri-settings (home-niri-configuration-theme
-                                                       config))
-                                       (tagged-entries entries
-                                                       'startup)
-                                       (tagged-entries entries
-                                                       'rule)
-                                       `((binds ,@(tagged-entries entries
-                                                                  'bind)))))))
+  (define (tagged tag)
+    (filter-map (match-lambda
+                  ((entry-tag . payload)
+                   (and (eq? entry-tag tag) payload)))
+                entries))
+
+  (for-each (match-lambda
+              ((tag . _)
+               (unless (memq tag '(startup rule bind))
+                 (error "unknown niri entry:" tag))))
+            entries)
+  (let ((unvalidated
+         (kdl-file "config.kdl"
+                   (append (niri-settings
+                            (home-niri-configuration-theme config))
+                           (tagged 'startup)
+                           (tagged 'rule)
+                           `((binds ,@(tagged 'bind)))))))
     (computed-file "niri-config.kdl"
                    #~(begin
                        (unless (zero? (system* #$(file-append niri "/bin/niri")
-                                               "validate" "-c"
-                                               #$unvalidated))
+                                               "validate" "-c" #$unvalidated))
                          (error "invalid niri configuration"))
-                       (copy-file #$unvalidated
-                                  #$output)))))
+                       (copy-file #$unvalidated #$output)))))
 
 (define home-niri-service-type
-  (service-type (name 'home-niri)
-                (extensions (list (service-extension
-                                   home-xdg-configuration-files-service-type
-                                   (lambda (config)
-                                     `(("niri/config.kdl" ,(niri-config-file
-                                                            config)))))))
-                (compose concatenate)
-                (extend (lambda (config entries)
-                          (home-niri-configuration (inherit config)
-                                                   (entries (append (home-niri-configuration-entries
-                                                                     config)
-                                                                    entries)))))
-                (description "Generate the niri configuration")))
+  (service-type
+    (name 'home-niri)
+    (extensions
+     (list (service-extension home-xdg-configuration-files-service-type
+                              (lambda (config)
+                                `(("niri/config.kdl"
+                                   ,(niri-config-file config)))))))
+    (compose concatenate)
+    (extend (lambda (config entries)
+              (home-niri-configuration
+                (inherit config)
+                (entries (append (home-niri-configuration-entries config)
+                                 entries)))))
+    (description "Generate the niri configuration")))
 
 (define wallpaper
-  (shell-script "wallpaper" "exec "
-                (file-append swaybg "/bin/swaybg")
-                " --mode fill --image \"$HOME/Pictures/wallpaper.jpg\"
-"))
+  (shell-script "wallpaper"
+                "exec " (file-append swaybg "/bin/swaybg")
+                " --mode fill --image \"$HOME/Pictures/wallpaper.jpg\"\n"))
 
 (define (niri-services theme)
   (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)
         (simple-service 'niri-portals
                         home-xdg-configuration-files-service-type
-                        `(("xdg-desktop-portal/niri-portals.conf" ,portals-conf)))
+                        `(("xdg-desktop-portal/niri-portals.conf"
+                           ,portals-conf)))
         (service home-niri-service-type
-                 (home-niri-configuration (theme theme)
-                                          (entries (cons* (niri-spawn-at-startup
-                                                           wallpaper)
-                                                          (niri-layer-rule
-                                                           "^wallpaper$"
-                                                           '(place-within-backdrop
-                                                             #t))
-                                                          (map (lambda (node)
-                                                                 (cons 'bind
-                                                                       node))
-                                                               %binds)))))))
+                 (home-niri-configuration
+                   (theme theme)
+                   (entries
+                    (cons* (niri-spawn-at-startup wallpaper)
+                           (niri-layer-rule "^wallpaper$"
+                                            '(place-within-backdrop #t))
+                           (map (lambda (node)
+                                  (cons 'bind node))
+                                %binds)))))))

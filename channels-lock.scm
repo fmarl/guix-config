@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "6f7a669c334efd12524ba62aaed87e5fc4eca7e3")
+       (commit "728b1b8bf6744d538382f69325008829488f2b30")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "25226c35c150f03d469b0c855d10b2402a094bc1")
+       (commit "47c20df59dd9f27c9154ef20a81d383a19d4ad7f")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "f0b8fbcf68ffdfd923c167b6421216e43a7a4b84")
+       (commit "ff85d80864dd7053c8ba8226f94859892b1e998f")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -32,7 +32,7 @@
        (name 'guix-cage)
        (url "https://github.com/fmarl/guix-cage")
        (branch "main")
-       (commit "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc")
+       (commit "d8a1f70d94d87cfb344e0f3f90a1defbab57311b")
        (introduction
         (make-channel-introduction
          "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc"
@@ -42,7 +42,7 @@
        (name 'guix-apparmor)
        (url "https://github.com/fmarl/guix-apparmor")
        (branch "main")
-       (commit "d7d5896072609b5cc5a4814eadf1b070f32e7992")
+       (commit "c4b5c11facde75a0843317815eb883b05efda439")
        (introduction
         (make-channel-introduction
          "2f525872b29f52123ef7c593be185c872343a38e"
@@ -52,7 +52,7 @@
        (name 'guix-impermanence)
        (url "https://github.com/fmarl/guix-impermanence")
        (branch "main")
-       (commit "1146b53a4d9449e1e400d9a3ad58d5bab782adcc")
+       (commit "b484bc735cbdb5321d58d10d01c09d2bfe7aae72")
        (introduction
         (make-channel-introduction
          "b4f6a01fe77ab0f484119b673ad105d9768a9780"
@@ -62,7 +62,7 @@
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "6bc8d3841eb20ddb8dfdf66bc513f6bae1f8c79e")
+       (commit "5b83734f1083c2b3ee5a59a1729110e44ad2c3f2")
        (introduction
         (make-channel-introduction
          "4d022a4f59b7a0ddc851d6f4795ae03ce6bbb504"

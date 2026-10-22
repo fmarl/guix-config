@@ -6,9 +6,9 @@
 (use-modules (common system test)
              (hosts workstation system))
 
-(host-system-test 'workstation
-                  %system
+(host-system-test 'workstation %system
                   #:services '(networking ssh-daemon unbound pcscd seatd)
-                  #:apparmor-profiles '("librewolf" "signal-desktop"
+                  #:apparmor-profiles '("librewolf"
+                                        "signal-desktop"
                                         "syncthing")
                   #:open-tcp-ports '(22))

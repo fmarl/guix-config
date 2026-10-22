@@ -168,6 +168,7 @@ function read_layout {
                 ;;
         esac
     done <<<"${facts}"
+    [[ -n "${PERSIST}" ]] || die "hosts/${HOST} has no tmpfs root"
 
     INSTALLED_REPO="${PERSIST}/etc/guix-config"
     CACHE="${MNT}${PERSIST}/var/cache/bootstrap"
@@ -203,7 +204,7 @@ function preflight {
 
 function confirm {
     lsblk -o NAME,SIZE,TYPE,FSTYPE,LABEL,MODEL "${DISK}"
-    info "Installing ${HOST} on ${DISK}${LUKS_UUID:+, encrypted}${PERSIST:+, impermanent}"
+    info "Installing ${HOST} on ${DISK}${LUKS_UUID:+, encrypted}"
     err "ALL DATA ON ${DISK} WILL BE DESTROYED."
 
     local answer
@@ -288,7 +289,7 @@ function install_system {
 
     local i
     for i in "${!USERS[@]}"; do
-        printf '%s\n' "${HASHES[i]}" | host_scm store-password-hash "${HOST}" "${MNT}" "${USERS[i]}"
+        printf '%s\n' "${HASHES[i]}" | host_scm store-password-hash "${MNT}" "${USERS[i]}"
     done
     rm -rf "${CACHE}"
 }

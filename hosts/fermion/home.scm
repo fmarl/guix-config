@@ -10,7 +10,6 @@
   (lookup-machine 'fermion))
 
 (define %home
-  (base-home-environment %machine
-                         #:ssh-clients '(thinkpad workstation)))
+  (base-home-environment %machine))
 
 %home

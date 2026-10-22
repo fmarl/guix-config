@@ -3,22 +3,20 @@
 
 (use-modules (guix channels)
              (guix describe)
+             (guix ui)
              (ice-9 match)
              (srfi srfi-1))
 
 (define (channel-commits channels)
   (map (lambda (channel)
          (cons (channel-name channel)
-               (channel-commit channel))) channels))
+               (channel-commit channel)))
+       channels))
 
 (define locked
   (match (command-line)
     ((_ lock)
-     (let ((environment (make-fresh-user-module)))
-       (module-use! environment
-                    (resolve-interface '(guix channels)))
-       (eval (call-with-input-file lock
-               read) environment)))))
+     (load* lock '((guix channels))))))
 
 (exit (lset<= equal?
               (channel-commits locked)

@@ -6,9 +6,10 @@
 (use-modules (common system test)
              (hosts fermion system))
 
-(host-system-test 'fermion
-                  %system
-                  #:services '(networking ssh-daemon unbound
-                                          syncthing-syncthing)
+(host-system-test 'fermion %system
+                  #:services '(networking
+                               ssh-daemon
+                               unbound
+                               syncthing-syncthing)
                   #:apparmor-profiles '("syncthing")
                   #:open-tcp-ports '(22 22000))

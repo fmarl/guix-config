@@ -15,10 +15,9 @@ OPTIONS=()
 
 function usage {
     cat <<USAGE
-Usage: $(basename "$0") [--impermanent] [--no-luks] HOSTNAME
+Usage: $(basename "$0") [--no-luks] HOSTNAME
 
-  --impermanent  Keep / on a tmpfs and persist state below /persist
-  --no-luks      Do not encrypt the root partition
+  --no-luks  Do not encrypt the root partition
 USAGE
 }
 
@@ -29,7 +28,6 @@ function parse_args {
                 usage
                 exit 0
                 ;;
-            --impermanent) OPTIONS+=(impermanent) ;;
             --no-luks) OPTIONS+=(no-luks) ;;
             -*)
                 usage >&2
@@ -54,7 +52,7 @@ function main {
     parse_args "$@"
 
     local dir="${REPO}/hosts/${HOST}" machines="${REPO}/common/machines.scm"
-    local default="        (machine (name 'default))))"
+    local default="          (name 'default)"
 
     [[ ! -e "${dir}" ]] || die "hosts/${HOST} already exists"
     grep -qF "(name '${HOST})" "${machines}" && die "${HOST} is already in common/machines.scm"
@@ -84,7 +82,7 @@ function main {
     cp "${TMP}/secrets.enc.yaml" "${dir}/secrets.yaml"
     cp "${TMP}"/{system,home,hardware}.scm "${dir}/"
 
-    sed -i "s/^${default//\//\\/}\$/        (machine (name '${HOST}))\n&/" "${machines}"
+    sed -i -z "s/        (machine\n${default}/        (machine\n          (name '${HOST})\n          (secrets? #t))\n&/" "${machines}"
 
     info "Done. Adjust the machine in common/machines.scm."
 }

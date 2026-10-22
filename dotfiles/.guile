@@ -2,29 +2,10 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 ;;; Copyright © 2025, 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
-(use-modules (ice-9 pretty-print)
-	     (ice-9 colorized)
-	     (ice-9 readline)
-	     (system repl common))
-
-(set! %load-compiled-path
-      (cons (string-append (getenv "HOME") "/.cache/guile/ccache")
-            %load-compiled-path))
-
-(define pp pretty-print)
-
-(define (module->symbols m)
-  (sort! (map symbol->string (module-map (lambda (sym var) sym) m))
-         string<?))
-
-(define (help-module m)
-  (display (string-append "Symbols in module " (symbol->string m) ":\n"))
-  (for-each display (map (lambda (s) (string-append "  " s "\n"))
-                         (module->symbols m))))
+(use-modules (ice-9 colorized)
+             (ice-9 readline)
+             (system repl common))
 
 (activate-colorized)
 (activate-readline)
-
-(repl-default-prompt-set!
- (lambda (r)
-   (string-append "(λ) ")))
+(repl-default-prompt-set! "(λ) ")

@@ -13,102 +13,83 @@
   #:use-module (common home helpers)
   #:use-module (common machines)
   #:use-module (common themes)
-  #:export (theme-services %bar-height
-                           %cursor-theme
-                           %cursor-size
-                           %monospace-font
-                           %corner-radius
-                           %small-corner-radius
-                           %small-spacing
-                           %spacing
-                           %large-spacing
-                           hairline-color
-                           %popup-alpha
-                           %sans-font))
+  #:export (theme-services
+            %bar-height
+            %cursor-theme
+            %cursor-size
+            %monospace-font
+            %corner-radius
+            %small-corner-radius
+            %small-spacing
+            %spacing
+            %large-spacing
+            hairline-color
+            %popup-alpha
+            %sans-font))
 
-(define %bar-height
-  28)
+(define %bar-height 28)
 
-(define %cursor-theme
-  "Bibata-Modern-Classic")
+(define %cursor-theme "Bibata-Modern-Classic")
+(define %cursor-size 24)
 
-(define %cursor-size
-  24)
+(define %monospace-font "Aporetic Sans Mono")
+(define %sans-font "Inter")
 
-(define %monospace-font
-  "Aporetic Sans Mono")
+(define %corner-radius 10)
+(define %small-corner-radius 6)
 
-(define %corner-radius
-  10)
+(define %small-spacing 4)
+(define %spacing 8)
+(define %large-spacing 12)
 
-(define %small-corner-radius
-  6)
+(define %popup-alpha 0.95)
 
-(define %small-spacing
-  4)
-
-(define %spacing
-  8)
-
-(define %large-spacing
-  12)
-
-(define* (hairline-color theme
-                         #:optional (format-color color-hex-alpha))
+(define* (hairline-color theme #:optional (format-color color-hex-alpha))
   "Return the color of THEME for thin borders, as FORMAT-COLOR formats it."
-  (format-color theme
-                'fg_0 0.1))
-
-(define %popup-alpha
-  0.95)
-
-(define %sans-font
-  "Inter")
+  (format-color theme 'fg_0 0.1))
 
 (define (gtk-settings theme)
   (define dark?
     (theme-dark? theme))
 
   (ini-file "settings.ini"
-            `(("Settings" ("gtk-theme-name" unquote
-                           (if dark? "adw-gtk3-dark" "adw-gtk3"))
-               ("gtk-icon-theme-name" unquote
-                (if dark? "Papirus-Dark" "Papirus"))
-               ("gtk-cursor-theme-name" unquote %cursor-theme)
-               ("gtk-cursor-theme-size" unquote %cursor-size)
-               ("gtk-font-name" unquote
-                (string-append %sans-font " 11"))
-               ("gtk-application-prefer-dark-theme" unquote dark?)))))
+            `(("Settings"
+               ("gtk-theme-name" . ,(if dark? "adw-gtk3-dark" "adw-gtk3"))
+               ("gtk-icon-theme-name" . ,(if dark? "Papirus-Dark" "Papirus"))
+               ("gtk-cursor-theme-name" . ,%cursor-theme)
+               ("gtk-cursor-theme-size" . ,%cursor-size)
+               ("gtk-font-name" . ,(string-append %sans-font " 11"))
+               ("gtk-application-prefer-dark-theme" . ,dark?)))))
 
 (define (gtk-css theme)
-  (plain-file "gtk.css"
-              (string-concatenate (map (lambda (entry)
-                                         (string-append "@define-color "
-                                                        (car entry) " "
-                                                        (cdr entry) ";\n"))
-                                       (color-entries theme
-                                                      '(("accent_color" . br_blue)
-                                                        ("accent_bg_color" . bg_accent)
-                                                        ("accent_fg_color" . fg_0)
-                                                        ("window_bg_color" . bg_0)
-                                                        ("window_fg_color" . fg_0)
-                                                        ("view_bg_color" . bg_0)
-                                                        ("view_fg_color" . fg_0)
-                                                        ("headerbar_bg_color" . bg_1)
-                                                        ("headerbar_fg_color" . fg_0)
-                                                        ("headerbar_backdrop_color" . bg_0)
-                                                        ("sidebar_bg_color" . bg_1)
-                                                        ("sidebar_fg_color" . fg_0)
-                                                        ("card_bg_color" . bg_1)
-                                                        ("card_fg_color" . fg_0)
-                                                        ("dialog_bg_color" . bg_1)
-                                                        ("dialog_fg_color" . fg_0)
-                                                        ("popover_bg_color" . bg_popup)
-                                                        ("popover_fg_color" . fg_0)
-                                                        ("destructive_color" . red)
-                                                        ("success_color" . green)
-                                                        ("warning_color" . yellow)
-                                                        ("error_color" . red)))))))
+  (plain-file
+   "gtk.css"
+   (string-concatenate
+    (map (lambda (entry)
+           (string-append "@define-color " (car entry) " " (cdr entry) ";\n"))
+         (color-entries theme
+                        '(("accent_color" . br_blue)
+                          ("accent_bg_color" . bg_accent)
+                          ("accent_fg_color" . fg_0)
+                          ("window_bg_color" . bg_0)
+                          ("window_fg_color" . fg_0)
+                          ("view_bg_color" . bg_0)
+                          ("view_fg_color" . fg_0)
+                          ("headerbar_bg_color" . bg_1)
+                          ("headerbar_fg_color" . fg_0)
+                          ("headerbar_backdrop_color" . bg_0)
+                          ("sidebar_bg_color" . bg_1)
+                          ("sidebar_fg_color" . fg_0)
+                          ("card_bg_color" . bg_1)
+                          ("card_fg_color" . fg_0)
+                          ("dialog_bg_color" . bg_1)
+                          ("dialog_fg_color" . fg_0)
+                          ("popover_bg_color" . bg_popup)
+                          ("popover_fg_color" . fg_0)
+                          ("destructive_color" . red)
+                          ("success_color" . green)
+                          ("warning_color" . yellow)
+                          ("error_color" . red)))))))
 
 (define (color-scheme-activation theme)
   #~(system* #$(file-append coreutils "/bin/env")
@@ -117,9 +98,7 @@
                             #$(file-append gsettings-desktop-schemas
                                            "/share/glib-2.0/schemas"))
              (string-append #$glib:bin "/bin/gsettings")
-             "set"
-             "org.gnome.desktop.interface"
-             "color-scheme"
+             "set" "org.gnome.desktop.interface" "color-scheme"
              #$(if (theme-dark? theme) "prefer-dark" "default")))
 
 (define (theme-services machine)
@@ -140,6 +119,5 @@
         (simple-service 'color-scheme home-activation-service-type
                         (color-scheme-activation theme))
         (simple-service 'cursor-theme home-environment-variables-service-type
-                        `(("XCURSOR_THEME" unquote %cursor-theme)
-                          ("XCURSOR_SIZE" unquote
-                           (number->string %cursor-size))))))
+                        `(("XCURSOR_THEME" . ,%cursor-theme)
+                          ("XCURSOR_SIZE" . ,(number->string %cursor-size))))))

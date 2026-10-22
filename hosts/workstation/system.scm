@@ -7,7 +7,6 @@
   #:use-module (nongnu packages linux)
   #:use-module (common machines)
   #:use-module (common system base)
-  #:use-module (common system networking)
   #:use-module (hosts workstation hardware)
   #:export (%system))
 
@@ -15,20 +14,18 @@
   (lookup-machine 'workstation))
 
 (define %system
-  (base-operating-system %machine
-                         #:kernel-config (local-file "defconfig")
-                         #:initrd-modules (list "nvme" "usbhid" "hid-generic")
-                         #:kernel-arguments (list
-                                             "it87.ignore_resource_conflict=1"
-                                             "amd_iommu=force_isolation")
-                         #:firmware (list amdgpu-firmware realtek-firmware)
-                         #:guix-daemon-options (list "--max-jobs=4")
-                         #:mapped-devices %mapped-devices
-                         #:file-systems %file-systems
-                         #:services (append (network-services %machine)
-                                            ssh-server-services
-                                            (list (simple-service 'sensors
-                                                   kernel-module-loader-service-type
-                                                   (list "it87"))))))
+  (base-operating-system
+   %machine
+   #:kernel-config (local-file "defconfig")
+   #:initrd-modules (list "nvme" "usbhid" "hid-generic")
+   #:kernel-arguments (list "it87.ignore_resource_conflict=1"
+                            "amd_iommu=force_isolation")
+   #:firmware (list amdgpu-firmware realtek-firmware)
+   #:guix-daemon-options (list "--max-jobs=4")
+   #:mapped-devices %mapped-devices
+   #:file-systems %file-systems
+   #:services (list (simple-service 'sensors
+                                    kernel-module-loader-service-type
+                                    (list "it87")))))
 
 %system

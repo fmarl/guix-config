@@ -14,34 +14,29 @@
   #:export (mako-services))
 
 (define (mako-config theme)
-  (key-value-file "mako-config"
-                  `(("font" unquote
-                     (string-append %sans-font " 11"))
-                    ("border-radius" unquote %corner-radius)
-                    ("border-size" . 1)
-                    ("padding" unquote %large-spacing)
-                    ("margin" unquote %large-spacing)
-                    ("background-color" unquote
-                     (color-hex-alpha theme
-                                      'bg_popup %popup-alpha))
-                    ("border-color" unquote
-                     (hairline-color theme))
-                    ,@(color-entries theme
-                                     '(("text-color" . fg_0)
-                                       ("progress-color" . bg_accent)))
-                    ("[urgency=critical]" . #t)
-                    ("border-size" . 2)
-                    ("border-color" unquote
-                     (color theme
-                            'red)))
-                  #:separator "="))
+  (key-value-file
+   "mako-config"
+   `(("font" . ,(string-append %sans-font " 11"))
+     ("border-radius" . ,%corner-radius)
+     ("border-size" . 1)
+     ("padding" . ,%large-spacing)
+     ("margin" . ,%large-spacing)
+     ("background-color" . ,(color-hex-alpha theme 'bg_popup %popup-alpha))
+     ("border-color" . ,(hairline-color theme))
+     ,@(color-entries theme
+                      '(("text-color" . fg_0)
+                        ("progress-color" . bg_accent)))
+     ("[urgency=critical]" . #t)
+     ("border-size" . 2)
+     ("border-color" . ,(color theme 'red)))
+   #:separator "="))
 
 (define (mako-services machine)
   (list (home-packages mako-locked libnotify)
         (simple-service 'mako-config home-xdg-configuration-files-service-type
-                        `(("mako/config" ,(mako-config (machine-theme machine)))))
-        (wm-extensions machine
-                       'mako-wm
+                        `(("mako/config"
+                           ,(mako-config (machine-theme machine)))))
+        (wm-extensions machine 'mako-wm
                        (wm-autostart (file-append mako-locked "/bin/mako"))
                        (wm-layer-rule "^notifications$"
                                       #:hide-from-screencast? #t))))

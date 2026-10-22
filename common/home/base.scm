@@ -14,6 +14,7 @@
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages text-editors)
   #:use-module (gnu services)
+  #:use-module (guix-apparmor home services)
   #:use-module (sagittarius locked image-viewers)
   #:use-module (sagittarius locked pdf)
   #:use-module (sagittarius locked video)
@@ -21,7 +22,6 @@
   #:use-module (sagittarius packages microvms)
   #:use-module (common home alacritty)
   #:use-module (common home bemenu)
-  #:use-module (common home dbus)
   #:use-module (common home emacs)
   #:use-module (common home git)
   #:use-module (common home gnupg)
@@ -36,58 +36,46 @@
   #:use-module (common home theme)
   #:use-module (common home waybar)
   #:use-module (common home wm)
+  #:use-module (common files)
   #:use-module (common machines)
-  #:export (base-home-environment desktop-services)
-  #:re-export (secrets-services syncthing-services))
+  #:export (base-home-environment))
+
+(define %channels-file "dotfiles/.config/guix/channels.scm")
 
 (define (base-services machine)
   (append (list (home-packages openssh)
                 (simple-service 'guile-config home-files-service-type
-                                `((".guile" ,(local-file
-                                              "../../dotfiles/.guile" "guile"))))
+                                `((".guile"
+                                   ,(config-file "dotfiles/.guile" "guile"))))
                 (simple-service 'guix-channels
                                 home-xdg-configuration-files-service-type
-                                `(("guix/channels.scm" ,(local-file
-                                                         "../../dotfiles/.config/guix/channels.scm"))
-                                  ("guix/trusted-channels.scm" ,(local-file
-                                                                 "../../dotfiles/.config/guix/channels.scm"
-                                                                 "trusted-channels.scm"))))
+                                `(("guix/channels.scm"
+                                   ,(config-file %channels-file))
+                                  ("guix/trusted-channels.scm"
+                                   ,(config-file %channels-file
+                                                 "trusted-channels.scm"))))
                 (service home-xdg-user-directories-service-type
-                         (home-xdg-user-directories-configuration (projects
-                                                                   "$HOME/Src"))))
-          %shell-services %git-services
+                         (home-xdg-user-directories-configuration
+                          (projects "$HOME/Src"))))
+          %shell-services
+          %git-services
           (if (machine-wm machine)
-              (append (gpg-services machine) %emacs-services
+              (append (gpg-services machine)
+                      %emacs-services
                       (list (home-packages font-aporetic)))
               server-editor-services)))
 
 (define server-editor-services
   (list (home-packages mg)
         (simple-service 'mg-editor home-environment-variables-service-type
-                        `(("EDITOR" unquote
-                           (file-append mg "/bin/mg"))))))
+                        `(("EDITOR" . ,(file-append mg "/bin/mg"))))))
 
 (define battery-alert
-  (shell-script "battery-alert"
-   "notified=\"$XDG_RUNTIME_DIR/battery-alert\"
-mkdir -p \"$notified\"
-while [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ]; do
-    for battery in /sys/class/power_supply/BAT*; do
-        marker=\"$notified/${battery##*/}\"
-        capacity=$(cat \"$battery/capacity\")
-        if [ \"$(cat \"$battery/status\")\" = Discharging ] &&
-           [ \"$capacity\" -le 15 ]; then
-            [ -e \"$marker\" ] ||
-                " libnotify
-   "/bin/notify-send -u critical \"Akku fast leer\" \"Noch $capacity %\"
-            touch \"$marker\"
-        else
-            rm -f \"$marker\"
-        fi
-    done
-    sleep 60
-done
-"))
+  (shell-script-file "battery-alert"
+                     (list (local-file "files/battery-alert.sh"))
+                     #:variables
+                     `(("notify_send"
+                        . ,(file-append libnotify "/bin/notify-send")))))
 
 (define (desktop-services machine)
   (append (list (home-packages librewolf
@@ -99,8 +87,7 @@ done
                                zathura-locked
                                zathura-pdf-mupdf
                                mpv-locked)
-                (wm-extensions machine
-                               'desktop-apps
+                (wm-extensions machine 'desktop-apps
                                (wm-window-rule "librewolf$"
                                                #:title "^Picture-in-Picture$"
                                                #:floating? #t)
@@ -115,7 +102,7 @@ done
               '())
           (alacritty-services machine)
           (bemenu-services machine)
-          %dbus-services
+          (list (service home-dbus-apparmor-service-type))
           (emacs-desktop-services machine)
           (theme-services machine)
           (wm-services machine)
@@ -124,21 +111,25 @@ done
           %mail-services
           (swayidle-services machine)
           (if (machine-mobile? machine)
-              (list (wm-extensions machine
-                                   'battery-alert
+              (list (wm-extensions machine 'battery-alert
                                    (wm-autostart battery-alert)))
               '())))
 
 (define* (base-home-environment machine
-                                #:key ssh-clients
+                                #:key
                                 (packages '())
                                 (services '()))
-  "Return the home environment of MACHINE with SERVICES added to the base
-services."
   (home-environment
     (packages packages)
     (services
-     (append services
-             (ssh-services (machine-name machine)
-                           #:ssh-clients ssh-clients)
-             (base-services machine) %base-home-services))))
+     (append (if (machine-wm machine)
+                 (desktop-services machine)
+                 '())
+             (if (machine-secrets? machine)
+                 (secrets-services machine)
+                 '())
+             (syncthing-services machine)
+             services
+             (ssh-services machine)
+             (base-services machine)
+             %base-home-services))))
