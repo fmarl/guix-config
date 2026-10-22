@@ -6,6 +6,7 @@
   #:use-module (guix packages)
   #:use-module (gnu home services)
   #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-xyz)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:export (ini-file
@@ -164,66 +165,40 @@ expects."
                   home-profile-service-type
                   packages))
 
-(define (kdl-value value)
-  (match value
-    ((? string?)
-     (list (quoted value)))
-    ((or #t #f (? number?))
-     (list (value->string value)))
-    (_
-     (list "\"" value "\""))))
-
-(define (number-like? str)
-  (let ((rest (string-trim str (char-set #\+ #\- #\.))))
-    (and (not (string-null? rest))
-         (char-numeric? (string-ref rest 0)))))
-
-(define (kdl-name name)
-  (let ((str (if (symbol? name)
-                 (symbol->string name)
-                 name)))
-    (if (and (not (string-null? str))
-             (not (number-like? str))
-             (string-every (lambda (c)
-                             (or (char-alphabetic? c)
-                                 (char-numeric? c)
-                                 (memv c '(#\- #\_ #\+ #\. #\:))))
-                           str))
-        str
-        (quoted str))))
-
-(define (kdl-arguments items)
-  (match items
-    (()
-     '())
-    (((? keyword? key) value . rest)
-     `(" " ,(kdl-name (keyword->symbol key)) "="
-       ,@(kdl-value value)
-       ,@(kdl-arguments rest)))
-    (((? pair?) . rest)
-     (kdl-arguments rest))
-    ((value . rest)
-     `(" " ,@(kdl-value value)
-       ,@(kdl-arguments rest)))))
-
-(define (kdl-nodes nodes depth)
-  (define indent
-    (make-string (* 4 depth) #\space))
-
-  (append-map (match-lambda
-                ((name . items)
-                 (let ((children (filter pair? items)))
-                   `(,indent ,(kdl-name name)
-                             ,@(kdl-arguments items)
-                             ,@(if (null? children)
-                                   '("\n")
-                                   `(" {\n"
-                                     ,@(kdl-nodes children (+ depth 1))
-                                     ,indent "}\n"))))))
-              nodes))
+(define (kdl-node->gexp node)
+  (match node
+    ((name . items)
+     (let loop ((items items) (arguments '()) (properties '()) (children '()))
+       (match items
+         (()
+          #~(kdl-node #$(if (symbol? name) (symbol->string name) name)
+                      (list #$@(reverse arguments))
+                      (list #$@(reverse properties))
+                      (list #$@(reverse children))))
+         (((? keyword? key) value . rest)
+          (loop rest
+                arguments
+                (cons #~(kdl-prop #$(symbol->string (keyword->symbol key))
+                                  #$value)
+                      properties)
+                children))
+         (((? pair? child) . rest)
+          (loop rest arguments properties
+                (cons (kdl-node->gexp child) children)))
+         ((value . rest)
+          (loop rest (cons value arguments) properties children)))))))
 
 (define (kdl-file name nodes)
-  (apply mixed-text-file name (kdl-nodes nodes 0)))
+  (computed-file name
+                 (with-extensions (list guile-kdl)
+                   #~(begin
+                       (use-modules (kdl))
+                       (call-with-output-file #$output
+                         (lambda (port)
+                           (display (kdl-document->string
+                                     (list #$@(map kdl-node->gexp nodes))
+                                     kdl-v1)
+                                    port)))))))
 
 (define (json-value->gexp value)
   (match value

@@ -104,6 +104,7 @@ Defaults umask_override
     ("fs.protected_regular" . "2")
     ("fs.suid_dumpable" . "0")
     ("vm.mmap_rnd_bits" . "32")
+    ("vm.memfd_noexec" . "2")
     ("-kernel.unprivileged_userns_apparmor_policy" . "0")
     ("net.core.bpf_jit_harden" . "2")
     ("net.ipv4.ping_group_range" . "0 2147483647")

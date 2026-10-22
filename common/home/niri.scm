@@ -10,6 +10,7 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu services)
   #:use-module (gnu system keyboard)
+  #:use-module (sagittarius locked wm)
   #:use-module (common home helpers)
   #:use-module (common home theme)
   #:use-module (common locale)
@@ -287,7 +288,7 @@ org.freedesktop.impl.portal.Notification=gtk;
 
 (define wallpaper
   (shell-script "wallpaper"
-                "exec " (file-append swaybg "/bin/swaybg")
+                "exec " (file-append swaybg-locked "/bin/swaybg")
                 " --mode fill --image \"$HOME/Pictures/wallpaper.jpg\"\n"))
 
 (define (niri-services theme)
