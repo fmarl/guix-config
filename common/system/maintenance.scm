@@ -75,6 +75,8 @@ btrfs file system."
   (let ((config (btrbk-config subvolumes)))
     (list (simple-service 'btrbk-config etc-service-type
                           `(("btrbk/btrbk.conf" ,config)))
+          (simple-service 'btrfs-scrub-state persisted-directories-service-type
+                          '(("/var/lib/btrfs" #o755)))
           (simple-service 'btrfs-maintenance shepherd-root-service-type
                           (list (shepherd-timer
                                  '(btrbk) "0 * * * *"

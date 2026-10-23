@@ -5,9 +5,10 @@
   #:use-module (guix records)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
-  #:export (theme-dark?
-            ef-owl
+  #:export (theme-name
+            theme-dark?
             modus-operandi-tinted
+            modus-vivendi-tinted
             color
             color-entries
             console-palette
@@ -21,41 +22,6 @@
   (name   theme-name)
   (dark?  theme-dark?)
   (colors theme-colors))
-
-(define ef-owl
-  (theme
-    (name 'ef-owl)
-    (dark? #t)
-    (colors '((bg_0 . "292c2f")
-              (bg_1 . "373b3d")
-              (bg_2 . "40474b")
-              (bg_popup . "33363a")
-              (bg_region . "404f66")
-              (bg_accent . "4f509f")
-              (bg_active . "60676b")
-              (border . "4f5f66")
-              (cursor . "afe6ef")
-              (dim_0 . "9a94a4")
-              (fg_0 . "d0d0d0")
-              (fg_1 . "aab9af")
-
-              (red . "d67869")
-              (green . "70bb70")
-              (yellow . "c09f6f")
-              (blue . "80a4e0")
-              (magenta . "e5a0ea")
-              (cyan . "8fb8ea")
-              (orange . "df885f")
-              (violet . "a0a0ef")
-
-              (br_red . "e4959f")
-              (br_green . "60bd90")
-              (br_yellow . "cf9f90")
-              (br_blue . "72aff0")
-              (br_magenta . "cfa0e8")
-              (br_cyan . "7ac0b9")
-              (br_orange . "d1a45f")
-              (br_violet . "d389af")))))
 
 (define modus-operandi-tinted
   (theme
@@ -92,6 +58,41 @@
               (br_orange . "894000")
               (br_violet . "8f0075")))))
 
+(define modus-vivendi-tinted
+  (theme
+    (name 'modus-vivendi-tinted)
+    (dark? #t)
+    (colors '((bg_0 . "0d0e1c")
+              (bg_1 . "1d2235")
+              (bg_2 . "2b3045")
+              (bg_popup . "14162c")
+              (bg_region . "555a66")
+              (bg_accent . "1640b0")
+              (bg_active . "4a4f69")
+              (border . "61647a")
+              (cursor . "ff66ff")
+              (dim_0 . "989898")
+              (fg_0 . "ffffff")
+              (fg_1 . "c6daff")
+
+              (red . "ff5f59")
+              (green . "44bc44")
+              (yellow . "d0bc00")
+              (blue . "2fafff")
+              (magenta . "feacd0")
+              (cyan . "00d3d0")
+              (orange . "ff6b55")
+              (violet . "79a8ff")
+
+              (br_red . "ff7f86")
+              (br_green . "11c777")
+              (br_yellow . "dfaf7a")
+              (br_blue . "00bcff")
+              (br_magenta . "b6a0ff")
+              (br_cyan . "6ae4b9")
+              (br_orange . "fec43f")
+              (br_violet . "f78fe7")))))
+
 (define (color theme name)
   "Return the color NAME of THEME as #rrggbb."
   (string-append "#"
@@ -117,7 +118,7 @@
     (blue . blue)
     (magenta . magenta)
     (cyan . cyan)
-    (gray . fg_0)
+    (gray . fg_1)
     (darkgray . dim_0)
     (lightred . br_red)
     (lightgreen . br_green)
@@ -125,18 +126,13 @@
     (lightblue . br_blue)
     (lightmagenta . br_magenta)
     (lightcyan . br_cyan)
-    (white . fg_1)))
+    (white . fg_0)))
 
 (define (console-palette theme)
-  "Return the 16 console colors of THEME as (RED GREEN BLUE) lists, black as
-the background and gray as the foreground."
+  "Return the 16 console colors of THEME as (RED GREEN BLUE) lists."
   (map (match-lambda
-         ((console . name)
-          (color-channels theme
-                          (if (and (eq? console 'white)
-                                   (theme-dark? theme))
-                              'fg_0
-                              name))))
+         ((_ . name)
+          (color-channels theme name)))
        %console-colors))
 
 (define (console-color name)

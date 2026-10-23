@@ -10,7 +10,6 @@
   #:use-module (gnu packages xorg)
   #:use-module (gnu services)
   #:use-module (gnu system keyboard)
-  #:use-module (sagittarius locked wm)
   #:use-module (common home helpers)
   #:use-module (common home theme)
   #:use-module (common locale)
@@ -286,11 +285,6 @@ org.freedesktop.impl.portal.Notification=gtk;
                                  entries)))))
     (description "Generate the niri configuration")))
 
-(define wallpaper
-  (shell-script "wallpaper"
-                "exec " (file-append swaybg-locked "/bin/swaybg")
-                " --mode fill --image \"$HOME/Pictures/wallpaper.jpg\"\n"))
-
 (define (niri-services theme)
   (list (home-packages xwayland-satellite xdg-desktop-portal-gnome)
         (simple-service 'niri-portals
@@ -301,9 +295,6 @@ org.freedesktop.impl.portal.Notification=gtk;
                  (home-niri-configuration
                    (theme theme)
                    (entries
-                    (cons* (niri-spawn-at-startup wallpaper)
-                           (niri-layer-rule "^wallpaper$"
-                                            '(place-within-backdrop #t))
-                           (map (lambda (node)
-                                  (cons 'bind node))
-                                %binds)))))))
+                    (map (lambda (node)
+                           (cons 'bind node))
+                         %binds))))))

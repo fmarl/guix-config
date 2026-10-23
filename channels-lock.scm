@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "728b1b8bf6744d538382f69325008829488f2b30")
+       (commit "a639dc9f4767b55d5a9240a76c82957533273657")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -42,7 +42,7 @@
        (name 'guix-apparmor)
        (url "https://github.com/fmarl/guix-apparmor")
        (branch "main")
-       (commit "c4b5c11facde75a0843317815eb883b05efda439")
+       (commit "5b4ad9ce847691870cb7f316e5e870d29acf559f")
        (introduction
         (make-channel-introduction
          "2f525872b29f52123ef7c593be185c872343a38e"
