@@ -2,6 +2,7 @@
 ;;; Copyright © 2025, 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (hosts workstation home)
+  #:use-module (gnu packages package-management)
   #:use-module (common home base)
   #:use-module (common machines)
   #:export (%home))
@@ -10,6 +11,7 @@
   (lookup-machine 'workstation))
 
 (define %home
-  (base-home-environment %machine))
+  (base-home-environment %machine
+                         #:packages (list flatpak)))
 
 %home
