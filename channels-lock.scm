@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "a639dc9f4767b55d5a9240a76c82957533273657")
+       (commit "704ad8ced8ac2a6f94ddaf6edbfa1ae7d154dd44")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "47c20df59dd9f27c9154ef20a81d383a19d4ad7f")
+       (commit "c241d19ff840dc75556f722b231760d119b6adea")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "ff85d80864dd7053c8ba8226f94859892b1e998f")
+       (commit "434a4114ffa319894b8e630088652b831ac784a5")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -32,7 +32,7 @@
        (name 'guix-cage)
        (url "https://github.com/fmarl/guix-cage")
        (branch "main")
-       (commit "d8a1f70d94d87cfb344e0f3f90a1defbab57311b")
+       (commit "c2e67b60cdc2d91f3d4cdca047cc027d6cb56d96")
        (introduction
         (make-channel-introduction
          "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc"
@@ -42,7 +42,7 @@
        (name 'guix-apparmor)
        (url "https://github.com/fmarl/guix-apparmor")
        (branch "main")
-       (commit "5b4ad9ce847691870cb7f316e5e870d29acf559f")
+       (commit "2f9e3cbe808f372982168581b761fe4e15bef50e")
        (introduction
         (make-channel-introduction
          "2f525872b29f52123ef7c593be185c872343a38e"
@@ -62,7 +62,7 @@
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "5b83734f1083c2b3ee5a59a1729110e44ad2c3f2")
+       (commit "334d5ee652f6ca5aad1678c5e573b4edbc7b2cf6")
        (introduction
         (make-channel-introduction
          "4d022a4f59b7a0ddc851d6f4795ae03ce6bbb504"

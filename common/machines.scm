@@ -35,7 +35,7 @@
   (gateway       machine-gateway
                  (default #f))
   (wm            machine-wm
-                 (default 'niri))
+                 (default #f))
   (theme         machine-theme
                  (default modus-operandi-tinted))
   (mobile?       machine-mobile?
@@ -54,17 +54,20 @@
 (define %machines
   (list (machine
           (name 'workstation)
+          (wm 'nucleotide)
           (address "192.168.0.200")
           (interface "enp5s0")
           (gateway "192.168.0.1")
           (audio? #f)
           (secrets? #t)
+          (theme modus-vivendi-tinted)
           (ssh-clients '(thinkpad))
           (syncthing-id
            "6E6JF2J-WMHAHHL-HPW7MXR-XCAKSWE-QH4XBGK-HVBIWRV-AFWMRQI-2E2L7QG")
           (syncthing-hub 'fermion))
         (machine
           (name 'thinkpad)
+          (wm 'nucleotide)
           (mobile? #t)
           (secrets? #t)
           (theme modus-vivendi-tinted)
