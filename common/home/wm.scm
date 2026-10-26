@@ -2,7 +2,9 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home wm)
+  #:use-module (guix gexp)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages music)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu services)
   #:use-module (common home helpers)
@@ -121,6 +123,9 @@
           (wm-bind key command #:locked? #t)))
        bindings))
 
+(define playerctl-bin
+  (file-append playerctl "/bin/playerctl"))
+
 (define audio-binds
   (locked-binds
    `(("XF86AudioRaiseVolume"
@@ -130,7 +135,10 @@
      ("XF86AudioMute"
       ,volume-osd "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle")
      ("XF86AudioMicMute"
-      ,volume-osd "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"))))
+      ,volume-osd "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle")
+     ("XF86AudioPlay" ,playerctl-bin "play-pause")
+     ("XF86AudioNext" ,playerctl-bin "next")
+     ("XF86AudioPrev" ,playerctl-bin "previous"))))
 
 (define brightness-binds
   (locked-binds

@@ -234,16 +234,11 @@
   "<big>{:%Y %B}</big>
 <tt><small>{calendar}</small></tt>")
 
+;; nucleotide speaks the part of niri's IPC that these modules use.
 (define %window-modules
-  '((niri
-     ("modules-left" . #("niri/workspaces" "niri/window"))
-     ("niri/window"
-      ("max-length" . 60)))
-    (nucleotide
-     ("modules-left" . #("wlr/taskbar"))
-     ("wlr/taskbar"
-      ("format" . "{title:.40}")
-      ("tooltip-format" . "{title}")))))
+  '(("modules-left" . #("niri/workspaces" "niri/window"))
+    ("niri/window"
+     ("max-length" . 60))))
 
 (define (right-modules modules)
   (define-values (pinned drawer)
@@ -271,7 +266,7 @@
     (machine-status-modules machine))
 
   `(("height" . ,%bar-height)
-    ,@(assq-ref %window-modules (machine-wm machine))
+    ,@%window-modules
     ("modules-center" . #("clock#time" "custom/dot" "clock#date"))
     ,@(right-modules modules)
 
@@ -347,26 +342,23 @@
       ("padding" . ,(px inset))
       ("border-radius" . ,(px (+ %small-corner-radius inset)))
       ("background" . ,(translucent 'fg_0 0.07)))
-     (("#workspaces button" "#taskbar button")
+     (("#workspaces button")
       ("margin" . "0 1px")
       ("padding" . ,(px 0 %spacing))
       ("border-radius" . ,(px %small-corner-radius))
       ("color" . ,(translucent 'fg_0 0.55))
       ("background" . "transparent")
       ("transition" . "background 200ms, color 200ms"))
-     (("#workspaces button:hover" "#taskbar button:hover")
+     (("#workspaces button:hover")
       ("color" . ,(color theme 'fg_0)))
      (("#workspaces button.active"
-       "#workspaces button.focused"
-       "#taskbar button.active")
+       "#workspaces button.focused")
       ("color" . ,(color theme 'fg_0))
       ("background" . ,(color theme 'bg_accent))
       ("box-shadow" . ,(string-append "0 1px 2px "
                                       (translucent 'fg_0 0.18))))
      (("#workspaces button.urgent")
       ("color" . ,(color theme 'red)))
-     (("#taskbar")
-      ("margin" . ,pill-margin))
      (("#window")
       ("padding" . ,(px 0 %large-spacing))
       ("font-weight" . "700"))

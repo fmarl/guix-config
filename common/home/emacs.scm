@@ -82,7 +82,6 @@
         emacs-cape
         emacs-corfu
         emacs-diff-hl
-        emacs-meow
         emacs-org-modern
         emacs-denote
 

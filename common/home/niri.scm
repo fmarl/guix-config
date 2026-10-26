@@ -164,6 +164,10 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Mod+End (focus-column-last))
     (Mod+Ctrl+Home (move-column-to-first))
     (Mod+Ctrl+End (move-column-to-last))
+    (Mod+Shift+Comma (focus-column-first))
+    (Mod+Shift+Period (focus-column-last))
+    (Mod+Ctrl+Shift+Comma (move-column-to-first))
+    (Mod+Ctrl+Shift+Period (move-column-to-last))
 
     (Mod+Page_Down (focus-workspace-down))
     (Mod+U (focus-workspace-down))
@@ -218,6 +222,9 @@ org.freedesktop.impl.portal.Notification=gtk;
     (Print (screenshot))
     (Ctrl+Print (screenshot-screen))
     (Alt+Print (screenshot-window))
+    (Mod+S (screenshot))
+    (Mod+Ctrl+S (screenshot-screen))
+    (Mod+Alt+S (screenshot-window))
 
     (Mod+Escape #:allow-inhibiting #f (toggle-keyboard-shortcuts-inhibit))
 
@@ -227,9 +234,14 @@ org.freedesktop.impl.portal.Notification=gtk;
 
     ,@(append-map (lambda (index)
                     (let ((n (number->string index)))
+                      ;; The emacs58 keymap sends shifted digits.
                       `((,(string-append "Mod+" n)
                          (focus-workspace ,index))
+                        (,(string-append "Mod+Shift+" n)
+                         (focus-workspace ,index))
                         (,(string-append "Mod+Ctrl+" n)
+                         (move-column-to-workspace ,index))
+                        (,(string-append "Mod+Ctrl+Shift+" n)
                          (move-column-to-workspace ,index)))))
                   (iota 9 1))))
 
