@@ -2,7 +2,9 @@
 ;;; Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
 (define-module (common home wm)
+  #:use-module (guix diagnostics)
   #:use-module (guix gexp)
+  #:use-module (guix i18n)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages music)
   #:use-module (gnu packages xdisorg)
@@ -95,6 +97,41 @@
    (else
     (error "unknown wm entry:" entry))))
 
+(define (regex->nucleotide-pattern regex)
+  "A nucleotide pattern for the niri REGEX: a string to compare with or a Lisp
+predicate. Only literals translate, with ^, $ and a leading (?i)."
+  (let* ((fold? (string-prefix? "(?i)" regex))
+         (unfolded (if fold? (substring regex 4) regex))
+         (start? (string-prefix? "^" unfolded))
+         (end? (string-suffix? "$" unfolded))
+         (text (substring unfolded
+                          (if start? 1 0)
+                          (- (string-length unfolded) (if end? 1 0))))
+         (compare (if fold? 'string-equal 'string=))
+         (size (string-length text)))
+    (when (string-any (char-set #\\ #\^ #\$ #\. #\* #\+ #\? #\| #\( #\) #\[ #\] #\{ #\})
+                      text)
+      (error "nucleotide cannot match this regular expression:" regex))
+    (cond ((and start? end? (not fold?)) text)
+          ((and start? end?) `(lambda (s) (,compare ,text s)))
+          (start? `(lambda (s)
+                     (and (>= (length s) ,size)
+                          (,compare ,text s #:end2 ,size))))
+          (end? `(lambda (s)
+                   (and (>= (length s) ,size)
+                        (,compare ,text s #:start2 (- (length s) ,size)))))
+          (fold? `(lambda (s) (search ,text s #:test (function char-equal))))
+          (else `(contains ,text)))))
+
+(define (window-rule->nucleotide entry)
+  (and (window-rule-floating? entry)
+       (nucleotide-rule `(#:app-id ,(regex->nucleotide-pattern (window-rule-app-id entry))
+                          ,@(if (window-rule-title entry)
+                                `(#:title ,(regex->nucleotide-pattern
+                                            (window-rule-title entry)))
+                                '()))
+                        #:float #t)))
+
 (define (entry->nucleotide entry)
   (cond
    ((autostart? entry)
@@ -102,11 +139,23 @@
    ((binding? entry)
     (nucleotide-bind (binding-key entry)
                      (apply nucleotide-spawn (binding-command entry))))
-   ((or (layer-rule? entry)
-        (window-rule? entry))
+   ((window-rule? entry)
+    (window-rule->nucleotide entry))
+   ((layer-rule? entry)
     #f)
    (else
     (error "unknown wm entry:" entry))))
+
+(define (nucleotide-unsupported entry)
+  "What nucleotide ignores of ENTRY, or #f."
+  (cond
+   ((and (binding? entry) (binding-locked? entry))
+    (format #f "~a while locked" (binding-key entry)))
+   ((and (window-rule? entry) (window-rule-hide-from-screencast? entry))
+    (format #f "hiding ~a from screencasts" (window-rule-app-id entry)))
+   ((and (layer-rule? entry) (layer-rule-hide-from-screencast? entry))
+    (format #f "hiding ~a from screencasts" (layer-rule-namespace entry)))
+   (else #f)))
 
 (define (wm-extensions machine name . entries)
   (match (machine-wm machine)
@@ -114,6 +163,10 @@
      (simple-service name home-niri-service-type
                      (map entry->niri entries)))
     ('nucleotide
+     (let ((ignored (filter-map nucleotide-unsupported entries)))
+       (unless (null? ignored)
+         (warning (G_ "nucleotide ignores in ~a: ~a~%")
+                  name (string-join ignored ", "))))
      (simple-service name home-nucleotide-service-type
                      (filter-map entry->nucleotide entries)))))
 
