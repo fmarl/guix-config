@@ -54,9 +54,7 @@
                                   ("guix/trusted-channels.scm"
                                    ,(config-file %channels-file
                                                  "trusted-channels.scm"))))
-                (service home-xdg-user-directories-service-type
-                         (home-xdg-user-directories-configuration
-                          (projects "$HOME/Src"))))
+                (service home-xdg-user-directories-service-type))
           %shell-services
           %git-services
           (if (machine-wm machine)
