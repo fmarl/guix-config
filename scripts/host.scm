@@ -80,16 +80,16 @@
     (mount device top "btrfs" 0 "subvolid=5")
     (chmod top #o700)
     (dynamic-wind
-        (const #t)
-        (lambda ()
-          (for-each (match-lambda
-                      ((name . _)
-                       (invoke "btrfs" "subvolume" "create"
-                               (string-append top "/" name))))
-                    (btrfs-subvolumes file-systems)))
-        (lambda ()
-          (umount top)
-          (rmdir top)))))
+      (const #t)
+      (lambda ()
+        (for-each (match-lambda
+                    ((name . _)
+                     (invoke "btrfs" "subvolume" "create"
+                             (string-append top "/" name))))
+                  (btrfs-subvolumes file-systems)))
+      (lambda ()
+        (umount top)
+        (rmdir top)))))
 
 (define (installer-binds target)
   "Bind /var/guix to the persistent subvolume and /tmp, where cow-store keeps

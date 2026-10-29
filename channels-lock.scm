@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "a5c3a694192aaf5354989d00a9cb3a8a59bac539")
+       (commit "d94bb1af90f7faf8bc7eba70552e89aae7659246")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "6783185de2b343108fe7076c62a42328e1b75ce7")
+       (commit "c9f396617ca5c98b9b47628a2f8f013638798c65")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -52,7 +52,7 @@
        (name 'guix-impermanence)
        (url "https://github.com/fmarl/guix-impermanence")
        (branch "main")
-       (commit "b484bc735cbdb5321d58d10d01c09d2bfe7aae72")
+       (commit "e584d0b4c722b9b6549350cab19ff0719a1af6bb")
        (introduction
         (make-channel-introduction
          "b4f6a01fe77ab0f484119b673ad105d9768a9780"

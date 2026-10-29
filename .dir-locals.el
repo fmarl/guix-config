@@ -20,6 +20,8 @@
                              (cons root geiser-guile-load-path))))))
 
    (eval . (put 'call-with-port 'scheme-indent-function 1))
+   (eval . (put 'catch 'scheme-indent-function 1))
+   (eval . (put 'dynamic-wind 'scheme-indent-function 0))
    (eval . (put 'guard 'scheme-indent-function 1))
    (eval . (put 'lambda* 'scheme-indent-function 1))
    (eval . (put 'match-record 'scheme-indent-function 3))

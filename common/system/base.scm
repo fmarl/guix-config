@@ -19,7 +19,7 @@
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module ((guix-impermanence services)
-                #:select (impermanence-services))
+                #:select (impermanent-operating-system))
   #:use-module (common locale)
   #:use-module (common machines)
   #:use-module (common system desktop)
@@ -126,77 +126,75 @@
   (define desktop?
     (and (machine-wm machine) #t))
 
-  (unless (impermanent-file-systems? file-systems)
-    (error "no tmpfs root in the file systems of" (machine-name machine)))
-
-  (operating-system
-    (host-name (symbol->string (machine-name machine)))
-    (kernel kernel)
-    (kernel-arguments
-     (append %hardened-kernel-arguments
-             kernel-arguments
-             (console-palette-arguments (machine-theme machine))
-             %default-kernel-arguments))
-    (initrd microcode-initrd)
-    (initrd-modules (or initrd-modules
-                        (base-initrd-modules kernel)))
-    (firmware firmware)
-    (locale "en_US.utf8")
-    (locale-definitions
-     (cons (locale-definition
-             (name (string-append %regional-locale ".utf8"))
-             (source %regional-locale)
-             (charset "UTF-8"))
-           %default-locale-definitions))
-    (timezone "Europe/Berlin")
-    (keyboard-layout %keyboard-layout)
-    (bootloader (bootloader-configuration
-                  (bootloader grub-efi-bootloader)
-                  (targets (list "/boot/efi"))
-                  (keyboard-layout %keyboard-layout)))
-    (users (cons* (user-account
-                    (inherit %root-account)
-                    (password "!"))
-                  (primary-user-account #:desktop? desktop?)
-                  %base-user-accounts))
-    (sudoers-file %sudoers)
-    (privileged-programs %privileged-programs)
-    (mapped-devices mapped-devices)
-    (file-systems (append file-systems %hardened-base-file-systems))
-    (packages %system-packages)
-    (services
-     (append (if desktop?
-                 (desktop-session machine)
-                 '())
-             (network-services machine)
-             (if (null? (machine-ssh-clients machine))
-                 '()
-                 ssh-server-services)
-             (if desktop?
-                 '()
-                 %console-services)
-             (if (machine-mobile? machine)
-                 %laptop-services
-                 '())
-             (if (machine-syncthing-hub machine)
-                 %syncthing-client-services
-                 '())
-             services
-             (if desktop?
-                 %desktop-base-services
-                 '())
-             %hardening-services
-             (if (null? mapped-devices)
-                 '()
-                 (list (udev-rules-service 'lvm2 lvm2)))
-             (btrfs-maintenance-services
-              (snapshot-subvolumes file-systems snapshot-directories))
-             (impermanence-services (list (user-name %user)))
-             (modify-services base-services
-               (guix-service-type
-                config => (guix-configuration
-                           (inherit config)
-                           (extra-options guix-daemon-options))))))))
+  (impermanent-operating-system
+   (operating-system
+     (host-name (symbol->string (machine-name machine)))
+     (kernel kernel)
+     (kernel-arguments
+      (append %hardened-kernel-arguments
+              kernel-arguments
+              (console-palette-arguments (machine-theme machine))
+              %default-kernel-arguments))
+     (initrd microcode-initrd)
+     (initrd-modules (or initrd-modules
+                         (base-initrd-modules kernel)))
+     (firmware firmware)
+     (locale "en_US.utf8")
+     (locale-definitions
+      (cons (locale-definition
+              (name (string-append %regional-locale ".utf8"))
+              (source %regional-locale)
+              (charset "UTF-8"))
+            %default-locale-definitions))
+     (timezone "Europe/Berlin")
+     (keyboard-layout %keyboard-layout)
+     (bootloader (bootloader-configuration
+                   (bootloader grub-efi-bootloader)
+                   (targets (list "/boot/efi"))
+                   (keyboard-layout %keyboard-layout)))
+     (users (cons* (user-account
+                     (inherit %root-account)
+                     (password "!"))
+                   (primary-user-account #:desktop? desktop?)
+                   %base-user-accounts))
+     (sudoers-file %sudoers)
+     (privileged-programs %privileged-programs)
+     (mapped-devices mapped-devices)
+     (file-systems (append file-systems %hardened-base-file-systems))
+     (packages %system-packages)
+     (services
+      (append (if desktop?
+                  (desktop-session machine)
+                  '())
+              (network-services machine)
+              (if (null? (machine-ssh-clients machine))
+                  '()
+                  ssh-server-services)
+              (if desktop?
+                  '()
+                  %console-services)
+              (if (machine-mobile? machine)
+                  %laptop-services
+                  '())
+              (if (machine-syncthing-hub machine)
+                  %syncthing-client-services
+                  '())
+              services
+              (if desktop?
+                  %desktop-base-services
+                  '())
+              %hardening-services
+              (if (null? mapped-devices)
+                  '()
+                  (list (udev-rules-service 'lvm2 lvm2)))
+              (btrfs-maintenance-services
+               (snapshot-subvolumes file-systems snapshot-directories))
+              (modify-services base-services
+                (guix-service-type
+                 config => (guix-configuration
+                            (inherit config)
+                            (extra-options guix-daemon-options)))))))
+   (list (user-name %user))))
 
 (define (stock-kernel? os)
   (eq? (operating-system-kernel os) linux))
