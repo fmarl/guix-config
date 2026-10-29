@@ -37,7 +37,8 @@
                   (pinentry-program
                    (bemenu-pinentry (machine-theme machine)))
                   (default-cache-ttl 1800)
-                  (max-cache-ttl 1800)))
+                  (max-cache-ttl 1800)
+                  (extra-content "ignore-cache-for-signing\n")))
         (simple-service 'gpg-config home-files-service-type
                         `((".gnupg/gpg.conf" ,gpg-conf)
                           (".gnupg/scdaemon.conf" ,scdaemon-conf)))))
