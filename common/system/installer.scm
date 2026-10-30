@@ -10,6 +10,7 @@
   #:use-module (guix)
   #:use-module (guix ui)
   #:use-module (gnu packages base)
+  #:use-module (gnu packages bootloaders)
   #:use-module (gnu packages cryptsetup)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages disk)
@@ -106,7 +107,9 @@
                             cryptsetup
                             parted
                             btrfs-progs
-                            dosfstools)
+                            dosfstools
+                            grub-efi
+                            efibootmgr)
                       (operating-system-packages installation-os)))))
 
 installation-os-nonfree

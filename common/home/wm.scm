@@ -212,4 +212,4 @@ predicate. Only literals translate, with ^, $ and a leading (?i)."
                                    '()))))
           (match (machine-wm machine)
             ('niri (niri-services theme))
-            ('nucleotide (nucleotide-services theme)))))
+            ('nucleotide (nucleotide-services machine)))))

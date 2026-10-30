@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix")
        (branch "master")
-       (commit "d94bb1af90f7faf8bc7eba70552e89aae7659246")
+       (commit "28f81558522962614fdb46f8e6baa3d7f0c36340")
        (introduction
         (make-channel-introduction
          "1fc71fd013a752600de04e3f5a5757fc1eafc5e7"
@@ -22,7 +22,7 @@
        (name 'sagittarius)
        (url "https://codeberg.org/fmarl/sagittarius")
        (branch "main")
-       (commit "c9f396617ca5c98b9b47628a2f8f013638798c65")
+       (commit "9fb884b5ac918177d08b5d2082de41cbd2c328a8")
        (introduction
         (make-channel-introduction
          "c2302ace8d0b0d16a01668399889c9d796af5777"
@@ -32,7 +32,7 @@
        (name 'guix-cage)
        (url "https://github.com/fmarl/guix-cage")
        (branch "main")
-       (commit "1eedf13ac44eb3de549adee300bb2201cc9f3940")
+       (commit "55ed88e7a7a6f0cbc3de42d4f1b6fb18ac9b91f9")
        (introduction
         (make-channel-introduction
          "56a634b5aae8a3c4e12a292ba87ac336a27ddcbc"
@@ -42,7 +42,7 @@
        (name 'guix-apparmor)
        (url "https://github.com/fmarl/guix-apparmor")
        (branch "main")
-       (commit "2f9e3cbe808f372982168581b761fe4e15bef50e")
+       (commit "bc76395588a6e04cbbd21f395e2e1c32f46806a6")
        (introduction
         (make-channel-introduction
          "2f525872b29f52123ef7c593be185c872343a38e"
@@ -52,7 +52,7 @@
        (name 'guix-impermanence)
        (url "https://github.com/fmarl/guix-impermanence")
        (branch "main")
-       (commit "e584d0b4c722b9b6549350cab19ff0719a1af6bb")
+       (commit "102f0ef295f5e5582d4eb1e62ae6924535c19797")
        (introduction
         (make-channel-introduction
          "b4f6a01fe77ab0f484119b673ad105d9768a9780"
@@ -62,7 +62,7 @@
        (name 'guix-microvm)
        (url "https://github.com/fmarl/guix-microvm")
        (branch "main")
-       (commit "334d5ee652f6ca5aad1678c5e573b4edbc7b2cf6")
+       (commit "d10a0c45d6b551fbdaa88f97601de0d13446daeb")
        (introduction
         (make-channel-introduction
          "4d022a4f59b7a0ddc851d6f4795ae03ce6bbb504"

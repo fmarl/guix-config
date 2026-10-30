@@ -16,6 +16,7 @@
             machine-theme
             machine-mobile?
             machine-audio?
+            machine-outputs
             machine-secrets?
             machine-ssh-clients
             machine-syncthing-id
@@ -42,6 +43,8 @@
                  (default #f))
   (audio?        machine-audio?
                  (default #t))
+  (outputs      machine-outputs
+                 (default '()))
   (secrets?      machine-secrets?
                  (default #f))
   (ssh-clients   machine-ssh-clients
@@ -59,6 +62,8 @@
           (interface "enp5s0")
           (gateway "192.168.0.1")
           (audio? #f)
+          (outputs '(("HDMI-A-1" 0 0)
+                     ("HDMI-A-2" 1920 0)))
           (secrets? #t)
           (theme modus-vivendi-tinted)
           (ssh-clients '(thinkpad))
