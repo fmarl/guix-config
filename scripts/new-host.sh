@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright © 2026 Florian Marrero Liestmann <f.m.liestmann@fx-ttr.de>
 
-# Create hosts/HOSTNAME with a new SSH key and add it to common/machines.scm.
+# Create hosts/HOSTNAME and add it to common/machines.scm.
 
 set -Eeuo pipefail
 
@@ -58,31 +58,16 @@ function main {
     grep -qF "(name '${HOST})" "${machines}" && die "${HOST} is already in common/machines.scm"
     grep -qxF "${default}" "${machines}" || die "Found no default machine in common/machines.scm"
 
-    local sops=(sops)
-    command -v sops >/dev/null || sops=(guix shell sops -- sops)
-
     TMP="$(mktemp -d)"
     trap 'rm -rf "${TMP}"' EXIT
-
-    info "Generating the SSH key of ${HOST} ..."
-    ssh-keygen -q -t ed25519 -N "" -C "${USER}@${HOST}" -f "${TMP}/id_ed25519"
-    {
-        echo "ssh: |"
-        sed 's/^/    /' "${TMP}/id_ed25519"
-    } >"${TMP}/secrets.yaml"
-    (cd "${REPO}" &&
-         "${sops[@]}" encrypt --filename-override "hosts/${HOST}/secrets.yaml" \
-         "${TMP}/secrets.yaml" >"${TMP}/secrets.enc.yaml")
 
     info "Writing hosts/${HOST} ..."
     (cd "${REPO}" &&
          GUILE_LOAD_PATH="${REPO}" guix repl -- scripts/host.scm generate "${HOST}" "${TMP}" "${OPTIONS[@]}")
     mkdir -p "${dir}"
-    cp "${TMP}/id_ed25519.pub" "${dir}/ssh.pub"
-    cp "${TMP}/secrets.enc.yaml" "${dir}/secrets.yaml"
     cp "${TMP}"/{system,home,hardware}.scm "${dir}/"
 
-    sed -i -z "s/        (machine\n${default}/        (machine\n          (name '${HOST})\n          (secrets? #t))\n&/" "${machines}"
+    sed -i -z "s/        (machine\n${default}/        (machine\n          (name '${HOST}))\n&/" "${machines}"
 
     info "Done. Adjust the machine in common/machines.scm."
 }

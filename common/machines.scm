@@ -75,7 +75,7 @@
           (wm 'nucleotide)
           (mobile? #t)
           (secrets? #t)
-          (theme modus-vivendi-tinted)
+          (theme modus-operandi-tinted)
           (syncthing-id
            "JBWKNB3-QHCRMWW-LABCNB5-R4VTXQI-3UVDZT3-7PXRCTB-YJL3CCA-HEDR7AG")
           (syncthing-hub 'fermion))

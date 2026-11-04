@@ -9,13 +9,13 @@
   #:use-module (gnu home services xdg)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages gnome)
-  #:use-module (gnu packages librewolf)
   #:use-module (gnu packages pdf)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages text-editors)
   #:use-module (gnu services)
   #:use-module (guix-apparmor home services)
   #:use-module (sagittarius locked image-viewers)
+  #:use-module (sagittarius locked librewolf)
   #:use-module (sagittarius locked pdf)
   #:use-module (sagittarius locked video)
   #:use-module (sagittarius packages messaging)
@@ -76,7 +76,7 @@
                         . ,(file-append libnotify "/bin/notify-send")))))
 
 (define (desktop-services machine)
-  (append (list (home-packages librewolf
+  (append (list (home-packages librewolf-locked
                                librewolf-vm
                                signal-desktop
                                gnome-keyring

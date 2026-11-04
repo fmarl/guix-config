@@ -3,30 +3,28 @@
 
 (define-module (common home ssh)
   #:use-module (guix gexp)
+  #:use-module (gnu home services)
   #:use-module (gnu home services ssh)
   #:use-module (gnu services)
   #:use-module (common files)
+  #:use-module (common home bemenu)
   #:use-module (common machines)
   #:use-module (common users)
-  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-26)
-  #:export (%ssh-public-key-file
-            %ssh-host-names
-            host-file
+  #:export (host-file
             ssh-services))
 
 (define (host-file host name)
   (config-file (string-append "hosts/" (symbol->string host) "/" name)))
 
-(define %ssh-public-key-file ".ssh/id_ed25519.pub")
+(define %identity-files
+  '("id_ed25519_sk_18067519" "id_ed25519_sk_backup"))
+
+(define (identity-file name)
+  (config-file (string-append "dotfiles/.ssh/" name)))
 
 (define %git-hosts
   '("codeberg.org" "github.com"))
-
-(define %ssh-host-names
-  (append %git-hosts
-          (map (compose symbol->string machine-name) %addressed-machines)))
 
 (define* (ssh-host name host-name user #:key (server-alive-count-max 2))
   (openssh-host
@@ -58,23 +56,40 @@
 (define default-host
   (openssh-host
    (name "*")
-   (extra-content (string-append "  IdentitiesOnly yes\n"
-                                 "  HashKnownHosts yes\n"
-                                 "  ServerAliveInterval 30\n"))))
+   (extra-content (string-append
+                   (string-concatenate
+                    (map (lambda (identity)
+                           (string-append "  IdentityFile ~/.ssh/" identity
+                                          "\n"))
+                         %identity-files))
+                   "  IdentitiesOnly yes\n"
+                   "  HashKnownHosts yes\n"
+                   "  ServerAliveInterval 30\n"))))
 
 (define (ssh-services machine)
   "Other services can add configuration as files in ~/.ssh/config.d/."
-  (list (service home-openssh-service-type
-                 (home-openssh-configuration
-                  (hosts (cons drop-in-host
-                               (append (map git-host %git-hosts)
-                                       (lan-hosts (machine-name machine))
-                                       (list default-host))))
-                  (authorized-keys
-                   (match (machine-ssh-clients machine)
-                     (() #f)
-                     (clients
-                      (map (cut host-file <> "ssh.pub") clients))))))
-        (service home-ssh-agent-service-type
-                 (home-ssh-agent-configuration
-                  (extra-options '("-t" "1h30m"))))))
+  (append
+   (list (service home-openssh-service-type
+                  (home-openssh-configuration
+                   (hosts (cons drop-in-host
+                                (append (map git-host %git-hosts)
+                                        (lan-hosts (machine-name machine))
+                                        (list default-host))))
+                   (authorized-keys
+                    (and (pair? (machine-ssh-clients machine))
+                         (map (lambda (identity)
+                                (identity-file
+                                 (string-append identity ".pub")))
+                              %identity-files)))))
+         (simple-service 'identity-files home-files-service-type
+                         (map (lambda (identity)
+                                (list (string-append ".ssh/" identity)
+                                      (identity-file identity)))
+                              %identity-files)))
+   ;; Without a terminal, ssh asks for the FIDO2 PIN through SSH_ASKPASS.
+   (if (machine-wm machine)
+       (list (simple-service 'ssh-askpass
+                             home-environment-variables-service-type
+                             `(("SSH_ASKPASS"
+                                . ,(bemenu-askpass (machine-theme machine))))))
+       '())))

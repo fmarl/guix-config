@@ -191,6 +191,7 @@ with the ports and output rules they need."
                    (x11-forwarding? #f)
                    (extra-content (string-append
                                    "AllowUsers " (user-name %user) "\n"
+                                   "PubkeyAuthOptions verify-required\n"
                                    "StreamLocalBindUnlink yes\n"))))
         (simple-service 'ssh-firewall firewall-service-type
                         (firewall-configuration

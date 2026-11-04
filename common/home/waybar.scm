@@ -9,7 +9,6 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages window-management)
-  #:use-module (sagittarius packages wm)
   #:use-module (common home helpers)
   #:use-module (common home theme)
   #:use-module (common home wm)
@@ -235,18 +234,11 @@
   "<big>{:%Y %B}</big>
 <tt><small>{calendar}</small></tt>")
 
-(define which-key
-  (file-append nucleotide "/share/nucleotide/waybar/which-key"))
-
 ;; nucleotide speaks the part of niri's IPC that these modules use.
 (define %window-modules
-  `(("modules-left" . #("niri/workspaces" "custom/which-key" "niri/window"))
+  `(("modules-left" . #("niri/workspaces" "niri/window"))
     ("niri/window"
-     ("max-length" . 60))
-    ("custom/which-key"
-     ("exec" . ,which-key)
-     ("return-type" . "json")
-     ("tooltip" . #f))))
+     ("max-length" . 60))))
 
 (define (right-modules modules)
   (define-values (pinned drawer)
@@ -370,13 +362,6 @@
      (("#window")
       ("padding" . ,(px 0 %large-spacing))
       ("font-weight" . "700"))
-     (("#custom-which-key")
-      ("margin" . ,pill-margin)
-      ("padding" . ,(px 0 %spacing))
-      ("border-radius" . ,(px %small-corner-radius))
-      ("color" . ,(color theme 'fg_0))
-      ("background" . ,(color theme 'bg_accent))
-      ("font-weight" . "600"))
      (("#clock.time" "#clock.date")
       ("min-width" . "88px"))
      (("#clock.time")

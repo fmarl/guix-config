@@ -29,6 +29,13 @@
     (setf *which-key-delay* 500)
     (load (uiop:xdg-config-home "nucleotide" "config.lisp"))))
 
+(define (nucleotide-monitor-arguments theme)
+  (list "--background" (color-hex-alpha theme 'bg_popup 0.93)
+        "--foreground" (color theme 'fg_0)
+        "--accent" (color theme 'blue)
+        "--dim" (color theme 'dim_0)
+        "--border" (color theme 'border)))
+
 (define screenshot
   (shell-script-file "screenshot"
                      (list (local-file "files/screenshot.sh"))
@@ -95,6 +102,7 @@ org.freedesktop.impl.portal.Screenshot=wlr;
         (service home-nucleotide-service-type
                  (home-nucleotide-configuration
                    (settings (nucleotide-settings theme))
+                   (monitor-arguments (nucleotide-monitor-arguments theme))
                    (entries
                     (append (list (nucleotide-autostart
                                    dbus-update-activation-environment
