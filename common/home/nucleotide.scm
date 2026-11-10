@@ -25,11 +25,12 @@
   `((setf *border-focused* ,(color theme 'br_blue))
     (setf *border-unfocused* ,(color theme 'border))
     (setf *cursor-theme* '(,%cursor-theme ,%cursor-size))
+    (setf *focus-follows-pointer* #t)
     (setf *libinput-settings* '(#:tap #t #:click-method #:button-areas))
-    (setf *which-key-delay* 500)
+    (setf *which-key-delay* 1000)
     (load (uiop:xdg-config-home "nucleotide" "config.lisp"))))
 
-(define (nucleotide-monitor-arguments theme)
+(define (nucleotide-tool-arguments theme)
   (list "--background" (color-hex-alpha theme 'bg_popup 0.93)
         "--foreground" (color theme 'fg_0)
         "--accent" (color theme 'blue)
@@ -102,7 +103,7 @@ org.freedesktop.impl.portal.Screenshot=wlr;
         (service home-nucleotide-service-type
                  (home-nucleotide-configuration
                    (settings (nucleotide-settings theme))
-                   (monitor-arguments (nucleotide-monitor-arguments theme))
+                   (tool-arguments (nucleotide-tool-arguments theme))
                    (entries
                     (append (list (nucleotide-autostart
                                    dbus-update-activation-environment
